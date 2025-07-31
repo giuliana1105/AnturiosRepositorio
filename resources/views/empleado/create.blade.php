@@ -68,7 +68,12 @@
                 </div>
                 <div class="col-md-6">
                     <label for="tipo_identificacion" class="form-label">Tipo Identificación</label>
-                    <input type="text" name="tipo_identificacion" id="tipo_identificacion" class="form-control" required value="{{ old('tipo_identificacion') }}">
+                    <select name="tipo_identificacion" id="tipo_identificacion" class="form-control" required>
+                        <option value="">Seleccione tipo</option>
+                        <option value="Cédula" {{ old('tipo_identificacion') == 'Cédula' ? 'selected' : '' }}>Cédula</option>
+                        <option value="RUC" {{ old('tipo_identificacion') == 'RUC' ? 'selected' : '' }}>RUC</option>
+                        <option value="Pasaporte" {{ old('tipo_identificacion') == 'Pasaporte' ? 'selected' : '' }}>Pasaporte</option>
+                    </select>
                 </div>
                 <div class="col-md-6">
                     <label for="codigocargo" class="form-label">Cargo</label>

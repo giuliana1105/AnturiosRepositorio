@@ -148,13 +148,58 @@ class EmpleadoController extends Controller
         $file = $request->file('excel_file');
         $rows = Excel::toArray([], $file)[0];
 
-        $bodegas = Bodega::pluck('idbodega')->toArray();
-        $cargos = Cargo::pluck('codigocargo')->toArray();
+        // Mapear bodegas y cargos por nombre (insensible a mayúsculas/minúsculas)
+        $bodegas = Bodega::all()->keyBy(function($item) {
+            return mb_strtolower(trim($item->nombrebodega));
+        });
+        $cargos = Cargo::all()->keyBy(function($item) {
+            return mb_strtolower(trim($item->nombrecargo));
+        });
+
+        // Tipos de identificación válidos (ajusta según tu base de datos)
+        $tiposIdentificacionValidos = [
+            'CEDULA' => 'Cedula',
+            'CEDULA' => 'Cedula',
+            'RUC' => 'RUC',
+            'PASAPORTE' => 'Pasaporte'
+        ];
 
         $errores = [];
         foreach ($rows as $index => $row) {
             if ($index === 0) continue; // Saltar encabezado
 
+            // Obtener la bodega por nombre (insensible a mayúsculas/minúsculas)
+            $nombreBodegaExcel = mb_strtolower(trim($row[6] ?? ''));
+            $bodega = Bodega::whereRaw('LOWER(nombrebodega) = ?', [$nombreBodegaExcel])->first();
+            if (!$bodega) {
+                $errores[] = "Fila " . ($index + 1) . ": La bodega '{$row[6]}' no existe.";
+                continue;
+            }
+
+            // Obtener el cargo por nombre (insensible a mayúsculas/minúsculas)
+            $nombreCargoExcel = mb_strtolower(trim($row[8] ?? ''));
+            $cargo = Cargo::whereRaw('LOWER(nombrecargo) = ?', [$nombreCargoExcel])->first();
+            if (!$cargo) {
+                $errores[] = "Fila " . ($index + 1) . ": El cargo '{$row[8]}' no existe.";
+                continue;
+            }
+
+            // Validar tipo de identificación
+            $tipoIdentificacionExcel = mb_strtoupper(trim($row[7] ?? ''));
+            $tipoIdentificacionExcel = str_replace(['Á','É','Í','Ó','Ú','á','é','í','ó','ú'], ['A','E','I','O','U','A','E','I','O','U'], $tipoIdentificacionExcel);
+
+            if ($tipoIdentificacionExcel === 'CEDULA') {
+                $tipoIdentificacionFinal = 'Cedula';
+            } elseif ($tipoIdentificacionExcel === 'RUC') {
+                $tipoIdentificacionFinal = 'RUC';
+            } elseif ($tipoIdentificacionExcel === 'PASAPORTE') {
+                $tipoIdentificacionFinal = 'Pasaporte';
+            } else {
+                $errores[] = "Fila " . ($index + 1) . ": El tipo de identificación '{$row[7]}' no es válido. Debe ser Cedula, RUC o Pasaporte.";
+                continue;
+            }
+
+            // Insertar usando los IDs correctos
             $data = [
                 'nro_identificacion' => $row[0] ?? null,
                 'nombreemp' => $row[1] ?? null,
@@ -162,20 +207,10 @@ class EmpleadoController extends Controller
                 'email' => $row[3] ?? null,
                 'nro_telefono' => $row[4] ?? null,
                 'direccionemp' => $row[5] ?? null,
-                'idbodega' => $row[6] ?? null,
-                'tipo_identificacion' => $row[7] ?? null,
-                'codigocargo' => $row[8] ?? null,
+                'idbodega' => $bodega->idbodega,
+                'tipo_identificacion' => $tipoIdentificacionFinal,
+                'codigocargo' => $cargo->codigocargo,
             ];
-
-            // Validar bodega y cargo
-            if (!in_array($data['idbodega'], $bodegas)) {
-                $errores[] = "Fila " . ($index + 1) . ": La bodega '{$data['idbodega']}' no existe.";
-                continue;
-            }
-            if (!in_array($data['codigocargo'], $cargos)) {
-                $errores[] = "Fila " . ($index + 1) . ": El cargo '{$data['codigocargo']}' no existe.";
-                continue;
-            }
 
             try {
                 DB::insert("INSERT INTO empleados (nro_identificacion, nombreemp, apellidoemp, email, nro_telefono, direccionemp, idbodega, tipo_identificacion, codigocargo, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())", [

@@ -41,6 +41,7 @@
     <table>
         <thead>
         <tr>
+            <th>Código</th>
             <th>Producto</th>
             <th>Cantidad</th>
             <th>Tipo de Empaque</th>
@@ -49,6 +50,7 @@
         <tbody>
         @foreach ($nota->detalles as $detalle)
             <tr>
+                <td>{{ $detalle->producto->codigo ?? 'N/A' }}</td>
                 <td>{{ $detalle->producto->nombre ?? 'N/A' }}</td>
                 <td>{{ $detalle->cantidad }}</td>
                 <td>{{ $detalle->producto->tipoempaque ?? 'Sin Empaque' }}</td>

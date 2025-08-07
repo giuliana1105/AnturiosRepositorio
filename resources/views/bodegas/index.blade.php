@@ -34,7 +34,7 @@
                 <h3 class="card-title">Nueva Bodega</h3>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('bodega.store') }}" role="form">
+                <form method="POST" action="{{ route('bodegas.store') }}" role="form">
                     @csrf
                     <div class="row">
                         <!-- Campo Nombre de la Bodega -->
@@ -55,7 +55,7 @@
         </div>
 
         <!-- Formulario de búsqueda -->
-        <form action="{{ route('bodega.index') }}" method="GET" class="mb-4">
+        <form action="{{ route('bodegas.index') }}" method="GET" class="mb-4">
             <div class="row">
                 <div class="col-12 col-md-4 mb-3">
                     <input type="text" name="search" class="form-control" placeholder="Buscar por nombre de bodega"
@@ -82,9 +82,9 @@
                             <td>{{ $bodega->nombrebodega }}</td>
                             <td>
                                 <!-- Botón Editar -->
-                                <a href="{{ route('bodega.edit', $bodega->idbodega) }}" class="btn btn-sm btn-primary mb-2 mb-md-0">Editar</a>
+                                <a href="{{ route('bodegas.edit', $bodega->idbodega) }}" class="btn btn-sm btn-primary mb-2 mb-md-0">Editar</a>
                                 <!-- Botón Eliminar -->
-                                <form action="{{ route('bodega.destroy', $bodega->idbodega) }}" method="POST"
+                                <form action="{{ route('bodegas.destroy', $bodega->idbodega) }}" method="POST"
                                     class="d-inline-block">
                                     @csrf
                                     @method('DELETE')

@@ -29,7 +29,7 @@
     <div class="tab-content" id="empleadoTabContent">
         <!-- Ingreso Manual -->
         <div class="tab-pane fade show active" id="manual" role="tabpanel">
-            <form id="manualForm" action="{{ route('empleado.store') }}" method="POST" class="row g-3">
+            <form id="manualForm" action="{{ route('empleados.store') }}" method="POST" class="row g-3">
                 @csrf
                 <div class="col-md-6">
                     <label for="nro_identificacion" class="form-label">Cédula</label>
@@ -93,7 +93,7 @@
         </div>
         <!-- Importar Excel -->
         <div class="tab-pane fade" id="excel" role="tabpanel">
-            <form id="excelForm" action="{{ route('empleado.import') }}" method="POST" enctype="multipart/form-data">
+            <form id="excelForm" action="{{ route('empleados.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="mb-3">
                     <label for="excel_file" class="form-label">Importar empleados por Excel</label>

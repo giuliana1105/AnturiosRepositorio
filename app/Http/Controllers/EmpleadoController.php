@@ -31,14 +31,14 @@ class EmpleadoController extends Controller
             })
             ->paginate(10);
 
-        return view('empleado.index', compact('empleados'));
+        return view('empleados.index', compact('empleados'));
     }
 
     public function create()
     {
         $bodegas = Bodega::all();
         $cargos = Cargo::all();
-        return view('empleado.create', compact('bodegas', 'cargos'));
+        return view('empleados.create', compact('bodegas', 'cargos'));
     }
 
     public function store(Request $request)
@@ -61,7 +61,7 @@ class EmpleadoController extends Controller
                 $request->tipo_identificacion,
                 $validatedData['codigocargo']
             ]);
-            return redirect()->route('empleado.index')->with('success', 'Empleado creado con éxito.');
+            return redirect()->route('empleados.index')->with('success', 'Empleado creado con éxito.');
         } catch (\Illuminate\Database\QueryException $e) {
             // Extraer solo el mensaje exacto del trigger en PostgreSQL
             $errorMessage = $e->getMessage();
@@ -83,7 +83,7 @@ class EmpleadoController extends Controller
         $bodegas = Bodega::all();
         $cargos = Cargo::all();
 
-        return view('empleado.edit', compact('empleado', 'bodegas', 'cargos'));
+        return view('empleados.edit', compact('empleado', 'bodegas', 'cargos'));
     }
 
     public function update(Request $request, $nro_identificacion)
@@ -114,7 +114,7 @@ class EmpleadoController extends Controller
                 'idbodega' => $validatedData['idbodega'],
             ]);
 
-            return redirect()->route('empleado.index')->with('success', 'Empleado actualizado exitosamente.');
+            return redirect()->route('empleados.index')->with('success', 'Empleado actualizado exitosamente.');
         } catch (\Illuminate\Database\QueryException $e) {
             // Capturar el mensaje de error del trigger
             $errorMessage = $e->getMessage();
@@ -136,7 +136,7 @@ class EmpleadoController extends Controller
     public function destroy($nro_identificacion)
     {
         Empleado::findOrFail($nro_identificacion)->delete();
-        return redirect()->route('empleado.index')->with('success', 'Empleado eliminado exitosamente.');
+        return redirect()->route('empleados.index')->with('success', 'Empleado eliminado exitosamente.');
     }
 
     public function import(Request $request)
@@ -233,6 +233,6 @@ class EmpleadoController extends Controller
             return redirect()->back()->with('error', implode('<br>', $errores));
         }
 
-        return redirect()->route('empleado.index')->with('success', 'Empleados importados correctamente.');
+        return redirect()->route('empleados.index')->with('success', 'Empleados importados correctamente.');
     }
 }

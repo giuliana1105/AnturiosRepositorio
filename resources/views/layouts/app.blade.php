@@ -87,21 +87,21 @@
                     @can('ver Producto')
                         <!-- Productos -->
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('producto.index') }}">Productos</a>
+                            <a class="nav-link" href="{{ route('productos.index') }}">Productos</a>
                         </li>
                     @endcan
 
                     @can('ver empleado')
                         <!-- Empleados -->
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('empleado.index') }}">Empleados</a>
+                            <a class="nav-link" href="{{ route('empleados.index') }}">Empleados</a>
                         </li>
                     @endcan
 
                     @can('ver bodega')
                         <!-- Bodegas -->
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('bodega.index') }}">Bodegas</a>
+                            <a class="nav-link" href="{{ route('bodegas.index') }}">Bodegas</a>
                         </li>
                     @endcan
 

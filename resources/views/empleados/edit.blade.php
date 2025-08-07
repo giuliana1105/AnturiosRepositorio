@@ -24,7 +24,7 @@
             </div>
         @endif
 
-        <form action="{{ route('empleado.update', $empleado->nro_identificacion) }}" method="POST" class="row g-3">
+        <form action="{{ route('empleados.update', $empleado->nro_identificacion) }}" method="POST" class="row g-3">
             @csrf
             @method('PATCH')
 
@@ -107,7 +107,7 @@
 
             <div class="col-12 text-center">
                 <button type="submit" class="btn btn-success">Actualizar</button>
-                <a href="{{ route('empleado.index') }}" class="btn btn-secondary">Cancelar</a>
+                <a href="{{ route('empleados.index') }}" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
     </div>

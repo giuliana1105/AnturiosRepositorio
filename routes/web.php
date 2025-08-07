@@ -34,23 +34,26 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth'])->group(function () {
 
     // 🔹 Ruta para la vista principal (home)
-    Route::get('/home', function () {
-        return view('home');
-    })->name('home');
+    Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+    Route::get('/home/bodega/{id}', [App\Http\Controllers\HomeController::class, 'bodega'])->name('home.bodega');
+
+    Route::get('/home/master', [App\Http\Controllers\HomeController::class, 'master'])->name('home.master');
 
     // 🔹 Rutas para los módulos principales
     //Route::resource('producto', ProductoController::class);
-    Route::resource('producto', ProductoController::class)->parameters([
+    Route::resource('productos', ProductoController::class)->parameters([
         'producto' => 'codigo' // Define que 'producto' usa 'cod_Prod' como identificador
     ]);
+    Route::post('productos/import', [ProductoController::class, 'import'])->name('productos.import'); // <-- CORREGIDO
     
     Route::resource('roles', RoleController::class);
 
-    Route::resource('empleado', EmpleadoController::class);
+    Route::resource('empleados', EmpleadoController::class);
+    Route::post('empleados/import', [EmpleadoController::class, 'import'])->name('empleados.import'); // <-- OPCIONAL, para mantener consistencia
+
     Route::resource('cargo', CargoController::class);
-    //Route::resource('tipoidentificacion', TipoIdentificacionController::class);
-    Route::resource('bodega', BodegaController::class);
-    //Route::resource('tipoempaque', TipoEmpaquesController::class);
+    Route::resource('bodegas', BodegaController::class);
     Route::resource('tipoNota', TipoNotaController::class);
     Route::resource('users', UserController::class);
 
@@ -72,12 +75,6 @@ Route::middleware(['auth'])->group(function () {
 
     // ✅ Generar PDF de Tipo Nota
     Route::get('tipoNota/pdf/{codigo}', [TipoNotaController::class, 'generarPDF'])->name('tipoNota.pdf');
-
-    Route::post('/transaccionProducto/finalizar/{id}', [TransaccionProductoController::class, 'finalizar'])
-        ->name('transaccionProducto.finalizar');
-
-    Route::post('producto/import', [ProductoController::class, 'import'])->name('producto.import');
-    Route::post('empleado/import', [EmpleadoController::class, 'import'])->name('empleado.import');
 });
 
 // 🔹 Redirigir la raíz al login si no está autenticado

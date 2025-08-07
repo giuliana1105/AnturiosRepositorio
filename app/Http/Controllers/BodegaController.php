@@ -22,7 +22,7 @@ class BodegaController extends Controller
     public function index()
     {
         $bodegas = Bodega::orderBy('nombrebodega', 'ASC')->paginate(5);
-        return view('bodega.index', compact('bodegas'));
+        return view('bodegas.index', compact('bodegas'));
     }
 
     /**
@@ -30,7 +30,7 @@ class BodegaController extends Controller
      */
     public function create()
     {
-        return view('bodega.create');
+        return view('bodegas.create');
     }
 
     /**
@@ -44,7 +44,7 @@ class BodegaController extends Controller
         ]);
 
         Bodega::create($request->all());  // Aquí idbodega será asignado automáticamente
-        return redirect()->route('bodega.index')->with('success', 'Registro creado satisfactoriamente');
+        return redirect()->route('bodegas.index')->with('success', 'Registro creado satisfactoriamente');
     }
 
     /**
@@ -53,7 +53,7 @@ class BodegaController extends Controller
     public function show(string $idbodega)
     {
         $bodega = Bodega::findOrFail($idbodega);
-        return view('bodega.show', compact('bodega'));
+        return view('bodegas.show', compact('bodega'));
     }
 
     /**
@@ -62,7 +62,7 @@ class BodegaController extends Controller
     public function edit(string $idbodega)
     {
         $bodega = Bodega::findOrFail($idbodega);
-        return view('bodega.edit', compact('bodega'));
+        return view('bodegas.edit', compact('bodega'));
     }
 
     /**
@@ -78,7 +78,7 @@ class BodegaController extends Controller
         $bodega = Bodega::findOrFail($idbodega);
         $bodega->update($request->all());
         
-        return redirect()->route('bodega.index')->with('success', 'Registro actualizado satisfactoriamente');
+        return redirect()->route('bodegas.index')->with('success', 'Registro actualizado satisfactoriamente');
     }
 
     /**
@@ -87,6 +87,6 @@ class BodegaController extends Controller
     public function destroy(string $idbodega)
     {
         Bodega::findOrFail($idbodega)->delete();
-        return redirect()->route('bodega.index')->with('success', 'Registro eliminado satisfactoriamente');
+        return redirect()->route('bodegas.index')->with('success', 'Registro eliminado satisfactoriamente');
     }
 }

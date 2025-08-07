@@ -18,20 +18,18 @@ return new class extends Migration
             $table->string('direccionemp', 100);
             $table->unsignedBigInteger('idbodega');
             $table->enum('tipo_identificacion', ['Cedula', 'RUC', 'Pasaporte']);
-            $table->unsignedBigInteger('codigocargo'); // Se cambia idcargo a codigocargo
+            $table->unsignedBigInteger('codigocargo');
             $table->timestamps();
 
-            // Relaciones
             $table->foreign('idbodega')->references('idbodega')->on('bodegas');
-            $table->foreign('codigocargo')->references('codigocargo')->on('cargos'); // Cambio en la clave foránea
+            $table->foreign('codigocargo')->references('codigocargo')->on('cargos');
         });
 
-        // Creación del procedimiento para validar datos de empleados
         DB::unprepared("CREATE OR REPLACE FUNCTION validar_empleado() RETURNS TRIGGER AS $$
         DECLARE
             provincia INTEGER;
             tercer_digito INTEGER;
-            coeficientes INTEGER[] := ARRAY[2, 1, 2, 1, 2, 1, 2, 1, 2];  -- Coeficientes usados en validación de cédula
+            coeficientes INTEGER[] := ARRAY[2, 1, 2, 1, 2, 1, 2, 1, 2];
             suma INTEGER := 0;
             resultado INTEGER;
             digito_verificador INTEGER;
@@ -42,7 +40,6 @@ return new class extends Migration
             primer_digito CHAR;
             digitos_iguales BOOLEAN;
         BEGIN
-            -- Validación del nombre y apellido (solo letras y espacios)
             IF NEW.nombreemp !~ '^[a-zA-ZÁÉÍÓÚáéíóúÑñ ]+$' THEN
                 RAISE EXCEPTION 'El nombre solo puede contener letras y espacios';
             END IF;
@@ -51,27 +48,21 @@ return new class extends Migration
                 RAISE EXCEPTION 'El apellido solo puede contener letras y espacios';
             END IF;
 
-            -- Validación del email
             IF NEW.email !~ '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$' THEN
                 RAISE EXCEPTION 'El email no es válido: ejemplo@gmail.com';
             END IF;
 
-            -- Validación del número de teléfono
             IF NEW.nro_telefono !~ '^0[2-9][0-9]{8}$' THEN
                 RAISE EXCEPTION 'El número de teléfono debe comenzar con 0, el segundo dígito entre 2 y 9 y tener 10 dígitos en total';
             END IF;
 
-            -- Validación de identificaciones
             IF NEW.tipo_identificacion = 'Cedula' OR NEW.tipo_identificacion = 'RUC' THEN
-                -- Extraer los primeros 10 dígitos (para cédula o base del RUC)
                 primeros_diez_digitos := SUBSTRING(NEW.nro_identificacion FROM 1 FOR 10);
 
-                -- Verificar que tiene 10 dígitos numéricos
                 IF LENGTH(primeros_diez_digitos) <> 10 OR primeros_diez_digitos !~ '[0-9]+' THEN
                     RAISE EXCEPTION 'La cédula debe contener 10 dígitos numéricos';
                 END IF;
 
-                -- Validación del dígito verificador
                 suma := 0;
                 FOR i IN 1..9 LOOP
                     digito := CAST(SUBSTRING(primeros_diez_digitos FROM i FOR 1) AS INTEGER);
@@ -94,15 +85,12 @@ return new class extends Migration
     }
 
     public function down(): void
-{
-    // Eliminar el trigger que depende de la función
-    DB::unprepared("DROP TRIGGER IF EXISTS trigger_validar_empleado ON empleados;");
-    
-    // Eliminar la función
-    DB::unprepared("DROP FUNCTION IF EXISTS validar_empleado;");
-
-    // Eliminar la tabla empleados
-    Schema::dropIfExists('empleados');
-}
-
+    {
+        // Elimina primero el trigger (nombre correcto: trg_validar_empleado)
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_validar_empleado ON empleados;");
+        // Luego elimina la función
+        DB::unprepared("DROP FUNCTION IF EXISTS validar_empleado();");
+        // Finalmente elimina la tabla
+        Schema::dropIfExists('empleados');
+    }
 };

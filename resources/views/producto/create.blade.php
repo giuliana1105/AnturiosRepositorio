@@ -30,7 +30,7 @@
     <div class="tab-content" id="productoTabContent">
         <!-- Ingreso Manual -->
         <div class="tab-pane fade show active" id="manual" role="tabpanel">
-            <form id="manualForm" action="{{ route('producto.store') }}" method="POST">
+            <form id="manualForm" action="{{ route('productos.store') }}" method="POST">
                 @csrf
                 <div class="row">
                     <div class="col-12 col-md-6 mb-3">
@@ -92,7 +92,7 @@
         </div>
         <!-- Importar Excel -->
         <div class="tab-pane fade" id="excel" role="tabpanel">
-            <form id="excelForm" action="{{ route('producto.import') }}" method="POST" enctype="multipart/form-data">
+            <form id="excelForm" action="{{ route('productos.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="mb-3">
                     <label for="excel_file" class="form-label">Importar productos por Excel</label>

@@ -52,7 +52,12 @@ class ProductoController extends Controller
         // Validaciones en Laravel antes de la inserción
         $validatedData = $request->validate([
             'codigo' => 'required|string|max:10',
-            'nombre' => 'required|string|max:50',
+            'nombre' => [
+                'required',
+                'string',
+                'max:50',
+                'regex:/^[\pL\pN\s\-]+$/u'
+            ],
             'descripcion' => 'required|string',
             'cantidad' => 'required|integer',
             'tipoempaque' => 'nullable|in:Paquete,Caja,Unidad',
@@ -71,7 +76,7 @@ class ProductoController extends Controller
                 $validatedData['tipoempaque']
             ]);
 
-            return redirect()->route('producto.index')->with('success', 'Producto creado correctamente.');
+            return redirect()->route('productos.index')->with('success', 'Producto creado correctamente.');
         } catch (QueryException $e) {
             return $this->handleDatabaseException($e);
         }
@@ -88,7 +93,12 @@ class ProductoController extends Controller
     {
         $validatedData = $request->validate([
             'codigo' => 'required|string|max:10',
-            'nombre' => 'required|string|max:50',
+            'nombre' => [
+                'required',
+                'string',
+                'max:50',
+                'regex:/^[\pL\pN\s\-]+$/u'
+            ],
             'descripcion' => 'required|string',
             'cantidad' => 'required|integer|min:1',
             'tipoempaque' => 'nullable|in:Paquete,Caja,Unidad',
@@ -98,7 +108,7 @@ class ProductoController extends Controller
             $producto = Producto::findOrFail($id);
             $producto->update($validatedData);
 
-            return redirect()->route('producto.index')->with('success', 'Producto actualizado correctamente.');
+            return redirect()->route('productos.index')->with('success', 'Producto actualizado correctamente.');
         } catch (QueryException $e) {
             return $this->handleDatabaseException($e);
         }
@@ -108,7 +118,7 @@ class ProductoController extends Controller
     {
         $producto = Producto::findOrFail($id);
         $producto->delete();
-        return redirect()->route('producto.index')->with('success', 'Producto eliminado correctamente.');
+        return redirect()->route('productos.index')->with('success', 'Producto eliminado correctamente.');
     }
 
     /**
@@ -172,7 +182,6 @@ class ProductoController extends Controller
         if ($errores) {
             return redirect()->back()->with('error', implode('<br>', $errores));
         }
-
-        return redirect()->route('producto.index')->with('success', 'Productos importados correctamente.');
+        return redirect()->route('productos.index')->with('success', 'Productos importados correctamente.');
     }
 }

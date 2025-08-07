@@ -33,9 +33,9 @@ class CreateProductosTable extends Migration
                     RAISE EXCEPTION 'El código del producto debe contener al menos una letra y un número.';
                 END IF;
 
-                -- Validar que el nombre solo contenga letras y espacios
-                IF NEW.nombre !~ '^[A-Za-z ]+$' THEN
-                    RAISE EXCEPTION 'El nombre del producto solo puede contener letras y espacios.';
+                -- Validar que el nombre solo contenga letras (incluyendo tildes y ñ) y espacios
+                IF NEW.nombre !~ '^[A-Za-zÁÉÍÓÚáéíóúÑñÜü0-9 ]+$' THEN
+                    RAISE EXCEPTION 'El nombre del producto solo puede contener letras, números y espacios.';
                 END IF;
 
                 -- Validar que la cantidad no sea negativa
@@ -63,10 +63,11 @@ class CreateProductosTable extends Migration
 
     public function down()
     {
-        // Eliminar el trigger y la función antes de eliminar la tabla
+        // Elimina primero el trigger
         DB::unprepared("DROP TRIGGER IF EXISTS trg_validar_producto ON productos;");
-        DB::unprepared("DROP FUNCTION IF EXISTS validar_producto;");
-
+        // Luego elimina la función
+        DB::unprepared("DROP FUNCTION IF EXISTS validar_producto();");
+        // Finalmente elimina la tabla
         Schema::dropIfExists('productos');
     }
 }

@@ -18,7 +18,7 @@
         @endif
 
         <!-- Formulario de búsqueda -->
-        <form action="{{ route('empleado.index') }}" method="GET" class="mb-3">
+        <form action="{{ route('empleados.index') }}" method="GET" class="mb-3">
             <div class="row">
                 <div class="col-md-6">
                     <input type="text" name="search" class="form-control"
@@ -32,7 +32,7 @@
 
         <!-- Botones para crear nuevos registros -->
         <div class="mb-3 text-right">
-            <a href="{{ route('empleado.create') }}" class="btn btn-primary" style="background-color: #88022D">Añadir
+            <a href="{{ route('empleados.create') }}" class="btn btn-primary" style="background-color: #88022D">Añadir
                 Empleado</a>
             <a href="{{ route('cargo.index') }}" class="btn btn-primary" style="background-color: #88022D">Añadir Cargo</a>
         </div>
@@ -75,9 +75,9 @@
                     <td>{{ $empleado->nro_telefono ?? 'N/A' }}</td> <!-- Muestra el número celular -->
 
                     <td>
-                        <a href="{{ route('empleado.edit', $empleado->nro_identificacion) }}"
+                        <a href="{{ route('empleados.edit', $empleado->nro_identificacion) }}"
                            class="btn btn-sm btn-primary">Editar</a>
-                        <form action="{{ route('empleado.destroy', $empleado->nro_identificacion) }}" method="POST"
+                        <form action="{{ route('empleados.destroy', $empleado->nro_identificacion) }}" method="POST"
                               class="d-inline-block">
                             @csrf
                             @method('DELETE')

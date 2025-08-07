@@ -13,25 +13,21 @@
                 </div>
                 <div class="panel-body">
                     <div class="table-container">
-                        <form method="POST" action="{{ route('bodega.update', $bodega->idbodega) }}" role="form">
+                        <form method="POST" action="{{ route('bodegas.update', $bodega->idbodega) }}" role="form">
                             @csrf
                             @method('PATCH')
                             <div class="row">
-                                <div class="col-xs-6 col-sm-6 col-md-6">
+                                <div class="col-xs-12 col-sm-12 col-md-12">
                                     <div class="form-group">
-                                        <input type="text" name="idbodega" id="idbodega" class="form-control input-sm" value="{{ $bodega->idbodega }}" placeholder="Nombre de la Identificación">
-                                    </div>
-                                </div>
-                                <div class="col-xs-6 col-sm-6 col-md-6">
-                                    <div class="form-group">
-                                        <input type="text" name="nombrebodega" id="nombrebodega" class="form-control input-sm" value="{{$bodega->nombrebodega}}">
+                                        <label for="nombrebodega">Nombre de la Bodega</label>
+                                        <input type="text" name="nombrebodega" id="nombrebodega" class="form-control input-sm" value="{{ $bodega->nombrebodega }}" required>
                                     </div>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-xs-12 col-sm-12 col-md-12">
                                     <input type="submit" value="Actualizar" class="btn btn-success btn-block">
-                                    <a href="{{ route('bodega.index') }}" class="btn btn-info btn-block">Atrás</a>
+                                    <a href="{{ route('bodegas.index') }}" class="btn btn-info btn-block">Atrás</a>
                                 </div>
                             </div>
                         </form>

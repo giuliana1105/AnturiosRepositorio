@@ -70,7 +70,7 @@
                     <label for="tipo_identificacion" class="form-label">Tipo Identificación</label>
                     <select name="tipo_identificacion" id="tipo_identificacion" class="form-control" required>
                         <option value="">Seleccione tipo</option>
-                        <option value="Cédula" {{ old('tipo_identificacion') == 'Cédula' ? 'selected' : '' }}>Cédula</option>
+                        <option value="Cedula" {{ old('tipo_identificacion') == 'Cedula' ? 'selected' : '' }}>Cédula</option>
                         <option value="RUC" {{ old('tipo_identificacion') == 'RUC' ? 'selected' : '' }}>RUC</option>
                         <option value="Pasaporte" {{ old('tipo_identificacion') == 'Pasaporte' ? 'selected' : '' }}>Pasaporte</option>
                     </select>

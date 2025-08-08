@@ -48,7 +48,8 @@
 
             <div class="col-md-6">
                 <label for="tipo_identificacion" class="form-label">Tipo de Identificación</label>
-                <select name="tipo_identificacion" id="tipo_identificacion" class="form-select" required>
+                <select name="tipo_identificacion" id="tipo_identificacion" class="form-control" required>
+                    <option value="">Seleccione tipo</option>
                     <option value="Cedula"
                         {{ old('tipo_identificacion', $empleado->tipo_identificacion) == 'Cedula' ? 'selected' : '' }}>
                         Cédula</option>

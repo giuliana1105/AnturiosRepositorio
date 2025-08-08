@@ -12,6 +12,8 @@
             <tr>
                 <th>Código</th>
                 <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Cantidad</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -20,6 +22,8 @@
                 <tr>
                     <td>{{ $producto->codigo }}</td>
                     <td>{{ $producto->nombre }}</td>
+                    <td>{{ $producto->descripcion }}</td>
+                    <td>{{ $producto->cantidad }}</td>
                     <td>
                         <a href="{{ route('productos.edit', $producto->codigo) }}" class="btn btn-sm btn-primary">Editar</a>
                         <form action="{{ route('productos.destroy', $producto->codigo) }}" method="POST" class="d-inline-block">

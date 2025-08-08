@@ -10,7 +10,7 @@
         <a href="{{ route('bodegas.index') }}" class="btn btn-primary">Bodegas</a>
         <a href="{{ route('tipoNota.index') }}" class="btn btn-primary">Tipo Nota</a>
         <a href="{{ route('transaccionProducto.index') }}" class="btn btn-primary">Transacción Producto</a>
-        ?>
+        
     </div>
     <!-- Puedes mostrar resúmenes o tablas aquí si lo deseas -->
 </div>

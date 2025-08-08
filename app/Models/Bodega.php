@@ -16,5 +16,17 @@ class Bodega extends Model
     {
         return $this->hasMany(TipoNota::class, 'idbodega', 'idbodega');
     }
+    public function productosEnviados()
+    {
+        return $this->belongsToMany(\App\Models\Producto::class, 'productos_bodega', 'bodega_id', 'producto_id')
+            ->withPivot('cantidad', 'fecha', 'es_devolucion')
+            ->wherePivot('es_devolucion', false);
+    }
 
+    public function productosDevueltos()
+    {
+        return $this->belongsToMany(\App\Models\Producto::class, 'productos_bodega', 'bodega_id', 'producto_id')
+            ->withPivot('cantidad', 'fecha', 'es_devolucion')
+            ->wherePivot('es_devolucion', true);
+    }
 }

@@ -91,18 +91,41 @@ class TransaccionProductoController extends Controller
             foreach ($detalles as $detalle) {
                 $producto = Producto::where('codigo', $detalle->codigoproducto)->firstOrFail();
 
-                // 🔹 Modificar cantidad según el tipo de nota
                 if ($nota->tiponota === 'ENVIO') {
+                    // Actualiza el stock
                     if ($producto->cantidad < $detalle->cantidad) {
                         DB::rollBack();
                         return redirect()->back()->with('error', "Stock insuficiente para el producto: {$producto->nombre}.");
                     }
                     $producto->cantidad -= $detalle->cantidad;
-                } elseif ($nota->tiponota === 'DEVOLUCION') {
-                    $producto->cantidad += $detalle->cantidad;
-                }
+                    $producto->save();
 
-                $producto->save();
+                    // Registra el movimiento en la tabla pivote
+                    DB::table('productos_bodega')->insert([
+                        'bodega_id'    => $nota->idbodega,
+                        'producto_id'  => $producto->codigo,
+                        'cantidad'     => $detalle->cantidad,
+                        'fecha'        => now(),
+                        'es_devolucion'=> false,
+                        'created_at'   => now(),
+                        'updated_at'   => now(),
+                    ]);
+                } elseif ($nota->tiponota === 'DEVOLUCION') {
+                    // Actualiza el stock
+                    $producto->cantidad += $detalle->cantidad;
+                    $producto->save();
+
+                    // Registra el movimiento como devolución
+                    DB::table('productos_bodega')->insert([
+                        'bodega_id'    => $nota->idbodega,
+                        'producto_id'  => $producto->codigo,
+                        'cantidad'     => $detalle->cantidad,
+                        'fecha'        => now(),
+                        'es_devolucion'=> true,
+                        'created_at'   => now(),
+                        'updated_at'   => now(),
+                    ]);
+                }
             }
 
             // 🔹 Marcar la transacción como finalizada

@@ -29,7 +29,8 @@ class HomeController extends Controller
     public function bodega($id)
     {
         $bodega = Bodega::findOrFail($id);
-        $productos = $bodega->productosEnviados()->with('producto')->get();
-        return view('home.bodega', compact('bodega', 'productos'));
+        $productos = $bodega->productosEnviados()->get();
+        $devueltos = $bodega->productosDevueltos()->get();
+        return view('home.bodega', compact('bodega', 'productos', 'devueltos'));
     }
 }

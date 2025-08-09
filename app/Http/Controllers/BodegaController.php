@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Bodega;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Routing\Controller;  
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Asegúrate de importar esto
 
@@ -88,5 +92,48 @@ class BodegaController extends Controller
     {
         Bodega::findOrFail($idbodega)->delete();
         return redirect()->route('bodegas.index')->with('success', 'Registro eliminado satisfactoriamente');
+    }
+
+    /**
+     * Display a listing of all products in the master bodega.
+     */
+    // Para ENVÍO: muestra todos los productos registrados
+    public function productosMaster()
+    {
+        $productos = \App\Models\Producto::all()->map(function($producto) {
+            return [
+                'codigo'      => $producto->codigo,
+                'nombre'      => $producto->nombre,
+                'cantidad'    => $producto->cantidad ?? 0,
+            ];
+        });
+
+        return response()->json($productos);
+    }
+
+    /**
+     * Display a listing of the products in the specified bodega.
+     */
+    // Para DEVOLUCIÓN: solo productos con stock en la bodega seleccionada
+    public function productosEnBodega($id)
+    {
+        $productos = DB::table('productos_bodega')
+            ->select('producto_id', DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) as enviados'), DB::raw('SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as devueltos'))
+            ->where('bodega_id', $id)
+            ->groupBy('producto_id')
+            ->get()
+            ->map(function($row) {
+                $producto = \App\Models\Producto::where('codigo', $row->producto_id)->first();
+                $cantidad = ($row->enviados - $row->devueltos);
+                return $cantidad > 0 && $producto ? [
+                    'codigo'      => $producto->codigo,
+                    'nombre'      => $producto->nombre,
+                    'cantidad'    => $cantidad,
+                ] : null;
+            })
+            ->filter()
+            ->values();
+
+        return response()->json($productos);
     }
 }

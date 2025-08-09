@@ -19,7 +19,8 @@
 
             <div class="mb-3">
                 <label for="tiponota" class="form-label">Tipo de Nota</label>
-                <select name="tiponota" id="tiponota-select" class="form-control" required>
+                <select id="tiponota-select" name="tiponota" class="form-control" required>
+                    <option value="">Seleccione tipo</option>
                     <option value="ENVIO">Envío</option>
                     <option value="DEVOLUCION">Devolución</option>
                 </select>
@@ -36,17 +37,21 @@
                 </select>
             </div>
 
+            <div class="mb-3">
+                <label for="idbodega" class="form-label">Bodega</label>
+                <select name="idbodega" class="form-control" required>
+                    @foreach ($bodegas as $bodega)
+                        <option value="{{ $bodega->idbodega }}">{{ $bodega->nombrebodega }}</option>
+                    @endforeach
+                </select>
+            </div>
+
             <div id="productos-container">
                 <div class="producto-row row mb-3">
                     <div class="col-md-4">
                         <label for="codigoproducto[]" class="form-label">Producto</label>
                         <select name="codigoproducto[]" class="form-control producto-select" required>
                             <option value="">Seleccione un producto</option>
-                            @foreach ($productos as $producto)
-                                <option value="{{ $producto->codigo }}" data-stock="{{ $producto->cantidad }}" data-tipoempaque="{{ $producto->tipoempaque }}">
-                                    {{ $producto->codigo }} - {{ $producto->nombre }}
-                                </option>
-                            @endforeach
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -64,103 +69,47 @@
                 </div>
             </div>
 
-            <div class="mb-3">
-                <label for="idbodega" class="form-label">Bodega</label>
-                <select name="idbodega" class="form-control" required>
-                    @foreach ($bodegas as $bodega)
-                        <option value="{{ $bodega->idbodega }}">{{ $bodega->nombrebodega }}</option>
-                    @endforeach
-                </select>
-            </div>
-
             <button type="submit" class="btn btn-primary">Guardar Nota</button>
         </form>
     </div>
+@endsection
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const productosContainer = document.getElementById('productos-container');
-            const tipoNotaSelect = document.getElementById('tiponota-select');
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tipoNotaSelect = document.getElementById('tiponota-select');
+    const bodegaSelect = document.querySelector('select[name="idbodega"]');
 
-            document.addEventListener('click', function (e) {
-                if (e.target.classList.contains('add-producto')) {
-                    e.preventDefault();
-                    agregarProducto();
-                }
-
-                if (e.target.classList.contains('remove-producto')) {
-                    e.preventDefault();
-                    if (document.querySelectorAll('.producto-row').length > 1) {
-                        e.target.closest('.producto-row').remove();
-                    }
-                }
-            });
-
-            document.addEventListener('change', function (e) {
-                if (e.target.classList.contains('producto-select')) {
-                    actualizarDatosProducto(e.target);
-                }
-            });
-
-            tipoNotaSelect.addEventListener('change', function () {
-                actualizarValidacionCantidad();
-            });
-
-            function agregarProducto() {
-                const firstRow = document.querySelector('.producto-row');
-                const newRow = firstRow.cloneNode(true);
-
-                newRow.querySelectorAll('select, input').forEach(input => {
-                    if (input.tagName === 'SELECT') {
-                        input.selectedIndex = 0;
-                    } else {
-                        input.value = '';
-                    }
+    function cargarProductos(url) {
+        fetch(url)
+            .then(res => res.json())
+            .then(productos => {
+                document.querySelectorAll('.producto-select').forEach(select => {
+                    select.innerHTML = '<option value="">Seleccione un producto</option>';
+                    productos.forEach(prod => {
+                        select.innerHTML += `<option value="${prod.codigo}" data-stock="${prod.cantidad ?? ''}">${prod.codigo} - ${prod.nombre}</option>`;
+                    });
                 });
-
-                productosContainer.appendChild(newRow);
-                actualizarValidacionCantidad();
-            }
-
-            function actualizarDatosProducto(selectElement) {
-                let selectedOption = selectElement.options[selectElement.selectedIndex];
-                let stock = selectedOption.getAttribute('data-stock') || 0;
-                let tipoEmpaque = selectedOption.getAttribute('data-tipoempaque');
-
-                let cantidadInput = selectElement.closest('.producto-row').querySelector('.cantidad-input');
-                let tipoEmpaqueInput = selectElement.closest('.producto-row').querySelector('.tipoempaque-input');
-
-                cantidadInput.setAttribute('max', stock);
-                tipoEmpaqueInput.value = tipoEmpaque;
-
-                actualizarValidacionCantidad();
-            }
-
-            function actualizarValidacionCantidad() {
-                let tipoNota = tipoNotaSelect.value;
-                document.querySelectorAll('.cantidad-input').forEach(input => {
-                    let productoSelect = input.closest('.producto-row').querySelector('.producto-select');
-                    let maxStock = parseInt(productoSelect.selectedOptions[0].getAttribute('data-stock')) || 0;
-
-                    if (tipoNota === 'ENVIO') {
-                        input.setAttribute('max', maxStock);
-                    } else {
-                        input.removeAttribute('max');
-                    }
-                });
-            }
-
-            document.addEventListener('input', function (e) {
-                if (e.target.classList.contains('cantidad-input')) {
-                    let tipoNota = tipoNotaSelect.value;
-                    let maxStock = parseInt(e.target.getAttribute('max')) || 0;
-
-                    if (tipoNota === 'ENVIO' && parseInt(e.target.value) > maxStock) {
-                        alert('La cantidad ingresada supera el stock disponible.');
-                        e.target.value = maxStock;
-                    }
-                }
             });
-        });
-    </script>
+    }
+
+    function actualizarOpcionesProductos() {
+        if (tipoNotaSelect.value === 'DEVOLUCION' && bodegaSelect.value) {
+            cargarProductos(`/bodegas/${bodegaSelect.value}/productos`);
+        } else if (tipoNotaSelect.value === 'ENVIO') {
+            cargarProductos(`/bodegas/master/productos`);
+        } else {
+            document.querySelectorAll('.producto-select').forEach(select => {
+                select.innerHTML = '<option value="">Seleccione un producto</option>';
+            });
+        }
+    }
+
+    tipoNotaSelect.addEventListener('change', actualizarOpcionesProductos);
+    bodegaSelect.addEventListener('change', actualizarOpcionesProductos);
+
+    // Ejecutar al cargar la página si ya hay valores seleccionados
+    actualizarOpcionesProductos();
+});
+</script>
 @endsection

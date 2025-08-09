@@ -59,6 +59,21 @@ class TipoNotaController extends Controller
             'cantidad' => 'required|array|min:1',
         ]);
 
+        // Validación para devoluciones: no permitir devolver más de lo que hay en la bodega
+        if ($request->tiponota === 'DEVOLUCION') {
+            foreach ($request->codigoproducto as $index => $codigo) {
+                $stock = DB::table('productos_bodega')
+                    ->where('bodega_id', $request->idbodega)
+                    ->where('producto_id', $codigo)
+                    ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
+                    ->value('stock') ?? 0;
+
+                if ($request->cantidad[$index] > $stock) {
+                    return redirect()->back()->with('error', 'Cantidad insuficiente para el producto ' . $codigo);
+                }
+            }
+        }
+
         try {
             DB::beginTransaction();
 
@@ -74,11 +89,23 @@ class TipoNotaController extends Controller
                 'fechanota' => now(),
             ]);
 
-            foreach ($request->codigoproducto as $index => $productoId) {
+            foreach ($request->codigoproducto as $index => $codigo) {
+                // Guarda el detalle de la nota
                 DetalleTipoNota::create([
                     'tipo_nota_id' => $nota->codigo,
-                    'codigoproducto' => $productoId,
+                    'codigoproducto' => $codigo,
                     'cantidad' => $request->cantidad[$index],
+                ]);
+
+                // Guarda el movimiento en productos_bodega
+                DB::table('productos_bodega')->insert([
+                    'bodega_id' => $request->idbodega,
+                    'producto_id' => $codigo, // <-- Debe ser el código del producto, ej: 'PF003'
+                    'cantidad' => $request->cantidad[$index],
+                    'fecha' => now(),
+                    'es_devolucion' => $request->tiponota === 'DEVOLUCION',
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]);
             }
 

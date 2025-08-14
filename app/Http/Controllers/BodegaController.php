@@ -105,6 +105,7 @@ class BodegaController extends Controller
                 'codigo'      => $producto->codigo,
                 'nombre'      => $producto->nombre,
                 'cantidad'    => $producto->cantidad ?? 0,
+                'empaque'     => $producto->tipoempaque ?? '', // <-- usa el nombre correcto del campo
             ];
         });
 
@@ -129,6 +130,7 @@ class BodegaController extends Controller
                     'codigo'      => $producto->codigo,
                     'nombre'      => $producto->nombre,
                     'cantidad'    => $cantidad,
+                    'empaque'     => $producto->tipoempaque ?? '', // <-- usa el nombre correcto del campo
                 ] : null;
             })
             ->filter()

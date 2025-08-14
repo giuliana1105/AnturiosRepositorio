@@ -21,4 +21,10 @@ class Producto extends Model
         'cantidad',
         'tipoempaque'
     ];
+
+    public function bodegas()
+    {
+        return $this->belongsToMany(Bodega::class, 'productos_bodega', 'producto_id', 'bodega_id');
+    }
+
 }

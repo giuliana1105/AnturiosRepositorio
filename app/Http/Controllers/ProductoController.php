@@ -40,8 +40,7 @@ class ProductoController extends Controller
      */
     public function create()
     {
-        $tipoempaques = ['Paquete', 'Caja', 'Unidad'];
-        return view('producto.create', compact('tipoempaques'));
+        return view('producto.create');
     }
 
     /**
@@ -49,7 +48,6 @@ class ProductoController extends Controller
      */
     public function store(Request $request)
     {
-        // Validaciones en Laravel antes de la inserción
         $validatedData = $request->validate([
             'codigo' => 'required|string|max:10',
             'nombre' => [
@@ -60,11 +58,12 @@ class ProductoController extends Controller
             ],
             'descripcion' => 'required|string',
             'cantidad' => 'required|integer',
-            'tipoempaque' => 'nullable|in:Paquete,Caja,Unidad',
+            // Elimina la validación de tipoempaque
         ]);
 
+        $validatedData['tipoempaque'] = 'Unidad'; // Siempre "Unidad"
+
         try {
-            // Inserción en la base de datos para activar el trigger
             DB::insert("
                 INSERT INTO productos (codigo, nombre, descripcion, cantidad, tipoempaque, created_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, NOW(), NOW())
@@ -85,8 +84,7 @@ class ProductoController extends Controller
     public function edit($id)
     {
         $producto = Producto::findOrFail($id);
-        $tipoempaques = ['Paquete', 'Caja', 'Unidad'];
-        return view('producto.edit', compact('producto', 'tipoempaques'));
+        return view('producto.edit', compact('producto'));
     }
 
     public function update(Request $request, $id)
@@ -101,8 +99,10 @@ class ProductoController extends Controller
             ],
             'descripcion' => 'required|string',
             'cantidad' => 'required|integer|min:1',
-            'tipoempaque' => 'nullable|in:Paquete,Caja,Unidad',
+            // Elimina la validación de tipoempaque
         ]);
+
+        $validatedData['tipoempaque'] = 'Unidad'; // Siempre "Unidad"
 
         try {
             $producto = Producto::findOrFail($id);
@@ -156,7 +156,7 @@ class ProductoController extends Controller
                 'nombre' => $row[1] ?? null,
                 'descripcion' => $row[2] ?? null,
                 'cantidad' => $row[3] ?? null,
-                'tipoempaque' => $row[4] ?? null,
+                'tipoempaque' => 'Unidad', // Siempre "Unidad"
             ];
 
             $validator = Validator::make($data, [
@@ -164,7 +164,6 @@ class ProductoController extends Controller
                 'nombre' => 'required|string|max:50',
                 'descripcion' => 'required|string',
                 'cantidad' => 'required|integer',
-                'tipoempaque' => 'required|in:' . implode(',', $tipoempaquesValidos),
             ]);
 
             if ($validator->fails()) {

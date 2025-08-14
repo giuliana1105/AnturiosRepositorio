@@ -14,6 +14,7 @@
                 <th>Nombre</th>
                 <th>Descripción</th>
                 <th>Cantidad</th>
+                <th>Tipo de Empaque</th> <!-- Nueva columna -->
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -24,6 +25,7 @@
                     <td>{{ $producto->nombre }}</td>
                     <td>{{ $producto->descripcion }}</td>
                     <td>{{ $producto->cantidad }}</td>
+                    <td>{{ $producto->tipoempaque }}</td> <!-- Muestra el tipo de empaque -->
                     <td>
                         <a href="{{ route('productos.edit', $producto->codigo) }}" class="btn btn-sm btn-primary">Editar</a>
                         <form action="{{ route('productos.destroy', $producto->codigo) }}" method="POST" class="d-inline-block">

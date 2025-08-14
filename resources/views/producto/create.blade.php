@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('content')
@@ -65,20 +64,6 @@
                         <input type="number" name="cantidad" class="form-control @error('cantidad') is-invalid @enderror"
                                required value="{{ old('cantidad') }}">
                         @error('cantidad')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="col-12 col-md-6 mb-3">
-                        <label for="tipoempaque" class="form-label">Tipo de Empaque</label>
-                        <select name="tipoempaque" class="form-control @error('tipoempaque') is-invalid @enderror" required>
-                            <option value="">Seleccione un tipo de empaque</option>
-                            @foreach ($tipoempaques as $tipo)
-                                <option value="{{ $tipo }}" {{ old('tipoempaque') == $tipo ? 'selected' : '' }}>
-                                    {{ $tipo }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('tipoempaque')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>

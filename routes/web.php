@@ -77,9 +77,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('tipoNota/pdf/{codigo}', [TipoNotaController::class, 'generarPDF'])->name('tipoNota.pdf');
 
     // Para ENVÍO
-    Route::get('/bodegas/master/productos', [App\Http\Controllers\BodegaController::class, 'productosMaster']);
+    Route::get('/bodegas/master/productos', [TipoNotaController::class, 'productosMaster']);
     // Para DEVOLUCIÓN
-    Route::get('/bodegas/{id}/productos', [App\Http\Controllers\BodegaController::class, 'productosEnBodega']);
+    Route::get('/bodegas/{id}/productos', [TipoNotaController::class, 'productosPorBodega']);
 });
 
 // 🔹 Redirigir la raíz al login si no está autenticado

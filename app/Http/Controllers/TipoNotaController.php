@@ -49,74 +49,141 @@ class TipoNotaController extends Controller
     /**
      * Guarda una nueva nota en la base de datos.
      */
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'tiponota' => 'required|string|max:255',
+    //         'nro_identificacion' => 'required|exists:empleados,nro_identificacion',
+    //         'idbodega' => 'required|string|exists:bodegas,idbodega',
+    //         'codigoproducto' => 'required|array|min:1',
+    //         'cantidad' => 'required|array|min:1',
+    //     ]);
+
+    //     // Validación para devoluciones: no permitir devolver más de lo que hay en la bodega
+    //     if ($request->tiponota === 'DEVOLUCION') {
+    //         foreach ($request->codigoproducto as $index => $codigo) {
+    //             $stock = DB::table('productos_bodega')
+    //                 ->where('bodega_id', $request->idbodega)
+    //                 ->where('producto_id', $codigo)
+    //                 ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
+    //                 ->value('stock') ?? 0;
+
+    //             if ($request->cantidad[$index] > $stock) {
+    //                 return redirect()->back()->with('error', 'Cantidad insuficiente para el producto ' . $codigo);
+    //             }
+    //         }
+    //     }
+
+    //     try {
+    //         DB::beginTransaction();
+
+    //         $ultimoCodigo = TipoNota::latest('codigo')->first();
+    //         $numero = $ultimoCodigo ? intval(str_replace('TN-', '', $ultimoCodigo->codigo)) + 1 : 1;
+    //         $codigoGenerado = 'TN-' . $numero;
+
+    //         $nota = TipoNota::create([
+    //             'codigo' => $codigoGenerado,
+    //             'tiponota' => $request->tiponota,
+    //             'nro_identificacion' => $request->nro_identificacion,
+    //             'idbodega' => $request->idbodega,
+    //             'fechanota' => now(),
+    //         ]);
+
+    //         foreach ($request->codigoproducto as $index => $codigo) {
+    //             // Guarda el detalle de la nota
+    //             DetalleTipoNota::create([
+    //                 'tipo_nota_id' => $nota->codigo,
+    //                 'codigoproducto' => $codigo,
+    //                 'cantidad' => $request->cantidad[$index],
+    //             ]);
+
+    //             // Guarda el movimiento en productos_bodega
+    //             DB::table('productos_bodega')->insert([
+    //                 'bodega_id' => $request->idbodega,
+    //                 'producto_id' => $codigo, // <-- Debe ser el código del producto, ej: 'PF003'
+    //                 'cantidad' => $request->cantidad[$index],
+    //                 'fecha' => now(),
+    //                 'es_devolucion' => $request->tiponota === 'DEVOLUCION',
+    //                 'created_at' => now(),
+    //                 'updated_at' => now(),
+    //             ]);
+    //         }
+
+    //         DB::commit();
+    //         return redirect()->route('tipoNota.index')->with('success', 'Nota creada exitosamente.');
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return redirect()->back()->with('error', 'Error al crear la nota: ' . $e->getMessage());
+    //     }
+    // }
+
+
     public function store(Request $request)
-    {
-        $request->validate([
-            'tiponota' => 'required|string|max:255',
-            'nro_identificacion' => 'required|exists:empleados,nro_identificacion',
-            'idbodega' => 'required|string|exists:bodegas,idbodega',
-            'codigoproducto' => 'required|array|min:1',
-            'cantidad' => 'required|array|min:1',
-        ]);
+{
+    $request->validate([
+        'tiponota' => 'required|string|max:255',
+        'nro_identificacion' => 'required|exists:empleados,nro_identificacion',
+        'idbodega' => 'required|string|exists:bodegas,idbodega',
+        'codigoproducto' => 'required|array|min:1',
+        'cantidad' => 'required|array|min:1',
+    ]);
 
-        // Validación para devoluciones: no permitir devolver más de lo que hay en la bodega
-        if ($request->tiponota === 'DEVOLUCION') {
-            foreach ($request->codigoproducto as $index => $codigo) {
-                $stock = DB::table('productos_bodega')
-                    ->where('bodega_id', $request->idbodega)
-                    ->where('producto_id', $codigo)
-                    ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
-                    ->value('stock') ?? 0;
+    // Validación para devoluciones
+    if ($request->tiponota === 'DEVOLUCION') {
+        foreach ($request->codigoproducto as $index => $codigo) {
+            $stock = DB::table('productos_bodega')
+                ->where('bodega_id', $request->idbodega)
+                ->where('producto_id', $codigo)
+                ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
+                ->value('stock') ?? 0;
 
-                if ($request->cantidad[$index] > $stock) {
-                    return redirect()->back()->with('error', 'Cantidad insuficiente para el producto ' . $codigo);
-                }
+            if ($request->cantidad[$index] > $stock) {
+                return redirect()->back()->with('error', 'Cantidad insuficiente para el producto ' . $codigo);
             }
-        }
-
-        try {
-            DB::beginTransaction();
-
-            $ultimoCodigo = TipoNota::latest('codigo')->first();
-            $numero = $ultimoCodigo ? intval(str_replace('TN-', '', $ultimoCodigo->codigo)) + 1 : 1;
-            $codigoGenerado = 'TN-' . $numero;
-
-            $nota = TipoNota::create([
-                'codigo' => $codigoGenerado,
-                'tiponota' => $request->tiponota,
-                'nro_identificacion' => $request->nro_identificacion,
-                'idbodega' => $request->idbodega,
-                'fechanota' => now(),
-            ]);
-
-            foreach ($request->codigoproducto as $index => $codigo) {
-                // Guarda el detalle de la nota
-                DetalleTipoNota::create([
-                    'tipo_nota_id' => $nota->codigo,
-                    'codigoproducto' => $codigo,
-                    'cantidad' => $request->cantidad[$index],
-                ]);
-
-                // Guarda el movimiento en productos_bodega
-                DB::table('productos_bodega')->insert([
-                    'bodega_id' => $request->idbodega,
-                    'producto_id' => $codigo, // <-- Debe ser el código del producto, ej: 'PF003'
-                    'cantidad' => $request->cantidad[$index],
-                    'fecha' => now(),
-                    'es_devolucion' => $request->tiponota === 'DEVOLUCION',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-
-            DB::commit();
-            return redirect()->route('tipoNota.index')->with('success', 'Nota creada exitosamente.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Error al crear la nota: ' . $e->getMessage());
         }
     }
 
+    try {
+        DB::beginTransaction();
+
+        // 🔥 Solución mejorada: Bloquear la tabla para evitar duplicados
+        $ultimoCodigo = TipoNota::lockForUpdate()->orderBy('codigo', 'desc')->first();
+        $numero = $ultimoCodigo ? intval(str_replace('TN-', '', $ultimoCodigo->codigo)) + 1 : 1;
+        $codigoGenerado = 'TN-' . $numero;
+
+        $nota = TipoNota::create([
+            'codigo' => $codigoGenerado, // Código único generado
+            'tiponota' => $request->tiponota,
+            'nro_identificacion' => $request->nro_identificacion,
+            'idbodega' => $request->idbodega,
+            'fechanota' => now(),
+        ]);
+
+        foreach ($request->codigoproducto as $index => $codigo) {
+            DetalleTipoNota::create([
+                'tipo_nota_id' => $nota->codigo,
+                'codigoproducto' => $codigo,
+                'cantidad' => $request->cantidad[$index],
+            ]);
+
+            DB::table('productos_bodega')->insert([
+                'bodega_id' => $request->idbodega,
+                'producto_id' => $codigo,
+                'cantidad' => $request->cantidad[$index],
+                'fecha' => now(),
+                'es_devolucion' => $request->tiponota === 'DEVOLUCION',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        DB::commit();
+        return redirect()->route('tipoNota.index')->with('success', 'Nota creada exitosamente.');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return redirect()->back()->with('error', 'Error al crear la nota: ' . $e->getMessage());
+    }
+}
     /**
      * Muestra una nota específica.
      */
@@ -223,4 +290,50 @@ class TipoNotaController extends Controller
 
         return $pdf->download("Nota_{$nota->codigo}.pdf");
     }
+
+    public function productosPorBodega($id)
+    {
+        // Obtiene los códigos de productos con stock en la bodega seleccionada
+        $codigos = DB::table('productos_bodega')
+            ->where('bodega_id', $id)
+            ->where('cantidad', '>', 0)
+            ->pluck('producto_id');
+
+        // Devuelve los productos filtrados
+        $productos = Producto::whereIn('codigo', $codigos)
+            ->get(['codigo', 'nombre', 'cantidad', 'tipoempaque']);
+
+        return response()->json($productos);
+    }
+
+    // public function productosMaster()
+    // {
+    //     // Busca la bodega master
+    //     $masterBodega = \App\Models\Bodega::where('nombrebodega', 'MASTER')->first();
+    //     $productos = collect();
+    //     if ($masterBodega) {
+    //         // Obtiene los códigos de productos con stock en la bodega master
+    //         $codigos = 
+    //         DB::table('productos_bodega')
+    //             ->where('bodega_id', $masterBodega->idbodega)
+    //             ->where('cantidad', '>', 0)
+    //             ->pluck('producto_id');
+
+    //         // Devuelve solo los productos en stock de la bodega master
+    //         $productos = \App\Models\Producto::whereIn('codigo', $codigos)
+    //             ->get(['codigo', 'nombre', 'cantidad', 'tipoempaque']);
+    //     }
+    //     return response()->json($productos);
+    // }
+    public function productosMaster()
+{
+    // Obtener todos los productos activos (o con stock) sin depender de bodega
+    $productos = \App\Models\Producto::query()
+        // Puedes añadir más condiciones si es necesario, por ejemplo:
+        // ->where('activo', true)
+        ->where('cantidad', '>', 0)
+        ->get(['codigo', 'nombre', 'cantidad', 'tipoempaque']);
+    
+    return response()->json($productos);
 }
+} 

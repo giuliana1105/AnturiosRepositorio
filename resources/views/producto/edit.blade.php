@@ -46,19 +46,6 @@
                     <input type="number" name="cantidad" class="form-control"
                            value="{{ $producto->cantidad }}" required min="1">
                 </div>
-
-                <!-- Campo Tipo de Empaque -->
-                <div class="col-12 col-md-6 mb-3">
-                    <label for="tipoempaque" class="form-label">Tipo de Empaque</label>
-                    <select name="tipoempaque" class="form-control">
-                        <option value="">Seleccione un tipo de empaque</option>
-                        @foreach ($tipoempaques as $tipo)
-                            <option value="{{ $tipo }}" {{ $producto->tipoempaque == $tipo ? 'selected' : '' }}>
-                                {{ $tipo }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
             </div>
 
             <!-- Botón Actualizar -->

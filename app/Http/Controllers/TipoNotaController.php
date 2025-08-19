@@ -291,21 +291,62 @@ class TipoNotaController extends Controller
         return $pdf->download("Nota_{$nota->codigo}.pdf");
     }
 
+    // public function productosPorBodega($id)
+    // {
+    //     // Obtiene los códigos de productos con stock en la bodega seleccionada
+    //     $codigos = DB::table('productos_bodega')
+    //         ->where('bodega_id', $id)
+    //         ->where('cantidad', '>', 0)
+    //         ->pluck('producto_id');
+
+    //     // Devuelve los productos filtrados
+    //     $productos = Producto::whereIn('codigo', $codigos)
+    //         ->get(['codigo', 'nombre', 'cantidad', 'tipoempaque']);
+
+    //     return response()->json($productos);
+    // }
+
+
+
+
+
     public function productosPorBodega($id)
-    {
-        // Obtiene los códigos de productos con stock en la bodega seleccionada
-        $codigos = DB::table('productos_bodega')
+{
+    // Obtener productos con stock en la bodega seleccionada
+    $productos = Producto::select('productos.codigo', 'productos.nombre', 'productos.tipoempaque')
+        ->join('productos_bodega', 'productos.codigo', '=', 'productos_bodega.producto_id')
+        ->where('productos_bodega.bodega_id', $id)
+        ->where('productos_bodega.cantidad', '>', 0)
+        ->groupBy('productos.codigo', 'productos.nombre', 'productos.tipoempaque')
+        ->get();
+
+    // Calcular stock por bodega para cada producto
+    $productos->each(function ($producto) use ($id) {
+        // Stock en la bodega seleccionada
+        $stockBodega = DB::table('productos_bodega')
             ->where('bodega_id', $id)
-            ->where('cantidad', '>', 0)
-            ->pluck('producto_id');
+            ->where('producto_id', $producto->codigo)
+            ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
+            ->value('stock') ?? 0;
 
-        // Devuelve los productos filtrados
-        $productos = Producto::whereIn('codigo', $codigos)
-            ->get(['codigo', 'nombre', 'cantidad', 'tipoempaque']);
+        // Stock general (suma de todas las bodegas)
+        $stockGeneral = DB::table('productos_bodega')
+            ->where('producto_id', $producto->codigo)
+            ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
+            ->value('stock') ?? 0;
 
-        return response()->json($productos);
-    }
+        // Agregar los datos al producto
+        $producto->cantidad = $stockGeneral; // Stock general
+        $producto->stocks_por_bodega = [
+            [
+                'idbodega' => (int)$id,
+                'cantidad' => $stockBodega
+            ]
+        ];
+    });
 
+    return response()->json($productos);
+}
     // public function productosMaster()
     // {
     //     // Busca la bodega master

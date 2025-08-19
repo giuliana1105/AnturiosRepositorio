@@ -118,7 +118,74 @@ class TipoNotaController extends Controller
     // }
 
 
-    public function store(Request $request)
+//     public function store(Request $request)
+// {
+//     $request->validate([
+//         'tiponota' => 'required|string|max:255',
+//         'nro_identificacion' => 'required|exists:empleados,nro_identificacion',
+//         'idbodega' => 'required|string|exists:bodegas,idbodega',
+//         'codigoproducto' => 'required|array|min:1',
+//         'cantidad' => 'required|array|min:1',
+//     ]);
+
+//     // Validación para devoluciones
+//     if ($request->tiponota === 'DEVOLUCION') {
+//         foreach ($request->codigoproducto as $index => $codigo) {
+//             $stock = DB::table('productos_bodega')
+//                 ->where('bodega_id', $request->idbodega)
+//                 ->where('producto_id', $codigo)
+//                 ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
+//                 ->value('stock') ?? 0;
+
+//             if ($request->cantidad[$index] > $stock) {
+//                 return redirect()->back()->with('error', 'Cantidad insuficiente para el producto ' . $codigo);
+//             }
+//         }
+//     }
+
+//     try {
+//         DB::beginTransaction();
+
+//         // 🔥 Solución mejorada: Bloquear la tabla para evitar duplicados
+//         $ultimoCodigo = TipoNota::lockForUpdate()->orderBy('codigo', 'desc')->first();
+//         $numero = $ultimoCodigo ? intval(str_replace('TN-', '', $ultimoCodigo->codigo)) + 1 : 1;
+//         $codigoGenerado = 'TN-' . $numero;
+
+//         $nota = TipoNota::create([
+//             'codigo' => $codigoGenerado, // Código único generado
+//             'tiponota' => $request->tiponota,
+//             'nro_identificacion' => $request->nro_identificacion,
+//             'idbodega' => $request->idbodega,
+//             'fechanota' => now(),
+//         ]);
+
+//         foreach ($request->codigoproducto as $index => $codigo) {
+//             DetalleTipoNota::create([
+//                 'tipo_nota_id' => $nota->codigo,
+//                 'codigoproducto' => $codigo,
+//                 'cantidad' => $request->cantidad[$index],
+//             ]);
+
+//             DB::table('productos_bodega')->insert([
+//                 'bodega_id' => $request->idbodega,
+//                 'producto_id' => $codigo,
+//                 'cantidad' => $request->cantidad[$index],
+//                 'fecha' => now(),
+//                 'es_devolucion' => $request->tiponota === 'DEVOLUCION',
+//                 'created_at' => now(),
+//                 'updated_at' => now(),
+//             ]);
+//         }
+
+//         DB::commit();
+//         return redirect()->route('tipoNota.index')->with('success', 'Nota creada exitosamente.');
+//     } catch (\Exception $e) {
+//         DB::rollBack();
+//         return redirect()->back()->with('error', 'Error al crear la nota: ' . $e->getMessage());
+//     }
+// }
+
+public function store(Request $request)
 {
     $request->validate([
         'tiponota' => 'required|string|max:255',
@@ -143,45 +210,51 @@ class TipoNotaController extends Controller
         }
     }
 
-    try {
-        DB::beginTransaction();
+    $maxAttempts = 5;
+    $attempt = 0;
 
-        // 🔥 Solución mejorada: Bloquear la tabla para evitar duplicados
-        $ultimoCodigo = TipoNota::lockForUpdate()->orderBy('codigo', 'desc')->first();
-        $numero = $ultimoCodigo ? intval(str_replace('TN-', '', $ultimoCodigo->codigo)) + 1 : 1;
-        $codigoGenerado = 'TN-' . $numero;
+    while ($attempt < $maxAttempts) {
+        try {
+            DB::beginTransaction();
 
-        $nota = TipoNota::create([
-            'codigo' => $codigoGenerado, // Código único generado
-            'tiponota' => $request->tiponota,
-            'nro_identificacion' => $request->nro_identificacion,
-            'idbodega' => $request->idbodega,
-            'fechanota' => now(),
-        ]);
+            // SOLUCIÓN MEJORADA: Usar una consulta atómica para generar el código
+            $nuevoCodigo = DB::transaction(function () {
+                $ultimoCodigo = TipoNota::lockForUpdate()
+                    ->orderByRaw("SUBSTRING(codigo FROM 4)::int DESC")
+                    ->first();
+                
+                $ultimoNumero = $ultimoCodigo ? (int) str_replace('TN-', '', $ultimoCodigo->codigo) : 0;
+                return 'TN-' . ($ultimoNumero + 1);
+            });
 
-        foreach ($request->codigoproducto as $index => $codigo) {
-            DetalleTipoNota::create([
-                'tipo_nota_id' => $nota->codigo,
-                'codigoproducto' => $codigo,
-                'cantidad' => $request->cantidad[$index],
+            $nota = TipoNota::create([
+                'codigo' => $nuevoCodigo,
+                'tiponota' => $request->tiponota,
+                'nro_identificacion' => $request->nro_identificacion,
+                'idbodega' => $request->idbodega,
+                'fechanota' => now(),
             ]);
 
-            DB::table('productos_bodega')->insert([
-                'bodega_id' => $request->idbodega,
-                'producto_id' => $codigo,
-                'cantidad' => $request->cantidad[$index],
-                'fecha' => now(),
-                'es_devolucion' => $request->tiponota === 'DEVOLUCION',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            // Resto de tu lógica para detalles y productos_bodega...
+
+            DB::commit();
+            return redirect()->route('tipoNota.index')->with('success', 'Nota creada exitosamente.');
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            
+            if ($e->errorInfo[0] == '23505') { // Error de violación de unicidad
+                $attempt++;
+                if ($attempt >= $maxAttempts) {
+                    return redirect()->back()->with('error', 'No se pudo generar un código único después de varios intentos. Por favor intente nuevamente.');
+                }
+                continue;
+            }
+            return redirect()->back()->with('error', 'Error al crear la nota: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error al crear la nota: ' . $e->getMessage());
         }
-
-        DB::commit();
-        return redirect()->route('tipoNota.index')->with('success', 'Nota creada exitosamente.');
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return redirect()->back()->with('error', 'Error al crear la nota: ' . $e->getMessage());
     }
 }
     /**

@@ -85,37 +85,66 @@
     document.addEventListener('DOMContentLoaded', function () {
     const tipoNotaSelect = document.getElementById('tiponota-select');
     const bodegaSelect = document.querySelector('select[name="idbodega"]');
+    let productosDisponibles = [];
+
+    // Función para obtener productos ya seleccionados
+    function getProductosSeleccionados() {
+        const seleccionados = [];
+        document.querySelectorAll('.producto-select').forEach(select => {
+            if (select.value) {
+                seleccionados.push(select.value);
+            }
+        });
+        return seleccionados;
+    }
+
+    // Función para actualizar las opciones de todos los selects
+    function actualizarOpcionesEnSelects() {
+        const productosSeleccionados = getProductosSeleccionados();
+        
+        document.querySelectorAll('.producto-select').forEach(select => {
+            const valorActual = select.value;
+            select.innerHTML = '<option value="">Seleccione un producto</option>';
+            
+            productosDisponibles.forEach(prod => {
+                // Solo mostrar el producto si no está seleccionado en otro select O si es el valor actual de este select
+                if (!productosSeleccionados.includes(prod.codigo) || prod.codigo === valorActual) {
+                    let optionHTML = `<option value="${prod.codigo}" data-stock="${prod.cantidad ?? ''}" data-empaque="${prod.tipoempaque ?? ''}"`;
+                    
+                    // Agregar stocks por bodega si existen
+                    if (prod.stocks_por_bodega) {
+                        prod.stocks_por_bodega.forEach(stockBodega => {
+                            optionHTML += ` data-stock-bodega-${stockBodega.idbodega}="${stockBodega.cantidad}"`;
+                        });
+                    }
+                    
+                    optionHTML += `>${prod.codigo} - ${prod.nombre}</option>`;
+                    select.innerHTML += optionHTML;
+                }
+            });
+            
+            // Restaurar el valor seleccionado
+            if (valorActual) {
+                select.value = valorActual;
+            }
+        });
+    }
 
     function cargarProductos(url, selectToUpdate = null) {
         fetch(url)
             .then(res => res.json())
             .then(productos => {
-                const bodegaId = tipoNotaSelect.value === 'DEVOLUCION' ? bodegaSelect.value : null;
+                productosDisponibles = productos;
                 
                 if (selectToUpdate) {
-                    // Solo llena el select nuevo
+                    // Solo actualiza el select específico (para nuevas filas)
+                    const productosSeleccionados = getProductosSeleccionados();
                     selectToUpdate.innerHTML = '<option value="">Seleccione un producto</option>';
                     productos.forEach(prod => {
-                        let optionHTML = `<option value="${prod.codigo}" data-stock="${prod.cantidad ?? ''}" data-empaque="${prod.tipoempaque ?? ''}"`;
-                        
-                        // Agregar stocks por bodega si existen
-                        if (prod.stocks_por_bodega) {
-                            prod.stocks_por_bodega.forEach(stockBodega => {
-                                optionHTML += ` data-stock-bodega-${stockBodega.idbodega}="${stockBodega.cantidad}"`;
-                            });
-                        }
-                        
-                        optionHTML += `>${prod.codigo} - ${prod.nombre}</option>`;
-                        selectToUpdate.innerHTML += optionHTML;
-                    });
-                } else {
-                    // Llena todos los selects
-                    document.querySelectorAll('.producto-select').forEach(select => {
-                        select.innerHTML = '<option value="">Seleccione un producto</option>';
-                        productos.forEach(prod => {
+                        // Solo mostrar productos no seleccionados
+                        if (!productosSeleccionados.includes(prod.codigo)) {
                             let optionHTML = `<option value="${prod.codigo}" data-stock="${prod.cantidad ?? ''}" data-empaque="${prod.tipoempaque ?? ''}"`;
                             
-                            // Agregar stocks por bodega si existen
                             if (prod.stocks_por_bodega) {
                                 prod.stocks_por_bodega.forEach(stockBodega => {
                                     optionHTML += ` data-stock-bodega-${stockBodega.idbodega}="${stockBodega.cantidad}"`;
@@ -123,9 +152,12 @@
                             }
                             
                             optionHTML += `>${prod.codigo} - ${prod.nombre}</option>`;
-                            select.innerHTML += optionHTML;
-                        });
+                            selectToUpdate.innerHTML += optionHTML;
+                        }
                     });
+                } else {
+                    // Actualiza todos los selects
+                    actualizarOpcionesEnSelects();
                 }
             });
     }
@@ -139,6 +171,7 @@
             document.querySelectorAll('.producto-select').forEach(select => {
                 select.innerHTML = '<option value="">Seleccione un producto</option>';
             });
+            productosDisponibles = [];
         }
     }
 
@@ -160,7 +193,7 @@
 
             row.parentNode.appendChild(newRow);
 
-            // Llena solo el nuevo select
+            // Llena solo el nuevo select con productos no seleccionados
             if (tipoNotaSelect.value === 'DEVOLUCION' && bodegaSelect.value) {
                 cargarProductos(`/bodegas/${bodegaSelect.value}/productos`, newRow.querySelector('.producto-select'));
             } else if (tipoNotaSelect.value === 'ENVIO') {
@@ -171,27 +204,24 @@
             const rows = document.querySelectorAll('.row-producto');
             if (rows.length > 1) {
                 e.target.closest('.row-producto').remove();
+                // Actualizar opciones después de eliminar una fila
+                actualizarOpcionesEnSelects();
             }
         }
     });
 
-    // Cuando se selecciona un producto, llena el empaque y la cantidad máxima según tipo de nota y bodega
+    // Cuando se selecciona un producto, actualizar empaque y opciones de otros selects
     document.getElementById('productos-container').addEventListener('change', function(e) {
         if (e.target.classList.contains('producto-select')) {
             const selectedOption = e.target.options[e.target.selectedIndex];
-            // Obtenemos el tipo de operación (envío/devolución)
             const tipoNota = tipoNotaSelect.value;
-            // Obtenemos la bodega seleccionada si es devolución
             const bodegaId = tipoNota === 'DEVOLUCION' ? bodegaSelect.value : null;
             
-            // Determinamos qué stock usar
             let stock;
             if (bodegaId) {
-                // Para devolución: buscamos el atributo data-stock-bodega-[id] que contiene el stock por bodega
                 stock = selectedOption.getAttribute(`data-stock-bodega-${bodegaId}`) || 
                        selectedOption.getAttribute('data-stock');
             } else {
-                // Para envío o casos normales: usamos el stock general
                 stock = selectedOption.getAttribute('data-stock');
             }
             
@@ -206,12 +236,30 @@
                 cantidadInput.value = '';
                 cantidadInput.placeholder = stock ? `Máx: ${stock}` : '';
             }
+
+            // Actualizar opciones en todos los selects para ocultar/mostrar productos
+            actualizarOpcionesEnSelects();
         }
     });
 
-    // Validación del formulario (se mantiene igual)
+    // Validación del formulario
     document.querySelector('form').addEventListener('submit', function(e) {
         let valid = true;
+        const productosSeleccionados = [];
+        
+        // Verificar productos duplicados
+        document.querySelectorAll('.producto-select').forEach(select => {
+            if (select.value) {
+                if (productosSeleccionados.includes(select.value)) {
+                    valid = false;
+                    alert('No se pueden seleccionar productos duplicados.');
+                    return;
+                }
+                productosSeleccionados.push(select.value);
+            }
+        });
+
+        // Verificar cantidades máximas
         document.querySelectorAll('.row-producto').forEach(row => {
             const cantidadInput = row.querySelector('input[name="cantidad[]"]');
             const max = parseInt(cantidadInput.max, 10);
@@ -223,9 +271,14 @@
                 cantidadInput.classList.remove('is-invalid');
             }
         });
+
         if (!valid) {
             e.preventDefault();
-            alert('La cantidad ingresada supera el stock disponible.');
+            if (productosSeleccionados.length !== new Set(productosSeleccionados).size) {
+                alert('No se pueden seleccionar productos duplicados.');
+            } else {
+                alert('La cantidad ingresada supera el stock disponible.');
+            }
         }
     });
 });

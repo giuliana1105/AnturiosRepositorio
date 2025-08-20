@@ -42,7 +42,11 @@
                             <td>
                                 <ul class="list-unstyled">
                                     @foreach ($nota->detalles as $detalle)
-                                        <li>{{ optional($detalle->producto)->nombre ?? 'N/A' }}</li>
+                                        @php
+                                            // Carga el producto si no está cargado en la relación
+                                            $producto = $detalle->producto ?? App\Models\Producto::where('codigo', $detalle->codigoproducto)->first();
+                                        @endphp
+                                        <li>{{ $producto->nombre ?? 'Producto '.$detalle->codigoproducto }}</li>
                                     @endforeach
                                 </ul>
                             </td>
@@ -60,7 +64,11 @@
                             <td>
                                 <ul class="list-unstyled">
                                     @foreach ($nota->detalles as $detalle)
-                                        <li>{{ optional($detalle->producto)->tipoempaque ?? 'Sin Empaque' }}</li>
+                                        @php
+                                            // Carga el producto si no está cargado en la relación
+                                            $producto = $detalle->producto ?? App\Models\Producto::where('codigo', $detalle->codigoproducto)->first();
+                                        @endphp
+                                        <li>{{ $producto->tipoempaque ?? 'Sin empaque' }}</li>
                                     @endforeach
                                 </ul>
                             </td>

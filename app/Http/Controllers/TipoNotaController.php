@@ -26,14 +26,34 @@ class TipoNotaController extends Controller
     /**
      * Muestra la lista de notas.
      */
-    public function index()
-    {
-        $tipoNotas = TipoNota::with(['responsableEmpleado', 'bodega', 'detalles.producto', 'transaccion'])
-            ->paginate(10);
+    // public function index()
+    // {
+    //     $tipoNotas = TipoNota::with(['responsableEmpleado', 'bodega', 'detalles.producto', 'transaccion'])
+    //         ->paginate(10);
 
-        return view('tipoNota.index', compact('tipoNotas'));
-    }
+    //     return view('tipoNota.index', compact('tipoNotas'));
+    // }
+public function index()
+{
+    $tipoNotas = TipoNota::with([
+        'responsableEmpleado',
+        'bodega',
+        'transaccion'
+    ])
+    ->orderBy('fechanota', 'desc')
+    ->paginate(10);
 
+    // Carga manual de productos para cada detalle
+    $tipoNotas->each(function($nota) {
+        $nota->load(['detalles' => function($query) {
+            $query->with(['producto' => function($q) {
+                $q->select('codigo', 'nombre', 'tipoempaque');
+            }]);
+        }]);
+    });
+
+    return view('tipoNota.index', compact('tipoNotas'));
+}
     /**
      * Muestra el formulario para crear una nueva nota.
      */

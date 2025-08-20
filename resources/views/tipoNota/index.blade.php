@@ -32,7 +32,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($tipoNotas as $nota)
+                    @forelse ($tipoNotas as $nota)
                         <tr>
                             <td>{{ $nota->codigo }}</td>
                             <td>{{ $nota->tiponota }}</td>
@@ -40,41 +40,57 @@
 
                             {{-- 🔹 Mostrar productos asociados a la nota --}}
                             <td>
-                                <ul class="list-unstyled">
-                                    @foreach ($nota->detalles as $detalle)
-                                        @php
-                                            // Carga el producto si no está cargado en la relación
-                                            $producto = $detalle->producto ?? App\Models\Producto::where('codigo', $detalle->codigoproducto)->first();
-                                        @endphp
-                                        <li>{{ $producto->nombre ?? 'Producto '.$detalle->codigoproducto }}</li>
-                                    @endforeach
-                                </ul>
+                                @if($nota->detalles && $nota->detalles->count() > 0)
+                                    <ul class="list-unstyled mb-0">
+                                        @foreach ($nota->detalles as $detalle)
+                                            <li>
+                                                @if($detalle->producto)
+                                                    {{ $detalle->producto->nombre }}
+                                                @else
+                                                    {{ $detalle->codigoproducto }}
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <span class="text-muted">Sin productos</span>
+                                @endif
                             </td>
 
                             {{-- 🔹 Mostrar cantidad de productos --}}
                             <td>
-                                <ul class="list-unstyled">
-                                    @foreach ($nota->detalles as $detalle)
-                                        <li>{{ $detalle->cantidad }}</li>
-                                    @endforeach
-                                </ul>
+                                @if($nota->detalles && $nota->detalles->count() > 0)
+                                    <ul class="list-unstyled mb-0">
+                                        @foreach ($nota->detalles as $detalle)
+                                            <li>{{ $detalle->cantidad ?? 0 }}</li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
                             </td>
 
                             {{-- 🔹 Mostrar tipo de empaque --}}
                             <td>
-                                <ul class="list-unstyled">
-                                    @foreach ($nota->detalles as $detalle)
-                                        @php
-                                            // Carga el producto si no está cargado en la relación
-                                            $producto = $detalle->producto ?? App\Models\Producto::where('codigo', $detalle->codigoproducto)->first();
-                                        @endphp
-                                        <li>{{ $producto->tipoempaque ?? 'Sin empaque' }}</li>
-                                    @endforeach
-                                </ul>
+                                @if($nota->detalles && $nota->detalles->count() > 0)
+                                    <ul class="list-unstyled mb-0">
+                                        @foreach ($nota->detalles as $detalle)
+                                            <li>
+                                                @if($detalle->producto && $detalle->producto->tipoempaque)
+                                                    {{ $detalle->producto->tipoempaque }}
+                                                @else
+                                                    <span class="text-muted">Sin empaque</span>
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
                             </td>
 
                             <td>{{ optional($nota->bodega)->nombrebodega ?? 'N/A' }}</td>
-                            <td>{{ $nota->fechanota }}</td>
+                            <td>{{ $nota->fechanota ? \Carbon\Carbon::parse($nota->fechanota)->format('d/m/Y H:i') : 'N/A' }}</td>
 
                             {{-- 🔹 Estado de la nota --}}
                             <td>
@@ -113,7 +129,11 @@
                                 </a>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="11" class="text-center">No se encontraron notas</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

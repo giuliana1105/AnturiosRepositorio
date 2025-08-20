@@ -33,27 +33,59 @@ class TipoNotaController extends Controller
 
     //     return view('tipoNota.index', compact('tipoNotas'));
     // }
+// public function index()
+// {
+//     $tipoNotas = TipoNota::with([
+//         'responsableEmpleado',
+//         'bodega',
+//         'transaccion'
+//     ])
+//     ->orderBy('fechanota', 'desc')
+//     ->paginate(10);
+
+//     // Carga manual de productos para cada detalle
+//     $tipoNotas->each(function($nota) {
+//         $nota->load(['detalles' => function($query) {
+//             $query->with(['producto' => function($q) {
+//                 $q->select('codigo', 'nombre', 'tipoempaque');
+//             }]);
+//         }]);
+//     });
+
+//     return view('tipoNota.index', compact('tipoNotas'));
+// }
+
+
+
+// Reemplaza el método index() en tu TipoNotaController.php
+
 public function index()
 {
     $tipoNotas = TipoNota::with([
         'responsableEmpleado',
         'bodega',
-        'transaccion'
+        'transaccion',
+        'detalles' => function($query) {
+            $query->with('producto');
+        }
     ])
     ->orderBy('fechanota', 'desc')
     ->paginate(10);
 
-    // Carga manual de productos para cada detalle
+    // Verificar que los productos se carguen correctamente
     $tipoNotas->each(function($nota) {
-        $nota->load(['detalles' => function($query) {
-            $query->with(['producto' => function($q) {
-                $q->select('codigo', 'nombre', 'tipoempaque');
-            }]);
-        }]);
+        $nota->detalles->each(function($detalle) {
+            // Si no se cargó el producto por la relación, lo buscamos manualmente
+            if (!$detalle->producto) {
+                $detalle->producto = \App\Models\Producto::where('codigo', $detalle->codigoproducto)->first();
+            }
+        });
     });
 
     return view('tipoNota.index', compact('tipoNotas'));
 }
+
+
     /**
      * Muestra el formulario para crear una nueva nota.
      */
@@ -205,6 +237,83 @@ public function index()
 //     }
 // }
 
+
+
+//met
+// public function store(Request $request)
+// {
+//     $request->validate([
+//         'tiponota' => 'required|string|max:255',
+//         'nro_identificacion' => 'required|exists:empleados,nro_identificacion',
+//         'idbodega' => 'required|string|exists:bodegas,idbodega',
+//         'codigoproducto' => 'required|array|min:1',
+//         'cantidad' => 'required|array|min:1',
+//     ]);
+
+//     // Validación para devoluciones
+//     if ($request->tiponota === 'DEVOLUCION') {
+//         foreach ($request->codigoproducto as $index => $codigo) {
+//             $stock = DB::table('productos_bodega')
+//                 ->where('bodega_id', $request->idbodega)
+//                 ->where('producto_id', $codigo)
+//                 ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
+//                 ->value('stock') ?? 0;
+
+//             if ($request->cantidad[$index] > $stock) {
+//                 return redirect()->back()->with('error', 'Cantidad insuficiente para el producto ' . $codigo);
+//             }
+//         }
+//     }
+
+//     $maxAttempts = 5;
+//     $attempt = 0;
+
+//     while ($attempt < $maxAttempts) {
+//         try {
+//             DB::beginTransaction();
+
+//             // SOLUCIÓN MEJORADA: Usar una consulta atómica para generar el código
+//             $nuevoCodigo = DB::transaction(function () {
+//                 $ultimoCodigo = TipoNota::lockForUpdate()
+//                     ->orderByRaw("SUBSTRING(codigo FROM 4)::int DESC")
+//                     ->first();
+                
+//                 $ultimoNumero = $ultimoCodigo ? (int) str_replace('TN-', '', $ultimoCodigo->codigo) : 0;
+//                 return 'TN-' . ($ultimoNumero + 1);
+//             });
+
+//             $nota = TipoNota::create([
+//                 'codigo' => $nuevoCodigo,
+//                 'tiponota' => $request->tiponota,
+//                 'nro_identificacion' => $request->nro_identificacion,
+//                 'idbodega' => $request->idbodega,
+//                 'fechanota' => now(),
+//             ]);
+
+//             // Resto de tu lógica para detalles y productos_bodega...
+
+//             DB::commit();
+//             return redirect()->route('tipoNota.index')->with('success', 'Nota creada exitosamente.');
+
+//         } catch (\Illuminate\Database\QueryException $e) {
+//             DB::rollBack();
+            
+//             if ($e->errorInfo[0] == '23505') { // Error de violación de unicidad
+//                 $attempt++;
+//                 if ($attempt >= $maxAttempts) {
+//                     return redirect()->back()->with('error', 'No se pudo generar un código único después de varios intentos. Por favor intente nuevamente.');
+//                 }
+//                 continue;
+//             }
+//             return redirect()->back()->with('error', 'Error al crear la nota: ' . $e->getMessage());
+//         } catch (\Exception $e) {
+//             DB::rollBack();
+//             return redirect()->back()->with('error', 'Error al crear la nota: ' . $e->getMessage());
+//         }
+//     }
+// }
+
+
 public function store(Request $request)
 {
     $request->validate([
@@ -237,16 +346,17 @@ public function store(Request $request)
         try {
             DB::beginTransaction();
 
-            // SOLUCIÓN MEJORADA: Usar una consulta atómica para generar el código
+            // Generar código único
             $nuevoCodigo = DB::transaction(function () {
                 $ultimoCodigo = TipoNota::lockForUpdate()
-                    ->orderByRaw("SUBSTRING(codigo FROM 4)::int DESC")
+                    ->orderByRaw("CAST(SUBSTRING(codigo FROM 4) AS INTEGER) DESC")
                     ->first();
                 
                 $ultimoNumero = $ultimoCodigo ? (int) str_replace('TN-', '', $ultimoCodigo->codigo) : 0;
                 return 'TN-' . ($ultimoNumero + 1);
             });
 
+            // Crear la nota
             $nota = TipoNota::create([
                 'codigo' => $nuevoCodigo,
                 'tiponota' => $request->tiponota,
@@ -255,7 +365,32 @@ public function store(Request $request)
                 'fechanota' => now(),
             ]);
 
-            // Resto de tu lógica para detalles y productos_bodega...
+            // Crear los detalles de la nota
+            foreach ($request->codigoproducto as $index => $codigo) {
+                // Verificar que el producto existe
+                $producto = \App\Models\Producto::where('codigo', $codigo)->first();
+                if (!$producto) {
+                    throw new \Exception("El producto con código {$codigo} no existe.");
+                }
+
+                // Crear detalle
+                DetalleTipoNota::create([
+                    'tipo_nota_id' => $nota->codigo,
+                    'codigoproducto' => $codigo,
+                    'cantidad' => $request->cantidad[$index],
+                ]);
+
+                // Registrar movimiento en productos_bodega
+                DB::table('productos_bodega')->insert([
+                    'bodega_id' => $request->idbodega,
+                    'producto_id' => $codigo,
+                    'cantidad' => $request->cantidad[$index],
+                    'fecha' => now(),
+                    'es_devolucion' => $request->tiponota === 'DEVOLUCION',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             DB::commit();
             return redirect()->route('tipoNota.index')->with('success', 'Nota creada exitosamente.');
@@ -263,7 +398,8 @@ public function store(Request $request)
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             
-            if ($e->errorInfo[0] == '23505') { // Error de violación de unicidad
+            // Error de violación de unicidad
+            if (str_contains($e->getMessage(), 'duplicate key') || str_contains($e->getMessage(), 'UNIQUE constraint')) {
                 $attempt++;
                 if ($attempt >= $maxAttempts) {
                     return redirect()->back()->with('error', 'No se pudo generar un código único después de varios intentos. Por favor intente nuevamente.');
@@ -276,6 +412,37 @@ public function store(Request $request)
             return redirect()->back()->with('error', 'Error al crear la nota: ' . $e->getMessage());
         }
     }
+
+    return redirect()->back()->with('error', 'No se pudo crear la nota después de varios intentos.');
+}
+
+public function debug($codigo)
+{
+    $nota = TipoNota::where('codigo', $codigo)->first();
+    
+    if (!$nota) {
+        dd('Nota no encontrada');
+    }
+    
+    $detalles = DetalleTipoNota::where('tipo_nota_id', $codigo)->get();
+    
+    $debug = [
+        'nota' => $nota,
+        'detalles_count' => $detalles->count(),
+        'detalles' => $detalles,
+        'productos_info' => []
+    ];
+    
+    foreach ($detalles as $detalle) {
+        $producto = \App\Models\Producto::where('codigo', $detalle->codigoproducto)->first();
+        $debug['productos_info'][] = [
+            'detalle' => $detalle,
+            'producto_encontrado' => $producto ? 'SÍ' : 'NO',
+            'producto' => $producto
+        ];
+    }
+    
+    dd($debug);
 }
     /**
      * Muestra una nota específica.

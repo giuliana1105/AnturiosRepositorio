@@ -38,7 +38,7 @@
                             <td>{{ $nota->tiponota }}</td>
                             <td>{{ optional($nota->responsableEmpleado)->nombreemp ?? 'N/A' }} {{ optional($nota->responsableEmpleado)->apellidoemp ?? '' }}</td>
 
-                            {{-- 🔹 Mostrar productos asociados a la nota --}}
+                            {{-- Mostrar productos asociados a la nota --}}
                             <td>
                                 @if($nota->detalles && $nota->detalles->count() > 0)
                                     <ul class="list-unstyled mb-0">
@@ -57,7 +57,7 @@
                                 @endif
                             </td>
 
-                            {{-- 🔹 Mostrar cantidad de productos --}}
+                            {{-- Mostrar cantidad de productos --}}
                             <td>
                                 @if($nota->detalles && $nota->detalles->count() > 0)
                                     <ul class="list-unstyled mb-0">
@@ -70,7 +70,7 @@
                                 @endif
                             </td>
 
-                            {{-- 🔹 Mostrar tipo de empaque --}}
+                            {{-- Mostrar tipo de empaque --}}
                             <td>
                                 @if($nota->detalles && $nota->detalles->count() > 0)
                                     <ul class="list-unstyled mb-0">
@@ -92,7 +92,7 @@
                             <td>{{ optional($nota->bodega)->nombrebodega ?? 'N/A' }}</td>
                             <td>{{ $nota->fechanota ? \Carbon\Carbon::parse($nota->fechanota)->format('d/m/Y H:i') : 'N/A' }}</td>
 
-                            {{-- 🔹 Estado de la nota --}}
+                            {{-- Estado de la nota --}}
                             <td>
                                 @if(optional($nota->transaccion)->estado)
                                     <span class="badge bg-info">{{ $nota->transaccion->estado }}</span>
@@ -101,28 +101,32 @@
                                 @endif
                             </td>
 
-                            {{-- 🔹 Acciones --}}
+                            {{-- Acciones --}}
                             <td>
                                 @if(!$nota->transaccion)
+                                    {{-- Solo mostrar botón confirmar si no está confirmada --}}
                                     <form action="{{ route('tipoNota.confirmar', $nota->codigo) }}" method="POST" style="display:inline;">
                                         @csrf
                                         <button type="submit" class="btn btn-success btn-sm mb-2">Confirmar</button>
                                     </form>
+
+                                    {{-- Solo mostrar botón editar si no está confirmada --}}
+                                    <a href="{{ route('tipoNota.edit', $nota->codigo) }}" class="btn btn-warning btn-sm mb-2">Editar</a>
+
+                                    {{-- Solo mostrar botón eliminar si no está confirmada --}}
+                                    @can('eliminar TipoNota')
+                                        <form action="{{ route('tipoNota.destroy', $nota->codigo) }}" method="POST" style="display:inline;">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de eliminar esta nota?')">Eliminar</button>
+                                        </form>
+                                    @endcan
+                                @else
+                                    {{-- Si está confirmada, mostrar mensaje informativo --}}
+                                    <span class="text-muted small">Nota confirmada</span>
                                 @endif
-
-                                {{-- Botón de Editar --}}
-                                <a href="{{ route('tipoNota.edit', $nota->codigo) }}" class="btn btn-warning btn-sm mb-2">Editar</a>
-
-                                {{-- Botón de Eliminar --}}
-                                @can('eliminar TipoNota')
-                                    <form action="{{ route('tipoNota.destroy', $nota->codigo) }}" method="POST" style="display:inline;">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de eliminar esta nota?')">Eliminar</button>
-                                    </form>
-                                @endcan
                             </td>
 
-                            {{-- 🔹 Botón de PDF --}}
+                            {{-- Botón de PDF --}}
                             <td>
                                 <a href="{{ route('tipoNota.pdf', $nota->codigo) }}" class="btn btn-danger btn-sm">
                                     Descargar PDF

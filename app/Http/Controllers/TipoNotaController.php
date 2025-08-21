@@ -486,9 +486,89 @@ public function debug($codigo)
     /**
      * Muestra el formulario para editar una nota.
      */
+    // public function edit($codigo)
+    // {
+    //     $tipoNota = TipoNota::with('detalles')->where('codigo', $codigo)->firstOrFail();
+    //     $empleados = Empleado::all();
+    //     $bodegas = Bodega::all();
+    //     $productos = Producto::all();
+
+    //     return view('tipoNota.edit', compact('tipoNota', 'empleados', 'bodegas', 'productos'));
+    // }
+
+    // /**
+    //  * Actualiza una nota en la base de datos.
+    //  */
+    // public function update(Request $request, $codigo)
+    // {
+    //     $request->validate([
+    //         'tiponota' => 'required|string|max:255',
+    //         'nro_identificacion' => 'required|exists:empleados,nro_identificacion',
+    //         'idbodega' => 'required|string|exists:bodegas,idbodega',
+    //         'codigoproducto' => 'required|array|min:1',
+    //         'cantidad' => 'required|array|min:1',
+    //     ]);
+
+    //     try {
+    //         DB::beginTransaction();
+
+    //         $nota = TipoNota::where('codigo', $codigo)->firstOrFail();
+    //         $nota->update([
+    //             'tiponota' => $request->tiponota,
+    //             'nro_identificacion' => $request->nro_identificacion,
+    //             'idbodega' => $request->idbodega,
+    //         ]);
+
+    //         $nota->detalles()->delete();
+
+    //         foreach ($request->codigoproducto as $index => $productoId) {
+    //             DetalleTipoNota::create([
+    //                 'tipo_nota_id' => $nota->codigo,
+    //                 'codigoproducto' => $productoId,
+    //                 'cantidad' => $request->cantidad[$index],
+    //             ]);
+    //         }
+
+    //         DB::commit();
+    //         return redirect()->route('tipoNota.index')->with('success', 'Nota actualizada correctamente.');
+    //     } catch (QueryException $e) {
+    //         DB::rollBack();
+    //         return redirect()->back()->with('error', 'Error al actualizar la nota.');
+    //     }
+    // }
+
+    // /**
+    //  * Elimina una nota.
+    //  */
+    // public function destroy($codigo)
+    // {
+    //     try {
+    //         DB::beginTransaction();
+    //         $nota = TipoNota::where('codigo', $codigo)->firstOrFail();
+    //         $nota->detalles()->delete();
+    //         $nota->delete();
+    //         DB::commit();
+
+    //         return redirect()->route('tipoNota.index')->with('success', 'Nota eliminada correctamente.');
+    //     } catch (QueryException $e) {
+    //         DB::rollBack();
+    //         return redirect()->back()->with('error', 'Error al eliminar la nota.');
+    //     }
+    // }
+
+
+    /**
+     * Muestra el formulario para editar una nota.
+     */
     public function edit($codigo)
     {
-        $tipoNota = TipoNota::with('detalles')->where('codigo', $codigo)->firstOrFail();
+        $tipoNota = TipoNota::with(['detalles', 'transaccion'])->where('codigo', $codigo)->firstOrFail();
+        
+        // Verificar si la nota ya está confirmada
+        if ($tipoNota->transaccion) {
+            return redirect()->route('tipoNota.index')->with('error', 'No se puede editar una nota que ya está confirmada.');
+        }
+        
         $empleados = Empleado::all();
         $bodegas = Bodega::all();
         $productos = Producto::all();
@@ -501,6 +581,13 @@ public function debug($codigo)
      */
     public function update(Request $request, $codigo)
     {
+        $tipoNota = TipoNota::with('transaccion')->where('codigo', $codigo)->firstOrFail();
+        
+        // Verificar si la nota ya está confirmada
+        if ($tipoNota->transaccion) {
+            return redirect()->route('tipoNota.index')->with('error', 'No se puede actualizar una nota que ya está confirmada.');
+        }
+        
         $request->validate([
             'tiponota' => 'required|string|max:255',
             'nro_identificacion' => 'required|exists:empleados,nro_identificacion',
@@ -512,18 +599,17 @@ public function debug($codigo)
         try {
             DB::beginTransaction();
 
-            $nota = TipoNota::where('codigo', $codigo)->firstOrFail();
-            $nota->update([
+            $tipoNota->update([
                 'tiponota' => $request->tiponota,
                 'nro_identificacion' => $request->nro_identificacion,
                 'idbodega' => $request->idbodega,
             ]);
 
-            $nota->detalles()->delete();
+            $tipoNota->detalles()->delete();
 
             foreach ($request->codigoproducto as $index => $productoId) {
                 DetalleTipoNota::create([
-                    'tipo_nota_id' => $nota->codigo,
+                    'tipo_nota_id' => $tipoNota->codigo,
                     'codigoproducto' => $productoId,
                     'cantidad' => $request->cantidad[$index],
                 ]);
@@ -542,9 +628,15 @@ public function debug($codigo)
      */
     public function destroy($codigo)
     {
+        $nota = TipoNota::with('transaccion')->where('codigo', $codigo)->firstOrFail();
+        
+        // Verificar si la nota ya está confirmada
+        if ($nota->transaccion) {
+            return redirect()->route('tipoNota.index')->with('error', 'No se puede eliminar una nota que ya está confirmada.');
+        }
+        
         try {
             DB::beginTransaction();
-            $nota = TipoNota::where('codigo', $codigo)->firstOrFail();
             $nota->detalles()->delete();
             $nota->delete();
             DB::commit();
@@ -555,7 +647,6 @@ public function debug($codigo)
             return redirect()->back()->with('error', 'Error al eliminar la nota.');
         }
     }
-
     /**
      * Genera un PDF con la información de una nota.
      */

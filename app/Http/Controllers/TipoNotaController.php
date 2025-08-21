@@ -59,6 +59,32 @@ class TipoNotaController extends Controller
 
 // Reemplaza el método index() en tu TipoNotaController.php
 
+// public function index()
+// {
+//     $tipoNotas = TipoNota::with([
+//         'responsableEmpleado',
+//         'bodega',
+//         'transaccion',
+//         'detalles' => function($query) {
+//             $query->with('producto');
+//         }
+//     ])
+//     ->orderBy('fechanota', 'desc')
+//     ->paginate(10);
+
+//     // Verificar que los productos se carguen correctamente
+//     $tipoNotas->each(function($nota) {
+//         $nota->detalles->each(function($detalle) {
+//             // Si no se cargó el producto por la relación, lo buscamos manualmente
+//             if (!$detalle->producto) {
+//                 $detalle->producto = \App\Models\Producto::where('codigo', $detalle->codigoproducto)->first();
+//             }
+//         });
+//     });
+
+//     return view('tipoNota.index', compact('tipoNotas'));
+// }
+
 public function index()
 {
     $tipoNotas = TipoNota::with([
@@ -69,7 +95,8 @@ public function index()
             $query->with('producto');
         }
     ])
-    ->orderBy('fechanota', 'desc')
+    ->orderBy('created_at', 'desc')  // Ordenar por created_at primero (más preciso)
+    ->orderBy('codigo', 'desc')      // Como respaldo, ordenar por código (secuencial)
     ->paginate(10);
 
     // Verificar que los productos se carguen correctamente

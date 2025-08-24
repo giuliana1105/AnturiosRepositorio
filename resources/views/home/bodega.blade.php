@@ -15,14 +15,18 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($productos as $item)
+            @forelse($productos as $item)
                 <tr>
                     <td>{{ $item->codigo }}</td>
                     <td>{{ $item->nombre }}</td>
-                    <td>{{ $item->pivot->cantidad }}</td>
-                    <td>{{ $item->pivot->fecha }}</td>
+                    <td>{{ $item->cantidad }}</td>
+                    <td>{{ \Carbon\Carbon::parse($item->fecha)->format('d/m/Y H:i') }}</td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="4" class="text-center">No hay productos enviados</td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
 
@@ -30,19 +34,25 @@
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th>Cantidad</th>
+                <th>Código</th>
                 <th>Nombre</th>
+                <th>Cantidad</th>
                 <th>Fecha</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($devueltos as $item)
+            @forelse($devueltos as $item)
                 <tr>
-                    <td>{{ $item->pivot->cantidad }}</td>
+                    <td>{{ $item->codigo }}</td>
                     <td>{{ $item->nombre }}</td>
-                    <td>{{ $item->pivot->fecha }}</td>
+                    <td>{{ $item->cantidad }}</td>
+                    <td>{{ \Carbon\Carbon::parse($item->fecha)->format('d/m/Y H:i') }}</td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="4" class="text-center">No hay productos devueltos</td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
 
@@ -57,15 +67,24 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($productosEnBodega as $item)
+            @forelse($productosEnBodega as $item)
                 <tr>
                     <td>{{ $item['codigo'] }}</td>
                     <td>{{ $item['nombre'] }}</td>
                     <td>{{ $item['descripcion'] }}</td>
                     <td>{{ $item['cantidad'] }}</td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="4" class="text-center">No hay productos en stock</td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
+
+    <div class="mt-4">
+        <a href="{{ route('home') }}" class="btn btn-secondary">Volver al inicio</a>
+        <a href="{{ route('tipoNota.create') }}" class="btn btn-primary">Crear Nueva Nota</a>
+    </div>
 </div>
 @endsection

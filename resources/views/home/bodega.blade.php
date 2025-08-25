@@ -20,7 +20,7 @@
                     <td>{{ $item->codigo }}</td>
                     <td>{{ $item->nombre }}</td>
                     <td>{{ $item->cantidad }}</td>
-                    <td>{{ \Carbon\Carbon::parse($item->fecha)->format('d/m/Y H:i') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($item->fecha)->format('d/m/Y') }}</td>
                 </tr>
             @empty
                 <tr>
@@ -46,7 +46,7 @@
                     <td>{{ $item->codigo }}</td>
                     <td>{{ $item->nombre }}</td>
                     <td>{{ $item->cantidad }}</td>
-                    <td>{{ \Carbon\Carbon::parse($item->fecha)->format('d/m/Y H:i') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($item->fecha)->format('d/m/Y') }}</td>
                 </tr>
             @empty
                 <tr>
@@ -85,6 +85,8 @@
     <div class="mt-4">
         <a href="{{ route('home') }}" class="btn btn-secondary">Volver al inicio</a>
         <a href="{{ route('tipoNota.create') }}" class="btn btn-primary">Crear Nueva Nota</a>
+        <a href="{{ route('venta.create', $bodega->idbodega) }}" class="btn btn-warning">Registrar venta</a>
+        <a href="{{ route('venta.index') }}" class="btn btn-info">Ver ventas</a>
     </div>
 </div>
 @endsection

@@ -12,6 +12,7 @@ use App\Http\Controllers\TipoEmpaquesController;
 use App\Http\Controllers\TipoNotaController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\VentaBodegaController;
 
 
 Route::middleware(['role:super-admin'])->group(function() {
@@ -80,6 +81,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/bodegas/master/productos', [TipoNotaController::class, 'productosMaster']);
     // Para DEVOLUCIÓN
     Route::get('/bodegas/{id}/productos', [TipoNotaController::class, 'productosPorBodega']);
+
+    Route::get('/bodega/{id}/venta', [VentaBodegaController::class, 'create'])->name('venta.create');
+    Route::post('/bodega/{id}/venta', [VentaBodegaController::class, 'store'])->name('venta.store');
+
+    Route::get('/ventas', [VentaBodegaController::class, 'index'])->name('venta.index');
+
+    Route::get('/bodega/{id}', [BodegaController::class, 'show'])->name('bodega.show');
 });
 
 // 🔹 Redirigir la raíz al login si no está autenticado

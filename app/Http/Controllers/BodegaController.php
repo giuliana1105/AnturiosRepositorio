@@ -54,10 +54,56 @@ class BodegaController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $idbodega)
+    public function show($id)
     {
-        $bodega = Bodega::findOrFail($idbodega);
-        return view('bodegas.show', compact('bodega'));
+        $bodega = Bodega::findOrFail($id);
+
+        // Productos en stock en la bodega
+        $productosEnBodega = DB::table('productos_bodega')
+            ->select('producto_id', DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) as enviados'), DB::raw('SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as devueltos'))
+            ->where('bodega_id', $id)
+            ->groupBy('producto_id')
+            ->get()
+            ->map(function($row) {
+                $producto = \App\Models\Producto::where('codigo', $row->producto_id)->first();
+                $cantidad = ($row->enviados - $row->devueltos);
+                return $cantidad > 0 && $producto ? [
+                    'codigo'      => $producto->codigo,
+                    'nombre'      => $producto->nombre,
+                    'descripcion' => $producto->descripcion, // <--- Agregado
+                    'cantidad'    => $cantidad,
+                    'empaque'     => $producto->tipoempaque ?? '',
+                ] : null;
+            })
+            ->filter()
+            ->values();
+
+        // Productos enviados y devueltos (si los usas en la vista)
+        $productos = DB::table('productos_bodega')
+            ->join('productos', 'productos.codigo', '=', 'productos_bodega.producto_id')
+            ->where('productos_bodega.bodega_id', $id)
+            ->where('productos_bodega.es_devolucion', false)
+            ->select(
+                'productos.codigo',
+                'productos.nombre',
+                'productos_bodega.cantidad',
+                'productos_bodega.fecha'
+            )
+            ->get();
+
+        $devueltos = DB::table('productos_bodega')
+            ->join('productos', 'productos.codigo', '=', 'productos_bodega.producto_id')
+            ->where('productos_bodega.bodega_id', $id)
+            ->where('productos_bodega.es_devolucion', true)
+            ->select(
+                'productos.codigo',
+                'productos.nombre',
+                'productos_bodega.cantidad',
+                'productos_bodega.fecha'
+            )
+            ->get();
+
+        return view('home.bodega', compact('bodega', 'productosEnBodega', 'productos', 'devueltos'));
     }
 
     /**

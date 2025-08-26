@@ -9,6 +9,9 @@ class Venta extends Model
     protected $fillable = [
         'bodega_id',
         'fecha',
+        'cliente',
+        'total_venta',
+        'tipo_pago',
     ];
 
     public function bodega()

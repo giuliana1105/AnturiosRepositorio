@@ -44,12 +44,23 @@ class VentaBodegaController extends Controller
             'cantidad.*' => 'required|integer|min:1',
             'precio_unitario' => 'required|array|min:1',
             'precio_unitario.*' => 'required|numeric|min:0.01',
+            'cliente' => 'required|string|max:255',
+            'tipo_pago' => 'required|in:Efectivo,Transferencia,Crédito,Cheque',
         ]);
+
+        $totalVenta = 0;
+
+        foreach ($request->producto_id as $index => $codigo) {
+            $totalVenta += $request->cantidad[$index] * $request->precio_unitario[$index];
+        }
 
         // Guarda la venta (cabecera)
         $venta = Venta::create([
             'bodega_id' => $bodega_id,
             'fecha' => now(),
+            'cliente' => $request->cliente,
+            'total_venta' => $totalVenta,
+            'tipo_pago' => $request->tipo_pago,
         ]);
 
         foreach ($request->producto_id as $index => $codigo) {

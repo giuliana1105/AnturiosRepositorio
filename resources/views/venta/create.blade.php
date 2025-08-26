@@ -6,6 +6,23 @@
     <form method="POST" action="{{ route('venta.store', $bodega->idbodega) }}">
         @csrf
         <div class="mb-3">
+            <label>Nro. venta</label>
+            <input type="text" class="form-control" value="Automático" readonly>
+        </div>
+        <div class="mb-3">
+            <label>Cliente</label>
+            <input type="text" name="cliente" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label>Tipo de pago</label>
+            <select name="tipo_pago" class="form-control" required>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Crédito">Crédito</option>
+                <option value="Cheque">Cheque</option>
+            </select>
+        </div>
+        <div class="mb-3">
             <label>Fecha</label>
             <input type="text" class="form-control" value="{{ now()->format('Y-m-d H:i') }}" readonly>
         </div>
@@ -44,6 +61,10 @@
                     <button type="button" class="btn btn-danger btn-remove-producto">-</button>
                 </div>
             </div>
+        </div>
+        <div class="mb-3">
+            <label>Total venta</label>
+            <input type="number" name="total_venta" class="form-control" id="total-venta" readonly>
         </div>
         <button type="submit" class="btn btn-success mt-3">Registrar Venta</button>
         <a href="{{ route('bodegas.show', $bodega->idbodega) }}" class="btn btn-secondary mt-3">Cancelar</a>
@@ -131,6 +152,16 @@ document.addEventListener('DOMContentLoaded', function() {
             actualizarSelects();
         }
     });
+
+    function calcularTotalVenta() {
+        let total = 0;
+        document.querySelectorAll('.precio-total-input').forEach(function(input) {
+            total += parseFloat(input.value) || 0;
+        });
+        document.getElementById('total-venta').value = total.toFixed(2);
+    }
+    document.getElementById('productos-container').addEventListener('input', calcularTotalVenta);
+    document.getElementById('productos-container').addEventListener('change', calcularTotalVenta);
 });
 </script>
 @endsection

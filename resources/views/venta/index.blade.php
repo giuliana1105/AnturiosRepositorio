@@ -10,14 +10,17 @@
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th>ID</th>
+                <th>Nro. venta</th>
                 <th>Bodega</th>
-                <th>Producto</th>
+                <th>Cliente</th>
+                <th>Tipo de pago</th>
                 <th>Fecha</th>
+                <th>Producto</th>
                 <th>Cantidad</th>
                 <th>Tipo Empaque</th>
                 <th>Precio Unitario</th>
                 <th>Precio Total</th>
+                <th>Total venta</th>
             </tr>
         </thead>
         <tbody>
@@ -25,12 +28,14 @@
                 <tr>
                     <td>{{ $venta->id }}</td>
                     <td>{{ $venta->bodega->nombrebodega ?? $venta->bodega_id }}</td>
+                    <td>{{ $venta->cliente }}</td>
+                    <td>{{ $venta->tipo_pago }}</td>
+                    <td>{{ $venta->fecha }}</td>
                     <td>
                         @foreach($venta->detalles as $detalle)
                             {{ $detalle->producto->nombre ?? $detalle->producto_id }}<br>
                         @endforeach
                     </td>
-                    <td>{{ $venta->fecha }}</td>
                     <td>
                         @foreach($venta->detalles as $detalle)
                             {{ $detalle->cantidad }}<br>
@@ -51,6 +56,7 @@
                             {{ $detalle->precio_total }}<br>
                         @endforeach
                     </td>
+                    <td>{{ $venta->total_venta }}</td>
                 </tr>
             @endforeach
         </tbody>

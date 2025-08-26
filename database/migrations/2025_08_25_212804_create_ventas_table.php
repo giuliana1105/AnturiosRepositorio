@@ -12,8 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ventas', function (Blueprint $table) {
-            $table->id();
+            $table->id(); // Nro. venta
             $table->unsignedBigInteger('bodega_id');
+            $table->string('cliente')->nullable();
+            $table->decimal('total_venta', 12, 2)->default(0);
+            $table->enum('tipo_pago', ['Efectivo', 'Transferencia', 'Crédito', 'Cheque'])->default('Efectivo');
             $table->dateTime('fecha');
             $table->timestamps();
 

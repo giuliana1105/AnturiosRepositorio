@@ -36,43 +36,48 @@ class VentaBodegaController extends Controller
     public function store(Request $request, $bodega_id)
     {
         $request->validate([
-            'producto_id' => 'required|exists:productos,codigo',
-            'cantidad' => 'required|integer|min:1',
-            'precio_unitario' => 'required|numeric|min:0.01',
+            'producto_id' => 'required|array|min:1',
+            'producto_id.*' => 'required|exists:productos,codigo',
+            'cantidad' => 'required|array|min:1',
+            'cantidad.*' => 'required|integer|min:1',
+            'precio_unitario' => 'required|array|min:1',
+            'precio_unitario.*' => 'required|numeric|min:0.01',
         ]);
 
-        // Verifica stock
-        $stock = DB::table('productos_bodega')
-            ->where('bodega_id', $bodega_id)
-            ->where('producto_id', $request->producto_id)
-            ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
-            ->value('stock') ?? 0;
+        foreach ($request->producto_id as $index => $codigo) {
+            // Verifica stock
+            $stock = DB::table('productos_bodega')
+                ->where('bodega_id', $bodega_id)
+                ->where('producto_id', $codigo)
+                ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
+                ->value('stock') ?? 0;
 
-        if ($request->cantidad > $stock) {
-            return back()->with('error', 'No hay suficiente stock para este producto.');
+            if ($request->cantidad[$index] > $stock) {
+                return back()->with('error', 'No hay suficiente stock para el producto ' . $codigo);
+            }
+
+            // Guarda la venta
+            \App\Models\VentaBodega::create([
+                'bodega_id' => $bodega_id,
+                'producto_id' => $codigo,
+                'fecha' => now(),
+                'cantidad' => $request->cantidad[$index],
+                'tipoempaque' => 'Unidad',
+                'precio_unitario' => $request->precio_unitario[$index],
+                'precio_total' => $request->cantidad[$index] * $request->precio_unitario[$index],
+            ]);
+
+            // Actualiza el stock en productos_bodega (registra salida)
+            DB::table('productos_bodega')->insert([
+                'bodega_id' => $bodega_id,
+                'producto_id' => $codigo,
+                'cantidad' => $request->cantidad[$index],
+                'fecha' => now(),
+                'es_devolucion' => true, // Salida por venta
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
-
-        // Guarda la venta
-        $venta = \App\Models\VentaBodega::create([
-            'bodega_id' => $bodega_id,
-            'producto_id' => $request->producto_id,
-            'fecha' => now(),
-            'cantidad' => $request->cantidad,
-            'tipoempaque' => 'Unidad',
-            'precio_unitario' => $request->precio_unitario,
-            'precio_total' => $request->cantidad * $request->precio_unitario,
-        ]);
-
-        // Actualiza el stock en productos_bodega (registra salida)
-        DB::table('productos_bodega')->insert([
-            'bodega_id' => $bodega_id,
-            'producto_id' => $request->producto_id,
-            'cantidad' => $request->cantidad,
-            'fecha' => now(),
-            'es_devolucion' => true, // Salida por venta
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
 
         // Redirige al index de ventas después de guardar
         return redirect()->route('venta.index')->with('success', 'Venta registrada correctamente.');

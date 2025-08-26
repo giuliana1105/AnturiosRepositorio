@@ -11,13 +11,12 @@
         <thead>
             <tr>
                 <th>Nro. venta</th>
-                <th>Bodega</th>
-                <th>Cliente</th>
-                <th>Tipo de pago</th>
                 <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Bodega</th>
                 <th>Producto</th>
-                <th>Cantidad</th>
                 <th>Tipo Empaque</th>
+                <th>Cantidad</th>
                 <th>Precio Unitario</th>
                 <th>Precio Total</th>
                 <th>Total venta</th>
@@ -27,10 +26,9 @@
             @foreach($ventas as $venta)
                 <tr>
                     <td>{{ $venta->id }}</td>
-                    <td>{{ $venta->bodega->nombrebodega ?? $venta->bodega_id }}</td>
+                    <td>{{ \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') }}</td>
                     <td>{{ $venta->cliente }}</td>
-                    <td>{{ $venta->tipo_pago }}</td>
-                    <td>{{ $venta->fecha }}</td>
+                    <td>{{ $venta->bodega->nombrebodega ?? $venta->bodega_id }}</td>
                     <td>
                         @foreach($venta->detalles as $detalle)
                             {{ $detalle->producto->nombre ?? $detalle->producto_id }}<br>
@@ -38,12 +36,12 @@
                     </td>
                     <td>
                         @foreach($venta->detalles as $detalle)
-                            {{ $detalle->cantidad }}<br>
+                            {{ $detalle->tipoempaque }}<br>
                         @endforeach
                     </td>
                     <td>
                         @foreach($venta->detalles as $detalle)
-                            {{ $detalle->tipoempaque }}<br>
+                            {{ $detalle->cantidad }}<br>
                         @endforeach
                     </td>
                     <td>

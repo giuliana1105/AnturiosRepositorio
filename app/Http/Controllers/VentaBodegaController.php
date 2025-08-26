@@ -15,6 +15,10 @@ class VentaBodegaController extends Controller
     {
         $bodega = Bodega::findOrFail($bodega_id);
 
+        // Calcula el próximo número de venta
+        $ultimoId = \App\Models\Venta::max('id');
+        $nroVenta = $ultimoId ? $ultimoId + 1 : 1;
+
         // Solo productos con stock en la bodega
         $productos = DB::table('productos_bodega')
             ->select('producto_id', DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock'))
@@ -32,7 +36,7 @@ class VentaBodegaController extends Controller
                 ];
             });
 
-        return view('venta.create', compact('bodega', 'productos'));
+        return view('venta.create', compact('bodega', 'productos', 'nroVenta'));
     }
 
     public function store(Request $request, $bodega_id)

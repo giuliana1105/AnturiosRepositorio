@@ -7,24 +7,15 @@
         @csrf
         <div class="mb-3">
             <label>Nro. venta</label>
-            <input type="text" class="form-control" value="Automático" readonly>
+            <input type="text" class="form-control" value="{{ $nroVenta }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label>Fecha</label>
+            <input type="text" class="form-control" value="{{ now()->format('Y-m-d') }}" readonly>
         </div>
         <div class="mb-3">
             <label>Cliente</label>
             <input type="text" name="cliente" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label>Tipo de pago</label>
-            <select name="tipo_pago" class="form-control" required>
-                <option value="Efectivo">Efectivo</option>
-                <option value="Transferencia">Transferencia</option>
-                <option value="Crédito">Crédito</option>
-                <option value="Cheque">Cheque</option>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label>Fecha</label>
-            <input type="text" class="form-control" value="{{ now()->format('Y-m-d H:i') }}" readonly>
         </div>
         <div id="productos-container">
             <div class="row align-items-end mb-3 row-producto">
@@ -65,6 +56,15 @@
         <div class="mb-3">
             <label>Total venta</label>
             <input type="number" name="total_venta" class="form-control" id="total-venta" readonly>
+        </div>
+        <div class="mb-3">
+            <label>Tipo de pago</label>
+            <select name="tipo_pago" class="form-control" required>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Crédito">Crédito</option>
+                <option value="Cheque">Cheque</option>
+            </select>
         </div>
         <button type="submit" class="btn btn-success mt-3">Registrar Venta</button>
         <a href="{{ route('bodegas.show', $bodega->idbodega) }}" class="btn btn-secondary mt-3">Cancelar</a>
@@ -136,12 +136,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             row.parentNode.appendChild(newRow);
             actualizarSelects();
+            calcularTotalVenta(); // <-- recalcula el total al agregar
         }
         if (e.target.classList.contains('btn-remove-producto')) {
             const rows = document.querySelectorAll('.row-producto');
             if (rows.length > 1) {
                 e.target.closest('.row-producto').remove();
                 actualizarSelects();
+                calcularTotalVenta(); // <-- recalcula el total al eliminar
             }
         }
     });

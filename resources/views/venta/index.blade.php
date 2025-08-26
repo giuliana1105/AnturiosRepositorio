@@ -25,12 +25,32 @@
                 <tr>
                     <td>{{ $venta->id }}</td>
                     <td>{{ $venta->bodega->nombrebodega ?? $venta->bodega_id }}</td>
-                    <td>{{ $venta->producto->nombre ?? $venta->producto_id }}</td>
-                    <td>{{ $venta->fecha ?? $venta->created_at }}</td>
-                    <td>{{ $venta->cantidad }}</td>
-                    <td>{{ $venta->tipoempaque }}</td>
-                    <td>{{ $venta->precio_unitario }}</td>
-                    <td>{{ $venta->precio_total }}</td>
+                    <td>
+                        @foreach($venta->detalles as $detalle)
+                            {{ $detalle->producto->nombre ?? $detalle->producto_id }}<br>
+                        @endforeach
+                    </td>
+                    <td>{{ $venta->fecha }}</td>
+                    <td>
+                        @foreach($venta->detalles as $detalle)
+                            {{ $detalle->cantidad }}<br>
+                        @endforeach
+                    </td>
+                    <td>
+                        @foreach($venta->detalles as $detalle)
+                            {{ $detalle->tipoempaque }}<br>
+                        @endforeach
+                    </td>
+                    <td>
+                        @foreach($venta->detalles as $detalle)
+                            {{ $detalle->precio_unitario }}<br>
+                        @endforeach
+                    </td>
+                    <td>
+                        @foreach($venta->detalles as $detalle)
+                            {{ $detalle->precio_total }}<br>
+                        @endforeach
+                    </td>
                 </tr>
             @endforeach
         </tbody>

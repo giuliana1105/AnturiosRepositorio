@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Bodega;
 use App\Models\Producto;
+use App\Models\Venta; // Nuevo modelo para cabecera
+use App\Models\DetalleVentaBodega; // Nuevo modelo para detalle
 
 class VentaBodegaController extends Controller
 {
@@ -44,6 +46,12 @@ class VentaBodegaController extends Controller
             'precio_unitario.*' => 'required|numeric|min:0.01',
         ]);
 
+        // Guarda la venta (cabecera)
+        $venta = Venta::create([
+            'bodega_id' => $bodega_id,
+            'fecha' => now(),
+        ]);
+
         foreach ($request->producto_id as $index => $codigo) {
             // Verifica stock
             $stock = DB::table('productos_bodega')
@@ -56,11 +64,10 @@ class VentaBodegaController extends Controller
                 return back()->with('error', 'No hay suficiente stock para el producto ' . $codigo);
             }
 
-            // Guarda la venta
-            \App\Models\VentaBodega::create([
-                'bodega_id' => $bodega_id,
+            // Guarda el detalle de la venta
+            DetalleVentaBodega::create([
+                'venta_id' => $venta->id,
                 'producto_id' => $codigo,
-                'fecha' => now(),
                 'cantidad' => $request->cantidad[$index],
                 'tipoempaque' => 'Unidad',
                 'precio_unitario' => $request->precio_unitario[$index],
@@ -73,7 +80,7 @@ class VentaBodegaController extends Controller
                 'producto_id' => $codigo,
                 'cantidad' => $request->cantidad[$index],
                 'fecha' => now(),
-                'es_devolucion' => true, // Salida por venta
+                'es_devolucion' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -85,7 +92,7 @@ class VentaBodegaController extends Controller
 
     public function index()
     {
-        $ventas = \App\Models\VentaBodega::with(['bodega', 'producto'])->orderBy('fecha', 'desc')->get();
+        $ventas = \App\Models\Venta::with(['bodega', 'detalles.producto'])->orderBy('fecha', 'desc')->get();
         return view('venta.index', compact('ventas'));
     }
 }

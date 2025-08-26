@@ -24,38 +24,24 @@
         </thead>
         <tbody>
             @foreach($ventas as $venta)
-                <tr>
-                    <td>{{ $venta->id }}</td>
-                    <td>{{ \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') }}</td>
-                    <td>{{ $venta->cliente }}</td>
-                    <td>{{ $venta->bodega->nombrebodega ?? $venta->bodega_id }}</td>
-                    <td>
-                        @foreach($venta->detalles as $detalle)
-                            {{ $detalle->producto->nombre ?? $detalle->producto_id }}<br>
-                        @endforeach
-                    </td>
-                    <td>
-                        @foreach($venta->detalles as $detalle)
-                            {{ $detalle->tipoempaque }}<br>
-                        @endforeach
-                    </td>
-                    <td>
-                        @foreach($venta->detalles as $detalle)
-                            {{ $detalle->cantidad }}<br>
-                        @endforeach
-                    </td>
-                    <td>
-                        @foreach($venta->detalles as $detalle)
-                            {{ $detalle->precio_unitario }}<br>
-                        @endforeach
-                    </td>
-                    <td>
-                        @foreach($venta->detalles as $detalle)
-                            {{ $detalle->precio_total }}<br>
-                        @endforeach
-                    </td>
-                    <td>{{ $venta->total_venta }}</td>
-                </tr>
+                @foreach($venta->detalles as $i => $detalle)
+                    <tr>
+                        @if($i == 0)
+                            <td rowspan="{{ $venta->detalles->count() }}">{{ $venta->id }}</td>
+                            <td rowspan="{{ $venta->detalles->count() }}">{{ \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') }}</td>
+                            <td rowspan="{{ $venta->detalles->count() }}">{{ $venta->cliente }}</td>
+                            <td rowspan="{{ $venta->detalles->count() }}">{{ $venta->bodega->nombrebodega ?? $venta->bodega_id }}</td>
+                        @endif
+                        <td>{{ $detalle->producto->nombre ?? $detalle->producto_id }}</td>
+                        <td>{{ $detalle->tipoempaque }}</td>
+                        <td>{{ $detalle->cantidad }}</td>
+                        <td>{{ $detalle->precio_unitario }}</td>
+                        <td>{{ $detalle->precio_total }}</td>
+                        @if($i == 0)
+                            <td rowspan="{{ $venta->detalles->count() }}">{{ $venta->total_venta }}</td>
+                        @endif
+                    </tr>
+                @endforeach
             @endforeach
         </tbody>
     </table>

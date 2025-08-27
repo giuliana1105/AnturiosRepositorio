@@ -8,6 +8,7 @@ use App\Models\Bodega;
 use App\Models\Producto;
 use App\Models\Venta; // Nuevo modelo para cabecera
 use App\Models\DetalleVentaBodega; // Nuevo modelo para detalle
+use App\Models\Abono;
 
 class VentaBodegaController extends Controller
 {
@@ -49,6 +50,7 @@ class VentaBodegaController extends Controller
             'precio_unitario' => 'required|array|min:1',
             'precio_unitario.*' => 'required|numeric|min:0.01',
             'cliente' => 'required|string|max:255',
+            'ciudad' => 'required|string|max:255', // <-- Nueva validación
             'tipo_pago' => 'required|in:Efectivo,Transferencia,Crédito,Cheque',
         ]);
 
@@ -63,6 +65,7 @@ class VentaBodegaController extends Controller
             'bodega_id' => $bodega_id,
             'fecha' => now(),
             'cliente' => $request->cliente,
+            'ciudad' => $request->ciudad, // <-- Nuevo campo
             'total_venta' => $totalVenta,
             'tipo_pago' => $request->tipo_pago,
         ]);
@@ -101,6 +104,20 @@ class VentaBodegaController extends Controller
             ]);
         }
 
+        // Guardar abonos si es crédito
+        if ($request->tipo_pago === 'Crédito' && $request->has('abono')) {
+            foreach ($request->abono as $index => $valorAbono) {
+                if ($valorAbono) {
+                    Abono::create([
+                        'venta_id' => $venta->id,
+                        'abono' => $valorAbono,
+                        'fecha' => $request->abono_fecha[$index] ?? now(),
+                        'tipo_pago' => $request->abono_tipo_pago[$index] ?? 'Crédito',
+                    ]);
+                }
+            }
+        }
+
         // Redirige al index de ventas después de guardar
         return redirect()->route('venta.index')->with('success', 'Venta registrada correctamente.');
     }
@@ -109,5 +126,15 @@ class VentaBodegaController extends Controller
     {
         $ventas = \App\Models\Venta::with(['bodega', 'detalles.producto'])->orderBy('fecha', 'desc')->get();
         return view('venta.index', compact('ventas'));
+    }
+
+    public function show($id)
+    {
+        $venta = Venta::with(['bodega', 'detalles.producto'])->findOrFail($id);
+        $abonos = [];
+        if ($venta->tipo_pago === 'Crédito') {
+            $abonos = \App\Models\Abono::where('venta_id', $venta->id)->get();
+        }
+        return view('venta.show', compact('venta', 'abonos'));
     }
 }

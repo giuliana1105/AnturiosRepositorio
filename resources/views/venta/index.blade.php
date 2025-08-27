@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('content')
@@ -13,35 +14,27 @@
                 <th>Nro. venta</th>
                 <th>Fecha</th>
                 <th>Cliente</th>
+                <th>Ciudad</th>
                 <th>Bodega</th>
-                <th>Producto</th>
-                <th>Tipo Empaque</th>
-                <th>Cantidad</th>
-                <th>Precio Unitario</th>
-                <th>Precio Total</th>
                 <th>Total venta</th>
+                <th>Forma de pago</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
             @foreach($ventas as $venta)
-                @foreach($venta->detalles as $i => $detalle)
-                    <tr>
-                        @if($i == 0)
-                            <td rowspan="{{ $venta->detalles->count() }}">{{ $venta->id }}</td>
-                            <td rowspan="{{ $venta->detalles->count() }}">{{ \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') }}</td>
-                            <td rowspan="{{ $venta->detalles->count() }}">{{ $venta->cliente }}</td>
-                            <td rowspan="{{ $venta->detalles->count() }}">{{ $venta->bodega->nombrebodega ?? $venta->bodega_id }}</td>
-                        @endif
-                        <td>{{ $detalle->producto->nombre ?? $detalle->producto_id }}</td>
-                        <td>{{ $detalle->tipoempaque }}</td>
-                        <td>{{ $detalle->cantidad }}</td>
-                        <td>{{ $detalle->precio_unitario }}</td>
-                        <td>{{ $detalle->precio_total }}</td>
-                        @if($i == 0)
-                            <td rowspan="{{ $venta->detalles->count() }}">{{ $venta->total_venta }}</td>
-                        @endif
-                    </tr>
-                @endforeach
+                <tr>
+                    <td>{{ $venta->id }}</td>
+                    <td>{{ \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') }}</td>
+                    <td>{{ $venta->cliente }}</td>
+                    <td>{{ $venta->ciudad ?? 'N/A' }}</td>
+                    <td>{{ $venta->bodega->nombrebodega ?? $venta->bodega_id }}</td>
+                    <td>{{ $venta->total_venta }}</td>
+                    <td>{{ $venta->tipo_pago ?? 'N/A' }}</td>
+                    <td>
+                        <a href="{{ route('venta.show', $venta->id) }}" class="btn btn-info btn-sm">Detalle venta</a>
+                    </td>
+                </tr>
             @endforeach
         </tbody>
     </table>

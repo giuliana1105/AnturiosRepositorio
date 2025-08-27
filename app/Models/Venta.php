@@ -10,6 +10,7 @@ class Venta extends Model
         'bodega_id',
         'fecha',
         'cliente',
+        'ciudad', // <-- Nuevo campo
         'total_venta',
         'tipo_pago',
     ];

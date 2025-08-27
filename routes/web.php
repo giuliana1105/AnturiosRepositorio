@@ -88,6 +88,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/ventas', [VentaBodegaController::class, 'index'])->name('venta.index');
 
     Route::get('/bodega/{id}', [BodegaController::class, 'show'])->name('bodega.show');
+    Route::get('venta/{venta}', [App\Http\Controllers\VentaBodegaController::class, 'show'])->name('venta.show');
 });
 
 // 🔹 Redirigir la raíz al login si no está autenticado

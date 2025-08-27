@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('content')
@@ -33,6 +32,9 @@
                     <td>{{ $venta->tipo_pago ?? 'N/A' }}</td>
                     <td>
                         <a href="{{ route('venta.show', $venta->id) }}" class="btn btn-info btn-sm">Detalle venta</a>
+                        @if($venta->tipo_pago === 'Crédito')
+                            <a href="{{ route('venta.abono', $venta->id) }}" class="btn btn-warning btn-sm">Agregar abono</a>
+                        @endif
                     </td>
                 </tr>
             @endforeach

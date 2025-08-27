@@ -137,4 +137,32 @@ class VentaBodegaController extends Controller
         }
         return view('venta.show', compact('venta', 'abonos'));
     }
+
+    public function abonoForm($id)
+    {
+        $venta = Venta::with(['bodega', 'detalles.producto'])->findOrFail($id);
+        $abonos = \App\Models\Abono::where('venta_id', $venta->id)->get();
+        $saldo = $venta->total_venta - $abonos->sum('abono');
+        return view('venta.abono', compact('venta', 'abonos', 'saldo'));
+    }
+
+    public function agregarAbono(Request $request, $id)
+    {
+        $venta = Venta::findOrFail($id);
+
+        $request->validate([
+            'abono' => 'required|numeric|min:0.01',
+            'fecha_abono' => 'required|date',
+            'tipo_pago_abono' => 'required|string',
+        ]);
+
+        \App\Models\Abono::create([
+            'venta_id' => $venta->id,
+            'abono' => $request->abono,
+            'fecha' => $request->fecha_abono,
+            'tipo_pago' => $request->tipo_pago_abono,
+        ]);
+
+        return redirect()->route('venta.abono', $venta->id)->with('success', 'Abono agregado correctamente.');
+    }
 }

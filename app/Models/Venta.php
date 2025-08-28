@@ -8,9 +8,10 @@ class Venta extends Model
 {
     protected $fillable = [
         'bodega_id',
+        'nro_venta',      // <-- Agrega esto
         'fecha',
         'cliente',
-        'ciudad', // <-- Nuevo campo
+        'ciudad',         // <-- Ya lo tienes, pero falta en migración
         'total_venta',
         'tipo_pago',
     ];

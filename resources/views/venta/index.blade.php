@@ -7,6 +7,9 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
     <a href="{{ url()->previous() }}" class="btn btn-secondary mb-3">Volver</a>
+    @if(isset($bodega))
+        <a href="{{ route('venta.index.bodega', $bodega->idbodega) }}" class="btn btn-info">Ver ventas</a>
+    @endif
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -23,7 +26,7 @@
         <tbody>
             @foreach($ventas as $venta)
                 <tr>
-                    <td>{{ $venta->id }}</td>
+                    <td>{{ $venta->nro_venta }}</td>
                     <td>{{ \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') }}</td>
                     <td>{{ $venta->cliente }}</td>
                     <td>{{ $venta->ciudad ?? 'N/A' }}</td>

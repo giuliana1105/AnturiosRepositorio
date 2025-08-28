@@ -16,9 +16,9 @@ class VentaBodegaController extends Controller
     {
         $bodega = Bodega::findOrFail($bodega_id);
 
-        // Calcula el próximo número de venta
-        $ultimoId = \App\Models\Venta::max('id');
-        $nroVenta = $ultimoId ? $ultimoId + 1 : 1;
+        // Calcula el próximo número de venta SOLO para esta bodega
+        $nroVenta = \App\Models\Venta::where('bodega_id', $bodega_id)->max('nro_venta');
+        $nroVenta = $nroVenta ? $nroVenta + 1 : 1;
 
         // Solo productos con stock en la bodega
         $productos = DB::table('productos_bodega')
@@ -55,17 +55,21 @@ class VentaBodegaController extends Controller
         ]);
 
         $totalVenta = 0;
-
         foreach ($request->producto_id as $index => $codigo) {
             $totalVenta += $request->cantidad[$index] * $request->precio_unitario[$index];
         }
 
+        // Calcula el próximo número de venta SOLO para esta bodega
+        $nroVenta = \App\Models\Venta::where('bodega_id', $bodega_id)->max('nro_venta');
+        $nroVenta = $nroVenta ? $nroVenta + 1 : 1;
+
         // Guarda la venta (cabecera)
         $venta = Venta::create([
             'bodega_id' => $bodega_id,
+            'nro_venta' => $nroVenta,
             'fecha' => now(),
             'cliente' => $request->cliente,
-            'ciudad' => $request->ciudad, // <-- Nuevo campo
+            'ciudad' => $request->ciudad,
             'total_venta' => $totalVenta,
             'tipo_pago' => $request->tipo_pago,
         ]);
@@ -119,7 +123,7 @@ class VentaBodegaController extends Controller
         }
 
         // Redirige al index de ventas después de guardar
-        return redirect()->route('venta.index')->with('success', 'Venta registrada correctamente.');
+        return redirect()->route('venta.index.bodega', $bodega_id)->with('success', 'Venta registrada correctamente.');
     }
 
     public function index()
@@ -134,6 +138,13 @@ class VentaBodegaController extends Controller
         }
 
         return view('venta.index', compact('ventas'));
+    }
+
+    public function indexPorBodega($bodega_id)
+    {
+        $bodega = Bodega::findOrFail($bodega_id);
+        $ventas = Venta::where('bodega_id', $bodega_id)->with('bodega')->get();
+        return view('venta.index', compact('ventas', 'bodega'));
     }
 
     public function show($id)

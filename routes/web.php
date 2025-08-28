@@ -94,6 +94,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('venta/{venta}/edit', [App\Http\Controllers\VentaBodegaController::class, 'edit'])->name('venta.edit');
     Route::put('venta/{venta}', [App\Http\Controllers\VentaBodegaController::class, 'update'])->name('venta.update');
     Route::delete('venta/{venta}', [App\Http\Controllers\VentaBodegaController::class, 'destroy'])->name('venta.destroy');
+
+    Route::get('bodega/{bodega}/ventas', [VentaBodegaController::class, 'indexPorBodega'])->name('venta.index.bodega');
 });
 
 // 🔹 Redirigir la raíz al login si no está autenticado

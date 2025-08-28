@@ -39,6 +39,18 @@
         </div>
     </div>
 
+    <div class="row mb-3" id="filtros-fechas">
+        <div class="col-md-4 mt-2">
+            <input type="date" class="form-control" id="filtro-dia" placeholder="Buscar por día">
+        </div>
+        <div class="col-md-4 mt-2">
+            <input type="date" class="form-control" id="filtro-fecha-inicio" placeholder="Fecha inicio">
+        </div>
+        <div class="col-md-4 mt-2">
+            <input type="date" class="form-control" id="filtro-fecha-fin" placeholder="Fecha fin">
+        </div>
+    </div>
+
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -101,18 +113,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const clienteInput = document.getElementById('filtro-cliente');
     const ciudadSelect = document.getElementById('filtro-ciudad');
     const pagoSelect = document.getElementById('filtro-pago');
+    const diaInput = document.getElementById('filtro-dia');
+    const fechaInicioInput = document.getElementById('filtro-fecha-inicio');
+    const fechaFinInput = document.getElementById('filtro-fecha-fin');
     const tabla = document.querySelector('.table');
 
     function filtrar() {
         const cliente = clienteInput.value.trim().toLowerCase();
         const ciudad = ciudadSelect.value;
         const pago = pagoSelect.value;
+        const dia = diaInput.value;
+        const fechaInicio = fechaInicioInput.value;
+        const fechaFin = fechaFinInput.value;
 
         Array.from(tabla.querySelectorAll('tbody tr')).forEach(row => {
             const tdCliente = row.children[2]?.textContent.toLowerCase();
             const tdCiudad = row.children[3]?.textContent;
             const tdPago = row.children[6]?.textContent.trim();
             const tdSaldo = row.children[6]?.getAttribute('data-saldo');
+            const tdFecha = row.children[1]?.textContent; // Formato: YYYY-MM-DD
 
             let mostrar = true;
             if (cliente && (!tdCliente || !tdCliente.includes(cliente))) mostrar = false;
@@ -128,6 +147,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
+            // Filtro por día exacto
+            if (dia && tdFecha !== dia) mostrar = false;
+
+            // Filtro por rango de fechas
+            if ((fechaInicio || fechaFin) && tdFecha) {
+                if (fechaInicio && tdFecha < fechaInicio) mostrar = false;
+                if (fechaFin && tdFecha > fechaFin) mostrar = false;
+            }
+
             row.style.display = mostrar ? '' : 'none';
         });
     }
@@ -135,6 +163,9 @@ document.addEventListener('DOMContentLoaded', function() {
     clienteInput.addEventListener('input', filtrar);
     ciudadSelect.addEventListener('change', filtrar);
     pagoSelect.addEventListener('change', filtrar);
+    diaInput.addEventListener('change', filtrar);
+    fechaInicioInput.addEventListener('change', filtrar);
+    fechaFinInput.addEventListener('change', filtrar);
 });
 </script>
 @endsection

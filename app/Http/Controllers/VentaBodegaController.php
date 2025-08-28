@@ -126,6 +126,22 @@ class VentaBodegaController extends Controller
         return redirect()->route('venta.index.bodega', $bodega_id)->with('success', 'Venta registrada correctamente.');
     }
 
+    public function indexPorBodega($bodega_id)
+    {
+        $bodega = Bodega::findOrFail($bodega_id);
+        $ventas = Venta::where('bodega_id', $bodega_id)->with('bodega')->get();
+
+        // Calcula el saldo para cada venta de crédito
+        foreach ($ventas as $venta) {
+            if ($venta->tipo_pago === 'Crédito') {
+                $abonos = \App\Models\Abono::where('venta_id', $venta->id)->sum('abono');
+                $venta->saldo = $venta->total_venta - $abonos;
+            }
+        }
+
+        return view('venta.index', compact('ventas', 'bodega'));
+    }
+
     public function index()
     {
         $ventas = Venta::with('bodega')->get();
@@ -138,13 +154,6 @@ class VentaBodegaController extends Controller
         }
 
         return view('venta.index', compact('ventas'));
-    }
-
-    public function indexPorBodega($bodega_id)
-    {
-        $bodega = Bodega::findOrFail($bodega_id);
-        $ventas = Venta::where('bodega_id', $bodega_id)->with('bodega')->get();
-        return view('venta.index', compact('ventas', 'bodega'));
     }
 
     public function show($id)

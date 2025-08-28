@@ -7,9 +7,36 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
     <a href="{{ url()->previous() }}" class="btn btn-secondary mb-3">Volver</a>
-    @if(isset($bodega))
+    <!-- @if(isset($bodega))
         <a href="{{ route('venta.index.bodega', $bodega->idbodega) }}" class="btn btn-info">Ver ventas</a>
-    @endif
+    @endif -->
+
+    <div class="row mb-3" id="filtros-ventas">
+        <div class="col-md-4">
+            <input type="text" class="form-control" id="filtro-cliente" placeholder="Buscar por cliente">
+        </div>
+        <div class="col-md-4">
+            <select class="form-control" id="filtro-ciudad">
+                <option value="">Todas las ciudades</option>
+                @php
+                    $ciudades = $ventas->pluck('ciudad')->unique()->filter()->sort();
+                @endphp
+                @foreach($ciudades as $ciudad)
+                    <option value="{{ $ciudad }}">{{ $ciudad }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-4">
+            <select class="form-control" id="filtro-pago">
+                <option value="">Todas las formas de pago</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Crédito">Crédito</option>
+                <option value="Cheque">Cheque</option>
+            </select>
+        </div>
+    </div>
+
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -60,4 +87,38 @@
         </tbody>
     </table>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const clienteInput = document.getElementById('filtro-cliente');
+    const ciudadSelect = document.getElementById('filtro-ciudad');
+    const pagoSelect = document.getElementById('filtro-pago');
+    const tabla = document.querySelector('.table');
+
+    function filtrar() {
+        const cliente = clienteInput.value.trim().toLowerCase();
+        const ciudad = ciudadSelect.value;
+        const pago = pagoSelect.value;
+
+        Array.from(tabla.querySelectorAll('tbody tr')).forEach(row => {
+            const tdCliente = row.children[2]?.textContent.toLowerCase();
+            const tdCiudad = row.children[3]?.textContent;
+            const tdPago = row.children[6]?.textContent.trim();
+
+            let mostrar = true;
+            if (cliente && (!tdCliente || !tdCliente.includes(cliente))) mostrar = false;
+            if (ciudad && tdCiudad !== ciudad) mostrar = false;
+            if (pago && !tdPago.includes(pago)) mostrar = false;
+
+            row.style.display = mostrar ? '' : 'none';
+        });
+    }
+
+    clienteInput.addEventListener('input', filtrar);
+    ciudadSelect.addEventListener('change', filtrar);
+    pagoSelect.addEventListener('change', filtrar);
+});
+</script>
 @endsection

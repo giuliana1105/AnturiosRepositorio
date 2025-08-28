@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <h3>Registrar Venta en {{ $bodega->nombrebodega }}</h3>
-    <form method="POST" action="{{ route('venta.store', $bodega->idbodega) }}">
+    <form method="POST" action="{{ route('venta.store', $bodega->idbodega) }}" id="form-venta">
         @csrf
         <div class="mb-3">
             <label>Nro. venta</label>
@@ -206,13 +206,35 @@
                 <input type="number" name="saldo" class="form-control" id="saldo-venta" readonly>
             </div>
         </div>
-        <button type="submit" class="btn btn-success mt-3">Registrar Venta</button>
+        <button type="button" class="btn btn-success mt-3" id="btn-pre-confirmar">Registrar Venta</button>
         <a href="{{ route('bodegas.show', $bodega->idbodega) }}" class="btn btn-secondary mt-3">Cancelar</a>
     </form>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmVentaModal" tabindex="-1" aria-labelledby="confirmVentaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmVentaLabel">Confirmar Venta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div id="detalle-venta-preview">
+          <!-- Aquí se llenará el detalle con JS -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-success" id="btn-confirmar-venta">Confirmar y Guardar</button>
+      </div>
+    </div>
+  </div>
 </div>
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     function actualizarSelects() {
@@ -395,6 +417,118 @@ document.addEventListener('DOMContentLoaded', function() {
             calcularSaldo();
         }
     });
+
+    // Botón para mostrar el modal
+    document.getElementById('btn-pre-confirmar').addEventListener('click', function(e) {
+        e.preventDefault();
+        mostrarDetalleVenta();
+        var modal = new bootstrap.Modal(document.getElementById('confirmVentaModal'));
+        modal.show();
+    });
+
+    // Botón para confirmar y guardar
+    document.getElementById('btn-confirmar-venta').addEventListener('click', function() {
+        document.getElementById('form-venta').submit();
+    });
+
+    function mostrarDetalleVenta() {
+        const cliente = document.querySelector('input[name="cliente"]').value;
+        const ciudad = document.querySelector('select[name="ciudad"]').value;
+        const tipoPago = document.querySelector('select[name="tipo_pago"]').value;
+        const productos = [];
+        document.querySelectorAll('.row-producto').forEach(row => {
+            productos.push({
+                cantidad: row.querySelector('input[name="cantidad[]"]').value,
+                producto: row.querySelector('select[name="producto_id[]"] option:checked').text,
+                empaque: row.querySelector('input[name="tipoempaque[]"]').value,
+                precio: row.querySelector('input[name="precio_unitario[]"]').value,
+                total: row.querySelector('input[name="precio_total[]"]').value
+            });
+        });
+        const totalVenta = document.getElementById('total-venta').value;
+
+        let html = `
+        <div class="row mb-2">
+            <div class="col-md-6">
+                <strong>Cliente:</strong> ${cliente}<br>
+                <strong>Ciudad:</strong> ${ciudad}
+            </div>
+            <div class="col-md-6 text-end">
+                <strong>Forma de pago:</strong> ${tipoPago}<br>
+                <strong>Fecha:</strong> {{ now()->format('Y-m-d') }}
+            </div>
+        </div>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Cantidad</th>
+                    <th>Producto</th>
+                    <th>Empaque</th>
+                    <th>Precio</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+        productos.forEach(p => {
+            html += `<tr>
+                <td>${p.cantidad}</td>
+                <td>${p.producto}</td>
+                <td>${p.empaque}</td>
+                <td>$${parseFloat(p.precio).toFixed(2)}</td>
+                <td>$${parseFloat(p.total).toFixed(2)}</td>
+            </tr>`;
+        });
+        html += `
+            </tbody>
+        </table>
+        <div class="text-end">
+            <strong>Total venta:</strong> $${parseFloat(totalVenta).toFixed(2)}
+        </div>
+        `;
+
+        // Mostrar abonos si el tipo de pago es Crédito
+        if (tipoPago === 'Crédito') {
+            const abonos = [];
+            document.querySelectorAll('.row-abono').forEach(row => {
+                abonos.push({
+                    abono: row.querySelector('input[name="abono[]"]').value,
+                    fecha: row.querySelector('input[name="fecha_abono[]"]').value,
+                    tipo: row.querySelector('select[name="tipo_pago_abono[]"]').value
+                });
+            });
+            const saldo = document.getElementById('saldo-venta').value;
+
+            html += `
+            <h5 class="mt-4">Abonos</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Abono</th>
+                        <th>Fecha</th>
+                        <th>Tipo de pago</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+            abonos.forEach(a => {
+                html += `<tr>
+                    <td>$${parseFloat(a.abono).toFixed(2)}</td>
+                    <td>${a.fecha}</td>
+                    <td>${a.tipo}</td>
+                </tr>`;
+            });
+            html += `
+                </tbody>
+            </table>
+            <div class="text-end">
+                <strong>Saldo:</strong> $${parseFloat(saldo).toFixed(2)}
+            </div>
+            `;
+        }
+
+        document.getElementById('detalle-venta-preview').innerHTML = html;
+    }
 });
 </script>
 @endsection

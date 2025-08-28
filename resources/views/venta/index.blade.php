@@ -29,12 +29,28 @@
                     <td>{{ $venta->ciudad ?? 'N/A' }}</td>
                     <td>{{ $venta->bodega->nombrebodega ?? $venta->bodega_id }}</td>
                     <td>{{ $venta->total_venta }}</td>
-                    <td>{{ $venta->tipo_pago ?? 'N/A' }}</td>
+                    <td>
+                        @if($venta->tipo_pago === 'Crédito')
+                            @if(isset($venta->saldo) && $venta->saldo > 0)
+                                <span style="background-color:#ffdddd; color:#b30000; padding:4px 8px; border-radius:4px;">Crédito</span>
+                            @else
+                                <span style="background-color:#ddffdd; color:#008000; padding:4px 8px; border-radius:4px;">Crédito</span>
+                            @endif
+                        @else
+                            {{ $venta->tipo_pago ?? 'N/A' }}
+                        @endif
+                    </td>
                     <td>
                         <a href="{{ route('venta.show', $venta->id) }}" class="btn btn-info btn-sm">Detalle venta</a>
                         @if($venta->tipo_pago === 'Crédito')
                             <a href="{{ route('venta.abono', $venta->id) }}" class="btn btn-warning btn-sm">Agregar abono</a>
                         @endif
+                        <a href="{{ route('venta.edit', $venta->id) }}" class="btn btn-primary btn-sm">Editar</a>
+                        <form action="{{ route('venta.destroy', $venta->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Está seguro de eliminar esta venta?')">Eliminar</button>
+                        </form>
                     </td>
                 </tr>
             @endforeach

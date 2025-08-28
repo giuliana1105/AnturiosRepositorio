@@ -124,7 +124,15 @@ class VentaBodegaController extends Controller
 
     public function index()
     {
-        $ventas = \App\Models\Venta::with(['bodega', 'detalles.producto'])->orderBy('fecha', 'desc')->get();
+        $ventas = Venta::with('bodega')->get();
+
+        foreach ($ventas as $venta) {
+            if ($venta->tipo_pago === 'Crédito') {
+                $abonos = \App\Models\Abono::where('venta_id', $venta->id)->sum('abono');
+                $venta->saldo = $venta->total_venta - $abonos;
+            }
+        }
+
         return view('venta.index', compact('ventas'));
     }
 
@@ -164,5 +172,55 @@ class VentaBodegaController extends Controller
         ]);
 
         return redirect()->route('venta.abono', $venta->id)->with('success', 'Abono agregado correctamente.');
+    }
+
+    public function edit($id)
+    {
+        $venta = Venta::with(['bodega', 'detalles.producto'])->findOrFail($id);
+        $bodega = $venta->bodega;
+        $productos = Producto::all();
+        return view('venta.edit', compact('venta', 'bodega', 'productos'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $venta = Venta::findOrFail($id);
+
+        $request->validate([
+            'cliente' => 'required|string|max:255',
+            'ciudad' => 'required|string|max:255',
+            'tipo_pago' => 'required|in:Efectivo,Transferencia,Crédito,Cheque',
+            'producto_id.*' => 'required|exists:productos,codigo',
+            'tipoempaque.*' => 'required|string',
+            'cantidad.*' => 'required|numeric|min:1',
+            'precio_unitario.*' => 'required|numeric|min:0',
+            'precio_total.*' => 'required|numeric|min:0',
+        ]);
+
+        $venta->update([
+            'cliente' => $request->cliente,
+            'ciudad' => $request->ciudad,
+            'tipo_pago' => $request->tipo_pago,
+        ]);
+
+        // Actualiza los detalles
+        foreach ($venta->detalles as $i => $detalle) {
+            $detalle->update([
+                'producto_id' => $request->producto_id[$i],
+                'tipoempaque' => $request->tipoempaque[$i],
+                'cantidad' => $request->cantidad[$i],
+                'precio_unitario' => $request->precio_unitario[$i],
+                'precio_total' => $request->precio_total[$i],
+            ]);
+        }
+
+        return redirect()->route('venta.index')->with('success', 'Venta actualizada correctamente.');
+    }
+
+    public function destroy($id)
+    {
+        $venta = Venta::findOrFail($id);
+        $venta->delete();
+        return redirect()->route('venta.index')->with('success', 'Venta eliminada correctamente.');
     }
 }

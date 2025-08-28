@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('content')
@@ -18,6 +17,7 @@
     <table class="table table-bordered">
         <thead>
             <tr>
+                <th>Código</th> <!-- Nueva columna -->
                 <th>Producto</th>
                 <th>Tipo Empaque</th>
                 <th>Cantidad</th>
@@ -28,6 +28,7 @@
         <tbody>
             @foreach($venta->detalles as $detalle)
                 <tr>
+                    <td>{{ $detalle->producto->codigo ?? $detalle->producto_id }}</td> <!-- Nuevo dato -->
                     <td>{{ $detalle->producto->nombre ?? $detalle->producto_id }}</td>
                     <td>{{ $detalle->tipoempaque }}</td>
                     <td>{{ $detalle->cantidad }}</td>

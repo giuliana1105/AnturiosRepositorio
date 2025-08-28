@@ -91,6 +91,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('venta/{venta}', [App\Http\Controllers\VentaBodegaController::class, 'show'])->name('venta.show');
     Route::get('venta/{venta}/abono', [App\Http\Controllers\VentaBodegaController::class, 'abonoForm'])->name('venta.abono');
     Route::post('venta/{venta}/abono', [App\Http\Controllers\VentaBodegaController::class, 'agregarAbono'])->name('venta.abono.store');
+    Route::get('venta/{venta}/edit', [App\Http\Controllers\VentaBodegaController::class, 'edit'])->name('venta.edit');
+    Route::put('venta/{venta}', [App\Http\Controllers\VentaBodegaController::class, 'update'])->name('venta.update');
+    Route::delete('venta/{venta}', [App\Http\Controllers\VentaBodegaController::class, 'destroy'])->name('venta.destroy');
 });
 
 // 🔹 Redirigir la raíz al login si no está autenticado

@@ -31,8 +31,10 @@
                 <option value="">Todas las formas de pago</option>
                 <option value="Efectivo">Efectivo</option>
                 <option value="Transferencia">Transferencia</option>
-                <option value="Crédito">Crédito</option>
                 <option value="Cheque">Cheque</option>
+                <option value="Crédito">Crédito</option>
+                <option value="Crédito liquidado">Crédito liquidado</option>
+                <option value="Crédito pendiente">Crédito pendiente</option>
             </select>
         </div>
     </div>
@@ -59,7 +61,11 @@
                     <td>{{ $venta->ciudad ?? 'N/A' }}</td>
                     <td>{{ $venta->bodega->nombrebodega ?? $venta->bodega_id }}</td>
                     <td>{{ $venta->total_venta }}</td>
-                    <td>
+                    <td
+                        @if($venta->tipo_pago === 'Crédito')
+                            data-saldo="{{ isset($venta->saldo) ? $venta->saldo : 0 }}"
+                        @endif
+                    >
                         @if($venta->tipo_pago === 'Crédito')
                             @if(isset($venta->saldo) && $venta->saldo > 0)
                                 <span style="background-color:#ffdddd; color:#b30000; padding:4px 8px; border-radius:4px;">Crédito</span>
@@ -106,11 +112,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const tdCliente = row.children[2]?.textContent.toLowerCase();
             const tdCiudad = row.children[3]?.textContent;
             const tdPago = row.children[6]?.textContent.trim();
+            const tdSaldo = row.children[6]?.getAttribute('data-saldo');
 
             let mostrar = true;
             if (cliente && (!tdCliente || !tdCliente.includes(cliente))) mostrar = false;
             if (ciudad && tdCiudad !== ciudad) mostrar = false;
-            if (pago && !tdPago.includes(pago)) mostrar = false;
+
+            if (pago) {
+                if (pago === 'Crédito liquidado') {
+                    if (!(tdPago.includes('Crédito') && tdSaldo == 0)) mostrar = false;
+                } else if (pago === 'Crédito pendiente') {
+                    if (!(tdPago.includes('Crédito') && tdSaldo > 0)) mostrar = false;
+                } else if (!tdPago.includes(pago)) {
+                    mostrar = false;
+                }
+            }
 
             row.style.display = mostrar ? '' : 'none';
         });

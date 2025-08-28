@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <h3>Detalle de la Venta #{{ $venta->id }}</h3>
-    <a href="{{ route('venta.index') }}" class="btn btn-secondary mb-3">Volver</a>
+    <a href="{{ route('venta.index.bodega', $venta->bodega_id) }}" class="btn btn-secondary mb-3">Volver</a>
     <table class="table table-bordered">
         <tr><th>Fecha</th><td>{{ \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') }}</td></tr>
         <tr><th>Cliente</th><td>{{ $venta->cliente }}</td></tr>

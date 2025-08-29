@@ -41,73 +41,89 @@
 
     <div class="row mb-3" id="filtros-fechas">
         <div class="col-md-4 mt-2">
+            <label for="filtro-dia" class="form-label fw-bold">Filtro por día</label>
             <input type="date" class="form-control" id="filtro-dia" placeholder="Buscar por día">
         </div>
-        <div class="col-md-4 mt-2">
-            <input type="date" class="form-control" id="filtro-fecha-inicio" placeholder="Fecha inicio">
-        </div>
-        <div class="col-md-4 mt-2">
-            <input type="date" class="form-control" id="filtro-fecha-fin" placeholder="Fecha fin">
+        <div class="col-md-8 mt-2">
+            <div class="row">
+                <div class="col-12">
+                    <span class="fw-bold">Filtro por rango</span>
+                </div>
+                <div class="col-md-6 mt-2">
+                    <input type="date" class="form-control" id="filtro-fecha-inicio" placeholder="Fecha inicio">
+                </div>
+                <div class="col-md-6 mt-2">
+                    <input type="date" class="form-control" id="filtro-fecha-fin" placeholder="Fecha fin">
+                </div>
+            </div>
         </div>
     </div>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Nro. venta</th>
-                <th>Fecha</th>
-                <th>Cliente</th>
-                <th>Ciudad</th>
-                <th>Bodega</th>
-                <th>Total venta</th>
-                <th>Forma de pago</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($ventas as $venta)
+    <div class="mb-3">
+        <button id="btn-reporte" class="btn btn-success">Generar reporte</button>
+    </div>
+
+    <div id="reporte-ventas">
+        <table class="table table-bordered">
+            <thead>
                 <tr>
-                    <td>{{ $venta->nro_venta }}</td>
-                    <td>{{ \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') }}</td>
-                    <td>{{ $venta->cliente }}</td>
-                    <td>{{ $venta->ciudad ?? 'N/A' }}</td>
-                    <td>{{ $venta->bodega->nombrebodega ?? $venta->bodega_id }}</td>
-                    <td>{{ $venta->total_venta }}</td>
-                    <td
-                        @if($venta->tipo_pago === 'Crédito')
-                            data-saldo="{{ isset($venta->saldo) ? $venta->saldo : 0 }}"
-                        @endif
-                    >
-                        @if($venta->tipo_pago === 'Crédito')
-                            @if(isset($venta->saldo) && $venta->saldo > 0)
-                                <span style="background-color:#ffdddd; color:#b30000; padding:4px 8px; border-radius:4px;">Crédito</span>
-                            @else
-                                <span style="background-color:#ddffdd; color:#008000; padding:4px 8px; border-radius:4px;">Crédito</span>
-                            @endif
-                        @else
-                            {{ $venta->tipo_pago ?? 'N/A' }}
-                        @endif
-                    </td>
-                    <td>
-                        <a href="{{ route('venta.show', $venta->id) }}" class="btn btn-info btn-sm">Detalle venta</a>
-                        @if($venta->tipo_pago === 'Crédito')
-                            <a href="{{ route('venta.abono', $venta->id) }}" class="btn btn-warning btn-sm">Agregar abono</a>
-                        @endif
-                        <a href="{{ route('venta.edit', $venta->id) }}" class="btn btn-primary btn-sm">Editar</a>
-                        <form action="{{ route('venta.destroy', $venta->id) }}" method="POST" style="display:inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Está seguro de eliminar esta venta?')">Eliminar</button>
-                        </form>
-                    </td>
+                    <th>Nro. venta</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Ciudad</th>
+                    <th>Bodega</th>
+                    <th>Total venta</th>
+                    <th>Forma de pago</th>
+                    <th>Acciones</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach($ventas as $venta)
+                    <tr>
+                        <td>{{ $venta->nro_venta }}</td>
+                        <td>{{ \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') }}</td>
+                        <td>{{ $venta->cliente }}</td>
+                        <td>{{ $venta->ciudad ?? 'N/A' }}</td>
+                        <td>{{ $venta->bodega->nombrebodega ?? $venta->bodega_id }}</td>
+                        <td>{{ $venta->total_venta }}</td>
+                        <td
+                            @if($venta->tipo_pago === 'Crédito')
+                                data-saldo="{{ isset($venta->saldo) ? $venta->saldo : 0 }}"
+                            @endif
+                        >
+                            @if($venta->tipo_pago === 'Crédito')
+                                @if(isset($venta->saldo) && $venta->saldo > 0)
+                                    <span style="background-color:#ffdddd; color:#b30000; padding:4px 8px; border-radius:4px;">Crédito</span>
+                                @else
+                                    <span style="background-color:#ddffdd; color:#008000; padding:4px 8px; border-radius:4px;">Crédito</span>
+                                @endif
+                            @else
+                                {{ $venta->tipo_pago ?? 'N/A' }}
+                            @endif
+                        </td>
+                        <td>
+                            <a href="{{ route('venta.show', $venta->id) }}" class="btn btn-info btn-sm">Detalle venta</a>
+                            @if($venta->tipo_pago === 'Crédito')
+                                <a href="{{ route('venta.abono', $venta->id) }}" class="btn btn-warning btn-sm">Agregar abono</a>
+                            @endif
+                            <a href="{{ route('venta.edit', $venta->id) }}" class="btn btn-primary btn-sm">Editar</a>
+                            <form action="{{ route('venta.destroy', $venta->id) }}" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Está seguro de eliminar esta venta?')">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection
 
 @section('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const clienteInput = document.getElementById('filtro-cliente');
@@ -166,6 +182,32 @@ document.addEventListener('DOMContentLoaded', function() {
     diaInput.addEventListener('change', filtrar);
     fechaInicioInput.addEventListener('change', filtrar);
     fechaFinInput.addEventListener('change', filtrar);
+});
+
+document.getElementById('btn-reporte').addEventListener('click', function() {
+    // Oculta el botón para que no salga en el PDF
+    document.getElementById('btn-reporte').style.display = 'none';
+
+    // Opcional: Cambia el título temporalmente
+    let originalTitle = document.title;
+    document.title = 'Reporte de Ventas';
+
+    html2canvas(document.getElementById('reporte-ventas')).then(function(canvas) {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pageWidth - 20;
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+        pdf.addImage(imgData, 'PNG', 10, 10, pdfWidth, pdfHeight);
+        pdf.output('dataurlnewwindow');
+
+        // Restaura el botón y el título
+        document.getElementById('btn-reporte').style.display = '';
+        document.title = originalTitle;
+    });
 });
 </script>
 @endsection

@@ -9,6 +9,7 @@ use App\Models\Producto;
 use App\Models\Venta; // Nuevo modelo para cabecera
 use App\Models\DetalleVentaBodega; // Nuevo modelo para detalle
 use App\Models\Abono;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class VentaBodegaController extends Controller
 {
@@ -191,7 +192,8 @@ class VentaBodegaController extends Controller
             'tipo_pago' => $request->tipo_pago_abono,
         ]);
 
-        return redirect()->route('venta.abono', $venta->id)->with('success', 'Abono agregado correctamente.');
+        // Redirige al index de ventas de la bodega correspondiente
+        return redirect()->route('venta.index.bodega', $venta->bodega_id)->with('success', 'Abono agregado correctamente.');
     }
 
     public function edit($id)
@@ -234,13 +236,27 @@ class VentaBodegaController extends Controller
             ]);
         }
 
-        return redirect()->route('venta.index')->with('success', 'Venta actualizada correctamente.');
+        return redirect()->route('venta.index.bodega', $venta->bodega_id)->with('success', 'Venta actualizada correctamente.');
     }
 
     public function destroy($id)
     {
         $venta = Venta::findOrFail($id);
         $venta->delete();
-        return redirect()->route('venta.index')->with('success', 'Venta eliminada correctamente.');
+        return redirect()->route('venta.index.bodega', $venta->bodega_id)->with('success', 'Venta eliminada correctamente.');
+    }
+
+    public function exportarVentas(Request $request)
+    {
+        // Aplica los mismos filtros que en tu index
+        $ventas = Venta::with(['detalles.producto'])
+            ->when($request->cliente, fn($q) => $q->where('cliente', 'like', '%'.$request->cliente.'%'))
+            ->when($request->ciudad, fn($q) => $q->where('ciudad', $request->ciudad))
+            ->when($request->tipo_pago, fn($q) => $q->where('tipo_pago', $request->tipo_pago))
+            // ...otros filtros...
+            ->get();
+
+        $pdf = Pdf::loadView('venta.pdf', compact('ventas'));
+        return $pdf->stream('reporte_ventas.pdf'); // o ->download('reporte_ventas.pdf')
     }
 }

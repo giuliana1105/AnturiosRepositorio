@@ -155,7 +155,7 @@
             </div>
         </div>
         <button type="submit" class="btn btn-primary mt-3">Guardar cambios</button>
-        <a href="{{ route('venta.index') }}" class="btn btn-secondary mt-3">Cancelar</a>
+        <a href="{{ route('venta.index.bodega', $venta->bodega_id) }}" class="btn btn-secondary mt-3">Cancelar</a>
     </form>
 </div>
 @endsection

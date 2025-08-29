@@ -4,7 +4,7 @@
 @section('content')
 <div class="container">
     <h3>Agregar abono a la Venta #{{ $venta->id }}</h3>
-    <a href="{{ route('venta.index') }}" class="btn btn-secondary mb-3">Volver</a>
+    <a href="{{ route('venta.index.bodega', $venta->bodega_id) }}" class="btn btn-secondary mb-3">Volver</a>
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif

@@ -14,45 +14,97 @@
     </style>
 </head>
 <body>
-@foreach($ventas as $venta)
-    <div class="venta-box">
-        <h4>Confirmar Venta</h4>
-        <div class="venta-header">
-            <div>
-                <strong>Cliente:</strong> {{ $venta->cliente }}<br>
-                <strong>Ciudad:</strong> {{ $venta->ciudad }}
+@if(request('dia'))
+    <h3 style="text-align:center; margin-bottom:20px;">
+        Reporte diario - {{ \Carbon\Carbon::parse(request('dia'))->format('d/m/Y') }}
+    </h3>
+    <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
+        <thead>
+            <tr style="background:#f5f5f5;">
+                <th style="border:1px solid #ccc; padding:4px;">Nro. Fac</th>
+                <th style="border:1px solid #ccc; padding:4px;">Cliente</th>
+                <th style="border:1px solid #ccc; padding:4px;">Total venta</th>
+                <th style="border:1px solid #ccc; padding:4px;">Forma de pago</th>
+                <th style="border:1px solid #ccc; padding:4px;">Abono</th>
+                <th style="border:1px solid #ccc; padding:4px;">Forma de pago/abonos</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach($ventas as $venta)
+            @php
+                // Busca el abono de la venta para la fecha filtrada
+                $abonoDia = null;
+                $formaPagoAbono = null;
+                if ($venta->tipo_pago === 'Crédito' && isset($venta->abonos)) {
+                    foreach ($venta->abonos as $abono) {
+                        if (\Carbon\Carbon::parse($abono->fecha)->format('Y-m-d') === request('dia')) {
+                            $abonoDia = $abono->abono;
+                            $formaPagoAbono = $abono->tipo_pago;
+                            break;
+                        }
+                    }
+                }
+            @endphp
+            <tr>
+                <td style="border:1px solid #ccc; padding:4px;">{{ $venta->nro_venta }}</td>
+                <td style="border:1px solid #ccc; padding:4px;">{{ $venta->cliente }}</td>
+                <td style="border:1px solid #ccc; padding:4px;">${{ number_format($venta->total_venta, 2) }}</td>
+                <td style="border:1px solid #ccc; padding:4px;">{{ $venta->tipo_pago }}</td>
+                <td style="border:1px solid #ccc; padding:4px;">
+                    @if($abonoDia)
+                        ${{ number_format($abonoDia, 2) }}
+                    @endif
+                </td>
+                <td style="border:1px solid #ccc; padding:4px;">
+                    @if($formaPagoAbono)
+                        {{ $formaPagoAbono }}
+                    @endif
+                </td>
+            </tr>
+        @endforeach
+        </tbody>
+    </table>
+@else
+    @foreach($ventas as $venta)
+        <div class="venta-box">
+            <h4>Confirmar Venta</h4>
+            <div class="venta-header">
+                <div>
+                    <strong>Cliente:</strong> {{ $venta->cliente }}<br>
+                    <strong>Ciudad:</strong> {{ $venta->ciudad }}
+                </div>
+                <div>
+                    <strong>Forma de pago:</strong> {{ $venta->tipo_pago }}<br>
+                    <strong>Fecha:</strong> {{ \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') }}
+                </div>
             </div>
-            <div>
-                <strong>Forma de pago:</strong> {{ $venta->tipo_pago }}<br>
-                <strong>Fecha:</strong> {{ \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') }}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cantidad</th>
+                        <th>Producto</th>
+                        <th>Empaque</th>
+                        <th>Precio</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($venta->detalles as $detalle)
+                    <tr>
+                        <td>{{ $detalle->cantidad }}</td>
+                        <td>{{ $detalle->producto->codigo }} - {{ $detalle->producto->nombre }}</td>
+                        <td>{{ $detalle->empaque ?? '' }}</td>
+                        <td>${{ number_format($detalle->precio_unitario, 2) }}</td>
+                        <td>${{ number_format($detalle->cantidad * $detalle->precio_unitario, 2) }}</td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+            <div class="venta-total">
+                <strong>Total venta:</strong> ${{ number_format($venta->total_venta, 2) }}
             </div>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Cantidad</th>
-                    <th>Producto</th>
-                    <th>Empaque</th>
-                    <th>Precio</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-            @foreach($venta->detalles as $detalle)
-                <tr>
-                    <td>{{ $detalle->cantidad }}</td>
-                    <td>{{ $detalle->producto->codigo }} - {{ $detalle->producto->nombre }}</td>
-                    <td>{{ $detalle->empaque ?? '' }}</td>
-                    <td>${{ number_format($detalle->precio_unitario, 2) }}</td>
-                    <td>${{ number_format($detalle->cantidad * $detalle->precio_unitario, 2) }}</td>
-                </tr>
-            @endforeach
-            </tbody>
-        </table>
-        <div class="venta-total">
-            <strong>Total venta:</strong> ${{ number_format($venta->total_venta, 2) }}
-        </div>
-    </div>
-@endforeach
+    @endforeach
+@endif
 </body>
 </html>

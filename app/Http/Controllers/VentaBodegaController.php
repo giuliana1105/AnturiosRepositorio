@@ -255,7 +255,7 @@ class VentaBodegaController extends Controller
             ->when($request->tipo_pago, function($q) use ($request) {
                 if ($request->tipo_pago === 'Crédito liquidado' || $request->tipo_pago === 'Crédito pendiente') {
                     $q->where('tipo_pago', 'Crédito');
-                } else {
+                } elseif ($request->tipo_pago) {
                     $q->where('tipo_pago', $request->tipo_pago);
                 }
             })
@@ -266,7 +266,7 @@ class VentaBodegaController extends Controller
 
         // Calcula el saldo para cada venta de crédito
         foreach ($ventas as $venta) {
-            if ($venta->tipo_pago === 'Crédito') {
+            if ($venta->tipo_pago === 'Crédito' && $venta->relationLoaded('abonos')) {
                 $abonos = $venta->abonos->sum('abono');
                 $venta->saldo = $venta->total_venta - $abonos;
             }
@@ -279,7 +279,7 @@ class VentaBodegaController extends Controller
             $ventas = $ventas->filter(fn($venta) => $venta->tipo_pago === 'Crédito' && isset($venta->saldo) && $venta->saldo > 0);
         }
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('venta.pdf', ['ventas' => $ventas]);
+        $pdf = Pdf::loadView('venta.pdf', ['ventas' => $ventas]);
         return $pdf->stream('reporte_ventas.pdf');
     }
 }

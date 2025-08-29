@@ -40,20 +40,41 @@
     </div>
 
     <div class="row mb-3" id="filtros-fechas">
-        <div class="col-md-4 mt-2">
-            <label for="filtro-dia" class="form-label fw-bold">Filtro por día</label>
-            <input type="date" class="form-control" id="filtro-dia" placeholder="Buscar por día">
+        <div class="col-md-4 mt-2 d-flex align-items-end">
+            <div style="width:100%;">
+                <label for="filtro-dia" class="form-label fw-bold">Filtro por día</label>
+                <div class="input-group">
+                    <input type="date" class="form-control" id="filtro-dia" placeholder="Buscar por día">
+                    <button type="button" id="clear-dia" class="btn btn-outline-danger" title="Quitar filtro">
+                        <span style="font-weight:bold;">&#10006;</span>
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="col-md-8 mt-2">
             <div class="row">
                 <div class="col-12">
                     <span class="fw-bold">Filtro por rango</span>
                 </div>
-                <div class="col-md-6 mt-2">
-                    <input type="date" class="form-control" id="filtro-fecha-inicio" placeholder="Fecha inicio">
+                <div class="col-md-6 mt-2 d-flex align-items-end">
+                    <div style="width:100%;">
+                        <div class="input-group">
+                            <input type="date" class="form-control" id="filtro-fecha-inicio" placeholder="Fecha inicio">
+                            <button type="button" id="clear-inicio" class="btn btn-outline-danger" title="Quitar filtro">
+                                <span style="font-weight:bold;">&#10006;</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6 mt-2">
-                    <input type="date" class="form-control" id="filtro-fecha-fin" placeholder="Fecha fin">
+                <div class="col-md-6 mt-2 d-flex align-items-end">
+                    <div style="width:100%;">
+                        <div class="input-group">
+                            <input type="date" class="form-control" id="filtro-fecha-fin" placeholder="Fecha fin">
+                            <button type="button" id="clear-fin" class="btn btn-outline-danger" title="Quitar filtro">
+                                <span style="font-weight:bold;">&#10006;</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -210,6 +231,20 @@ document.getElementById('btn-reporte').addEventListener('click', function(e) {
     url += params.join('&');
 
     window.open(url, '_blank');
+});
+
+document.getElementById('clear-dia').addEventListener('click', function() {
+    document.getElementById('filtro-dia').value = '';
+    // Dispara el evento para que se actualice el filtro
+    document.getElementById('filtro-dia').dispatchEvent(new Event('change'));
+});
+document.getElementById('clear-inicio').addEventListener('click', function() {
+    document.getElementById('filtro-fecha-inicio').value = '';
+    document.getElementById('filtro-fecha-inicio').dispatchEvent(new Event('change'));
+});
+document.getElementById('clear-fin').addEventListener('click', function() {
+    document.getElementById('filtro-fecha-fin').value = '';
+    document.getElementById('filtro-fecha-fin').dispatchEvent(new Event('change'));
 });
 </script>
 @endsection

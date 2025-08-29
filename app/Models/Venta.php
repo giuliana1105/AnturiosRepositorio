@@ -24,4 +24,8 @@ class Venta extends Model
     {
         return $this->hasMany(DetalleVentaBodega::class, 'venta_id');
     }
+    public function abonos()
+    {
+        return $this->hasMany(\App\Models\Abono::class, 'venta_id');
+    }
 }

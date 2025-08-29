@@ -60,7 +60,10 @@
     </div>
 
     <div class="mb-3">
-        <button id="btn-reporte" class="btn btn-success">Generar reporte</button>
+        <button id="btn-reporte" class="btn btn-success mb-3"
+            data-bodega="{{ isset($bodega) ? $bodega->idbodega : '' }}">
+            Generar PDF
+        </button>
     </div>
 
     <div id="reporte-ventas">
@@ -184,30 +187,29 @@ document.addEventListener('DOMContentLoaded', function() {
     fechaFinInput.addEventListener('change', filtrar);
 });
 
-document.getElementById('btn-reporte').addEventListener('click', function() {
-    // Oculta el botón para que no salga en el PDF
-    document.getElementById('btn-reporte').style.display = 'none';
+document.getElementById('btn-reporte').addEventListener('click', function(e) {
+    e.preventDefault();
 
-    // Opcional: Cambia el título temporalmente
-    let originalTitle = document.title;
-    document.title = 'Reporte de Ventas';
+    const bodega_id = this.getAttribute('data-bodega');
+    const cliente = document.getElementById('filtro-cliente').value;
+    const ciudad = document.getElementById('filtro-ciudad').value;
+    const tipo_pago = document.getElementById('filtro-pago').value;
+    const dia = document.getElementById('filtro-dia').value;
+    const fecha_inicio = document.getElementById('filtro-fecha-inicio').value;
+    const fecha_fin = document.getElementById('filtro-fecha-fin').value;
 
-    html2canvas(document.getElementById('reporte-ventas')).then(function(canvas) {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pageWidth - 20;
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    let url = "{{ route('ventas.exportar') }}?";
+    let params = [];
+    if(bodega_id) params.push('bodega_id=' + encodeURIComponent(bodega_id));
+    if(cliente) params.push('cliente=' + encodeURIComponent(cliente));
+    if(ciudad) params.push('ciudad=' + encodeURIComponent(ciudad));
+    if(tipo_pago) params.push('tipo_pago=' + encodeURIComponent(tipo_pago));
+    if(dia) params.push('dia=' + encodeURIComponent(dia));
+    if(fecha_inicio) params.push('fecha_inicio=' + encodeURIComponent(fecha_inicio));
+    if(fecha_fin) params.push('fecha_fin=' + encodeURIComponent(fecha_fin));
+    url += params.join('&');
 
-        pdf.addImage(imgData, 'PNG', 10, 10, pdfWidth, pdfHeight);
-        pdf.output('dataurlnewwindow');
-
-        // Restaura el botón y el título
-        document.getElementById('btn-reporte').style.display = '';
-        document.title = originalTitle;
-    });
+    window.open(url, '_blank');
 });
 </script>
 @endsection

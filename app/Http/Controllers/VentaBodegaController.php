@@ -248,15 +248,38 @@ class VentaBodegaController extends Controller
 
     public function exportarVentas(Request $request)
     {
-        // Aplica los mismos filtros que en tu index
-        $ventas = Venta::with(['detalles.producto'])
+        $ventas = Venta::with(['detalles.producto', 'abonos'])
+            ->when($request->bodega_id, fn($q) => $q->where('bodega_id', $request->bodega_id))
             ->when($request->cliente, fn($q) => $q->where('cliente', 'like', '%'.$request->cliente.'%'))
             ->when($request->ciudad, fn($q) => $q->where('ciudad', $request->ciudad))
-            ->when($request->tipo_pago, fn($q) => $q->where('tipo_pago', $request->tipo_pago))
-            // ...otros filtros...
+            ->when($request->tipo_pago, function($q) use ($request) {
+                if ($request->tipo_pago === 'Crédito liquidado' || $request->tipo_pago === 'Crédito pendiente') {
+                    $q->where('tipo_pago', 'Crédito');
+                } else {
+                    $q->where('tipo_pago', $request->tipo_pago);
+                }
+            })
+            ->when($request->dia, fn($q) => $q->whereDate('fecha', $request->dia))
+            ->when($request->fecha_inicio, fn($q) => $q->whereDate('fecha', '>=', $request->fecha_inicio))
+            ->when($request->fecha_fin, fn($q) => $q->whereDate('fecha', '<=', $request->fecha_fin))
             ->get();
 
-        $pdf = Pdf::loadView('venta.pdf', compact('ventas'));
-        return $pdf->stream('reporte_ventas.pdf'); // o ->download('reporte_ventas.pdf')
+        // Calcula el saldo para cada venta de crédito
+        foreach ($ventas as $venta) {
+            if ($venta->tipo_pago === 'Crédito') {
+                $abonos = $venta->abonos->sum('abono');
+                $venta->saldo = $venta->total_venta - $abonos;
+            }
+        }
+
+        // Filtros especiales para crédito liquidado/pendiente
+        if ($request->tipo_pago === 'Crédito liquidado') {
+            $ventas = $ventas->filter(fn($venta) => $venta->tipo_pago === 'Crédito' && isset($venta->saldo) && $venta->saldo == 0);
+        } elseif ($request->tipo_pago === 'Crédito pendiente') {
+            $ventas = $ventas->filter(fn($venta) => $venta->tipo_pago === 'Crédito' && isset($venta->saldo) && $venta->saldo > 0);
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('venta.pdf', ['ventas' => $ventas]);
+        return $pdf->stream('reporte_ventas.pdf');
     }
 }

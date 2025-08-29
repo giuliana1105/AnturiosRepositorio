@@ -103,7 +103,7 @@
                         </td>
                         <td>
                             <a href="{{ route('venta.show', $venta->id) }}" class="btn btn-info btn-sm">Detalle venta</a>
-                            @if($venta->tipo_pago === 'Crédito')
+                            @if($venta->tipo_pago === 'Crédito' && isset($venta->saldo) && $venta->saldo > 0)
                                 <a href="{{ route('venta.abono', $venta->id) }}" class="btn btn-warning btn-sm">Agregar abono</a>
                             @endif
                             <a href="{{ route('venta.edit', $venta->id) }}" class="btn btn-primary btn-sm">Editar</a>

@@ -43,6 +43,9 @@ class VentaBodegaController extends Controller
 
     public function store(Request $request, $bodega_id)
     {
+        // Depuración
+         //dd($request->all());
+
         $request->validate([
             'producto_id' => 'required|array|min:1',
             'producto_id.*' => 'required|exists:productos,codigo',
@@ -112,12 +115,20 @@ class VentaBodegaController extends Controller
         // Guardar abonos si es crédito
         if ($request->tipo_pago === 'Crédito' && $request->has('abono')) {
             foreach ($request->abono as $index => $valorAbono) {
-                if ($valorAbono) {
-                    Abono::create([
+                $tipoPago = is_array($request->tipo_pago_abono)
+                    ? ($request->tipo_pago_abono[$index] ?? null)
+                    : $request->tipo_pago_abono;
+
+                $fechaAbono = is_array($request->fecha_abono)
+                    ? ($request->fecha_abono[$index] ?? now())
+                    : ($request->fecha_abono ?? now());
+
+                if ($valorAbono && $tipoPago) {
+                    \App\Models\Abono::create([
                         'venta_id' => $venta->id,
                         'abono' => $valorAbono,
-                        'fecha' => $request->abono_fecha[$index] ?? now(),
-                        'tipo_pago' => $request->abono_tipo_pago[$index] ?? 'Crédito',
+                        'fecha' => $fechaAbono,
+                        'tipo_pago' => $tipoPago,
                     ]);
                 }
             }

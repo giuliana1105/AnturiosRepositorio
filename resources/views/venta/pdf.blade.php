@@ -120,6 +120,8 @@
     <h3 style="text-align:center; margin-bottom:20px;">
         @if(request('tipo_pago'))
             Reporte - {{ ucwords(str_replace('_', ' ', request('tipo_pago'))) }}
+        @elseif(request('ciudad'))
+            Reporte - {{ request('ciudad') }}
         @else
             Reporte de Ventas
         @endif

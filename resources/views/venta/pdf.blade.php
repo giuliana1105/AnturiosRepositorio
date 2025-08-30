@@ -116,6 +116,130 @@
         TRANSFERENCIA: ${{ number_format($totalTransferencia, 2) }}<br>
         CHEQUE: ${{ number_format($totalCheque, 2) }}
     </div>
+
+@elseif(request('fecha_inicio') && request('fecha_fin'))
+    @php
+        $inicio = \Carbon\Carbon::parse(request('fecha_inicio'));
+        $fin = \Carbon\Carbon::parse(request('fecha_fin'));
+        $totalEfectivo = 0;
+        $totalTransferencia = 0;
+        $totalCheque = 0;
+    @endphp
+
+    @for($fecha = $inicio->copy(); $fecha->lte($fin); $fecha->addDay())
+        @php
+            $ventasDia = $ventas->filter(function($venta) use ($fecha) {
+                return \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') === $fecha->format('Y-m-d');
+            });
+            $efectivoDia = 0;
+            $transferenciaDia = 0;
+            $chequeDia = 0;
+        @endphp
+
+        @if($ventasDia->count())
+            <h3 style="text-align:center; margin-bottom:20px;">
+                Reporte diario - {{ $fecha->format('d/m/Y') }}
+            </h3>
+            <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
+                <thead>
+                    <tr style="background:#f5f5f5;">
+                        <th style="border:1px solid #ccc; padding:4px;">Nro. Fac</th>
+                        <th style="border:1px solid #ccc; padding:4px;">Cliente</th>
+                        <th style="border:1px solid #ccc; padding:4px;">Total venta</th>
+                        <th style="border:1px solid #ccc; padding:4px;">Forma de pago</th>
+                        <th style="border:1px solid #ccc; padding:4px;">Abono</th>
+                        <th style="border:1px solid #ccc; padding:4px;">Forma de pago/abonos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($ventasDia as $venta)
+                    @php
+                        $abonosDia = [];
+                        if ($venta->tipo_pago === 'Crédito' && isset($venta->abonos)) {
+                            foreach ($venta->abonos as $abono) {
+                                if (\Carbon\Carbon::parse($abono->fecha)->format('Y-m-d') === $fecha->format('Y-m-d')) {
+                                    $abonosDia[] = $abono;
+                                }
+                            }
+                        }
+                        $abonosCount = count($abonosDia);
+                    @endphp
+
+                    <tr>
+                        <td style="border:1px solid #ccc; padding:4px;">{{ $venta->nro_venta }}</td>
+                        <td style="border:1px solid #ccc; padding:4px;">{{ $venta->cliente }}</td>
+                        <td style="border:1px solid #ccc; padding:4px;">${{ number_format($venta->total_venta, 2) }}</td>
+                        <td style="border:1px solid #ccc; padding:4px;">{{ $venta->tipo_pago }}</td>
+                        <td style="border:1px solid #ccc; padding:4px;">
+                            @if($venta->tipo_pago === 'Crédito' && $abonosCount > 0)
+                                ${{ number_format($abonosDia[0]->abono, 2) }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td style="border:1px solid #ccc; padding:4px;">
+                            @if($venta->tipo_pago === 'Crédito' && $abonosCount > 0)
+                                {{ $abonosDia[0]->tipo_pago }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                    </tr>
+                    @if($venta->tipo_pago === 'Crédito' && $abonosCount > 1)
+                        @for($i = 1; $i < $abonosCount; $i++)
+                            <tr>
+                                <td style="border:1px solid #ccc; padding:4px;">{{ $venta->nro_venta }}</td>
+                                <td style="border:1px solid #ccc; padding:4px;">{{ $venta->cliente }}</td>
+                                <td style="border:1px solid #ccc; padding:4px;">-</td>
+                                <td style="border:1px solid #ccc; padding:4px;">-</td>
+                                <td style="border:1px solid #ccc; padding:4px;">${{ number_format($abonosDia[$i]->abono, 2) }}</td>
+                                <td style="border:1px solid #ccc; padding:4px;">{{ $abonosDia[$i]->tipo_pago }}</td>
+                            </tr>
+                        @endfor
+                    @endif
+
+                    @php
+                        if($venta->tipo_pago === 'Efectivo') {
+                            $efectivoDia += $venta->total_venta;
+                        }
+                        if($venta->tipo_pago === 'Transferencia') {
+                            $transferenciaDia += $venta->total_venta;
+                        }
+                        if($venta->tipo_pago === 'Cheque') {
+                            $chequeDia += $venta->total_venta;
+                        }
+                        if($venta->tipo_pago === 'Crédito' && $abonosCount > 0) {
+                            foreach($abonosDia as $abono) {
+                                if($abono->tipo_pago === 'Efectivo') $efectivoDia += $abono->abono;
+                                if($abono->tipo_pago === 'Transferencia') $transferenciaDia += $abono->abono;
+                                if($abono->tipo_pago === 'Cheque') $chequeDia += $abono->abono;
+                            }
+                        }
+                    @endphp
+                @endforeach
+                </tbody>
+            </table>
+            <div style="margin-bottom: 30px;">
+                <span style="font-weight:bold; text-decoration: underline;">Total entregar del día:</span><br><br>
+                EFECTIVO: ${{ number_format($efectivoDia, 2) }}<br>
+                TRANSFERENCIA: ${{ number_format($transferenciaDia, 2) }}<br>
+                CHEQUE: ${{ number_format($chequeDia, 2) }}
+            </div>
+            @php
+                $totalEfectivo += $efectivoDia;
+                $totalTransferencia += $transferenciaDia;
+                $totalCheque += $chequeDia;
+            @endphp
+        @endif
+    @endfor
+
+    <div style="margin-top: 30px; border-top:1px solid #ccc; padding-top:10px;">
+        <span style="font-weight:bold; text-decoration: underline;">Total entregar en el rango:</span><br><br>
+        EFECTIVO: ${{ number_format($totalEfectivo, 2) }}<br>
+        TRANSFERENCIA: ${{ number_format($totalTransferencia, 2) }}<br>
+        CHEQUE: ${{ number_format($totalCheque, 2) }}
+    </div>
+
 @else
     <h3 style="text-align:center; margin-bottom:20px;">
         @if(request('tipo_pago'))

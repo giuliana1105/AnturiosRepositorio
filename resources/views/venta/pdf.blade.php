@@ -117,9 +117,16 @@
         CHEQUE: ${{ number_format($totalCheque, 2) }}
     </div>
 @else
+    <h3 style="text-align:center; margin-bottom:20px;">
+        @if(request('tipo_pago'))
+            Reporte - {{ ucwords(str_replace('_', ' ', request('tipo_pago'))) }}
+        @else
+            Reporte de Ventas
+        @endif
+    </h3>
+
     @foreach($ventas as $venta)
         <div class="venta-box">
-            <h4>Confirmar Venta</h4>
             <div class="venta-header">
                 <div>
                     <strong>Cliente:</strong> {{ $venta->cliente }}<br>
@@ -145,7 +152,7 @@
                     <tr>
                         <td>{{ $detalle->cantidad }}</td>
                         <td>{{ $detalle->producto->codigo }} - {{ $detalle->producto->nombre }}</td>
-                        <td>{{ $detalle->empaque ?? '' }}</td>
+                        <td>{{ $detalle->tipoempaque ?? $detalle->empaque ?? '-' }}</td>
                         <td>${{ number_format($detalle->precio_unitario, 2) }}</td>
                         <td>${{ number_format($detalle->cantidad * $detalle->precio_unitario, 2) }}</td>
                     </tr>
@@ -155,6 +162,42 @@
             <div class="venta-total">
                 <strong>Total venta:</strong> ${{ number_format($venta->total_venta, 2) }}
             </div>
+            @if($venta->tipo_pago === 'Crédito')
+                @php
+                    $saldo = $venta->total_venta;
+                    if(isset($venta->abonos)) {
+                        foreach($venta->abonos as $abono) {
+                            $saldo -= $abono->abono;
+                        }
+                    }
+                @endphp
+                <div class="venta-total">
+                    <strong>Saldo actual:</strong> ${{ number_format($saldo, 2) }}
+                </div>
+            @endif
+            @if($venta->tipo_pago === 'Crédito' && isset($venta->abonos) && count($venta->abonos) > 0)
+                <div style="margin-top: 10px;">
+                    <strong>Abonos</strong>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Abono</th>
+                                <th>Fecha</th>
+                                <th>Tipo de pago</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach($venta->abonos as $abono)
+                            <tr>
+                                <td>${{ number_format($abono->abono, 2) }}</td>
+                                <td>{{ \Carbon\Carbon::parse($abono->fecha)->format('Y-m-d') }}</td>
+                                <td>{{ $abono->tipo_pago }}</td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
         </div>
     @endforeach
 @endif

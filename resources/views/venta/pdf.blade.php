@@ -64,6 +64,41 @@
         @endforeach
         </tbody>
     </table>
+    @php
+        $totalEfectivo = 0;
+        $totalTransferencia = 0;
+        $totalCheque = 0;
+
+        foreach($ventas as $venta) {
+            // Suma ventas directas
+            if($venta->tipo_pago === 'Efectivo') {
+                $totalEfectivo += $venta->total_venta;
+            }
+            if($venta->tipo_pago === 'Transferencia') {
+                $totalTransferencia += $venta->total_venta;
+            }
+            if($venta->tipo_pago === 'Cheque') {
+                $totalCheque += $venta->total_venta;
+            }
+            // Suma abonos del día
+            if($venta->tipo_pago === 'Crédito' && isset($venta->abonos)) {
+                foreach($venta->abonos as $abono) {
+                    if(\Carbon\Carbon::parse($abono->fecha)->format('Y-m-d') === request('dia')) {
+                        if($abono->tipo_pago === 'Efectivo') $totalEfectivo += $abono->abono;
+                        if($abono->tipo_pago === 'Transferencia') $totalTransferencia += $abono->abono;
+                        if($abono->tipo_pago === 'Cheque') $totalCheque += $abono->abono;
+                    }
+                }
+            }
+        }
+    @endphp
+
+    <div style="margin-top: 30px;">
+        <span style="font-weight:bold; text-decoration: underline;">Total entregar:</span><br><br>
+        EFECTIVO: ${{ number_format($totalEfectivo, 2) }}<br>
+        TRANSFERENCIA: ${{ number_format($totalTransferencia, 2) }}<br>
+        CHEQUE: ${{ number_format($totalCheque, 2) }}
+    </div>
 @else
     @foreach($ventas as $venta)
         <div class="venta-box">

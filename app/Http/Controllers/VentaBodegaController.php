@@ -204,7 +204,7 @@ class VentaBodegaController extends Controller
         ]);
 
         // Redirige al index de ventas de la bodega correspondiente
-        return redirect()->route('venta.index.bodega', $venta->bodega_id)->with('success', 'Abono agregado correctamente.');
+        return redirect()->route('venta.abono', $venta->id)->with('success', 'Abono agregado correctamente.');
     }
 
     public function edit($id)

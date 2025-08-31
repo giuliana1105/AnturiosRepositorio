@@ -14,6 +14,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
+        'email',      // <-- Agrega esto
         'username',
         'password',
     ];
@@ -26,9 +27,6 @@ class User extends Authenticatable
     // Mutator para validar y encriptar la contraseña al asignarla
     public function setPasswordAttribute($value)
     {
-        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/', $value)) {
-            throw new \InvalidArgumentException('La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.');
-        }
-        $this->attributes['password'] = bcrypt($value); // Laravel la encripta automáticamente
+        $this->attributes['password'] = bcrypt($value);
     }
 }

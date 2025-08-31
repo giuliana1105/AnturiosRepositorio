@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class Empleado extends Model
 {
@@ -48,4 +49,34 @@ class Empleado extends Model
         return $cargos[$this->codigocargo] ?? 'Desconocido';
     }
 
+    protected static function booted()
+    {
+        static::created(function ($empleado) {
+            // Solo crear si no existe usuario con ese email
+            if (!User::where('email', $empleado->email)->exists()) {
+                User::create([
+                    'name' => $empleado->nombreemp . ' ' . $empleado->apellidoemp,
+                    'email' => $empleado->email,
+                    'username' => $empleado->email, // O puedes usar otro campo si tienes username
+                    'password' => $empleado->nro_identificacion, // <-- SIN bcrypt
+                ]);
+            }
+        });
+
+        static::updated(function ($empleado) {
+            $user = User::where('email', $empleado->getOriginal('email'))->first();
+            if ($user) {
+                $user->name = $empleado->nombreemp . ' ' . $empleado->apellidoemp;
+                $user->email = $empleado->email;
+                $user->save();
+            }
+        });
+
+        static::deleted(function ($empleado) {
+            $user = User::where('email', $empleado->email)->first();
+            if ($user) {
+                $user->delete();
+            }
+        });
+    }
 }

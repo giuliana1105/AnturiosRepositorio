@@ -55,16 +55,16 @@ class EmpleadoController extends Controller
         ]);
 
         try {
-            DB::insert("INSERT INTO empleados (nro_identificacion, nombreemp, apellidoemp, email, nro_telefono, direccionemp, idbodega, tipo_identificacion, codigocargo, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())", [
-                $request->nro_identificacion,
-                $request->nombreemp,
-                $request->apellidoemp,
-                $validatedData['email'],
-                $request->nro_telefono,
-                $request->direccionemp,
-                $validatedData['idbodega'],
-                $request->tipo_identificacion,
-                $validatedData['codigocargo']
+            Empleado::create([
+                'nro_identificacion' => $request->nro_identificacion,
+                'nombreemp' => $request->nombreemp,
+                'apellidoemp' => $request->apellidoemp,
+                'email' => $validatedData['email'],
+                'nro_telefono' => $request->nro_telefono,
+                'direccionemp' => $request->direccionemp,
+                'idbodega' => $validatedData['idbodega'],
+                'tipo_identificacion' => $request->tipo_identificacion,
+                'codigocargo' => $validatedData['codigocargo'],
             ]);
             return redirect()->route('empleados.index')->with('success', 'Empleado creado con éxito.');
         } catch (\Illuminate\Database\QueryException $e) {

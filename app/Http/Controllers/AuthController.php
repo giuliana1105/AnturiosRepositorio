@@ -10,19 +10,19 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            //'username' => 'required|regex:/^[a-zA-Z]{4,15}$/',
             'email' => 'required|email',
-            'password' => 'required|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
+            'password' => 'required',
         ]);
         $credentials = $request->only('email', 'password');
 
+        // Permitir login con email y nro_identificacion como password
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             return redirect()->route('home');
         }
 
         return back()->withErrors([
-            'email' => 'El nombre de usuario o la contraseña no son correctos.',
+            'email' => 'El correo o la contraseña no son correctos.',
         ]);
     }
 

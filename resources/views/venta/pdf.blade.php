@@ -234,7 +234,9 @@
     @endfor
 
     <div style="margin-top: 30px; border-top:1px solid #ccc; padding-top:10px;">
-        <span style="font-weight:bold; text-decoration: underline;">Total entregar en el rango:</span><br><br>
+        <span style="font-weight:bold; text-decoration: underline;">
+            Reporte {{ \Carbon\Carbon::parse(request('fecha_inicio'))->format('d-m-Y') }} / {{ \Carbon\Carbon::parse(request('fecha_fin'))->format('d-m-Y') }}
+        </span><br><br>
         EFECTIVO: ${{ number_format($totalEfectivo, 2) }}<br>
         TRANSFERENCIA: ${{ number_format($totalTransferencia, 2) }}<br>
         CHEQUE: ${{ number_format($totalCheque, 2) }}

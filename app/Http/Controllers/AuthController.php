@@ -5,6 +5,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
+
+
 class AuthController extends Controller
 {
     public function login(Request $request)
@@ -18,6 +20,9 @@ class AuthController extends Controller
         // Permitir login con email y nro_identificacion como password
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+            if (auth()->user()->must_change_password) {
+                return redirect()->route('password.change.form');
+            }
             return redirect()->route('home');
         }
 
@@ -33,5 +38,24 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/login');
+    }
+
+    public function showChangePasswordForm()
+    {
+        return view('auth.change-password');
+    }
+
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = auth()->user();
+        $user->password = $request->password;
+        $user->must_change_password = false;
+        $user->save();
+
+        return redirect()->route('home')->with('success', 'Contraseña cambiada correctamente.');
     }
 }

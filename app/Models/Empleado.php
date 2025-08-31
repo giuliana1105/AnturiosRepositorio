@@ -57,8 +57,9 @@ class Empleado extends Model
                 User::create([
                     'name' => $empleado->nombreemp . ' ' . $empleado->apellidoemp,
                     'email' => $empleado->email,
-                    'username' => $empleado->email, // O puedes usar otro campo si tienes username
-                    'password' => $empleado->nro_identificacion, // <-- SIN bcrypt
+                    'username' => $empleado->email,
+                    'password' => $empleado->nro_identificacion,
+                    'must_change_password' => true, // <--- importante
                 ]);
             }
         });

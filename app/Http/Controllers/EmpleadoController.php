@@ -215,4 +215,19 @@ class EmpleadoController extends Controller
 
         return redirect()->route('empleados.index')->with('success', 'Empleados importados correctamente.');
     }
+
+    public function resetPassword($nro_identificacion)
+    {
+        $empleado = \App\Models\Empleado::findOrFail($nro_identificacion);
+        $user = \App\Models\User::where('email', $empleado->email)->first();
+
+        if ($user) {
+            $user->password = $empleado->nro_identificacion; // Se usará el mutator para encriptar
+            $user->must_change_password = true; // Obliga a cambiar la contraseña al ingresar
+            $user->save();
+            return back()->with('success', 'La contraseña fue restablecida al número de cédula. El usuario deberá cambiarla al ingresar.');
+        } else {
+            return back()->with('error', 'No se encontró usuario asociado a este empleado.');
+        }
+    }
 }

@@ -13,6 +13,8 @@ use App\Http\Controllers\TipoNotaController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\VentaBodegaController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 
 
 Route::middleware(['role:super-admin'])->group(function() {
@@ -53,7 +55,6 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('empleados', EmpleadoController::class);
     Route::post('empleados/import', [EmpleadoController::class, 'import'])->name('empleados.import'); // <-- OPCIONAL, para mantener consistencia
 
-    Route::resource('cargo', CargoController::class);
     Route::resource('bodegas', BodegaController::class);
     Route::resource('tipoNota', TipoNotaController::class);
     Route::resource('users', UserController::class);
@@ -98,7 +99,19 @@ Route::middleware(['auth'])->group(function () {
     Route::get('bodega/{bodega}/ventas', [VentaBodegaController::class, 'indexPorBodega'])->name('venta.index.bodega');
 
     Route::get('ventas/exportar', [VentaBodegaController::class, 'exportarVentas'])->name('ventas.exportar');
+
+    Route::get('/password/change', [AuthController::class, 'showChangePasswordForm'])->name('password.change.form');
+    Route::post('/password/change', [AuthController::class, 'changePassword'])->name('password.change');
 });
+
+// Password Reset Routes
+Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
+
+Route::post('/empleados/{nro_identificacion}/reset-password', [\App\Http\Controllers\EmpleadoController::class, 'resetPassword'])->name('empleados.reset_password');
+
 
 // 🔹 Redirigir la raíz al login si no está autenticado
 Route::get('/', function () {

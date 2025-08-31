@@ -34,7 +34,6 @@
         <div class="mb-3 text-right">
             <a href="{{ route('empleados.create') }}" class="btn btn-primary" style="background-color: #88022D">Añadir
                 Empleado</a>
-            <!-- <a href="{{ route('cargo.index') }}" class="btn btn-primary" style="background-color: #88022D">Añadir Cargo</a> -->
         </div>
 
         <!-- Tabla de empleados -->
@@ -83,6 +82,13 @@
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-danger"
                                     onclick="return confirm('¿Está seguro de eliminar este empleado?')">Eliminar</button>
+                        </form>
+                        <form action="{{ route('empleados.reset_password', $empleado->nro_identificacion) }}" method="POST" class="d-inline-block">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-warning"
+                                onclick="return confirm('¿Está seguro de restablecer la contraseña de este empleado?')">
+                                Restablecer Contraseña
+                            </button>
                         </form>
                     </td>
                 </tr>

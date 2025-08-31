@@ -18,11 +18,10 @@ return new class extends Migration
             $table->string('direccionemp', 100);
             $table->unsignedBigInteger('idbodega');
             $table->enum('tipo_identificacion', ['Cedula', 'RUC', 'Pasaporte']);
-            $table->unsignedBigInteger('codigocargo');
+            $table->unsignedTinyInteger('codigocargo'); // Ya no es foránea
             $table->timestamps();
 
             $table->foreign('idbodega')->references('idbodega')->on('bodegas');
-            $table->foreign('codigocargo')->references('codigocargo')->on('cargos');
         });
 
         DB::unprepared("CREATE OR REPLACE FUNCTION validar_empleado() RETURNS TRIGGER AS $$

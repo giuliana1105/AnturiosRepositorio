@@ -5,26 +5,31 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Empleado;
 use App\Models\Bodega;
-use App\Models\Cargo;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Asegúrate de importar esto
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class EmpleadoController extends Controller
 {
-     //Aqu[i es donde estoy dando permisos
-    
-     use AuthorizesRequests; 
-     public function __construct()
- {
-     
-     $this->authorizeResource(Empleado::class, 'empleado'); // ✅ Debe coincidir con la ruta
- }
+    use AuthorizesRequests; 
+    public function __construct()
+    {
+        $this->authorizeResource(Empleado::class, 'empleado');
+    }
+
+    // Cargos fijos
+    private $cargos = [
+        1 => 'Administrador',
+        2 => 'Vendedor camión',
+        3 => 'Vendedor',
+        4 => 'Jefe de bodega',
+        5 => 'Gerente',
+    ];
 
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $empleados = Empleado::with('bodega', 'cargo')
+        $empleados = Empleado::with('bodega')
             ->when($search, function ($query, $search) {
                 return $query->where('nombreemp', 'like', "%{$search}%")
                     ->orWhere('nro_identificacion', 'like', "%{$search}%");
@@ -37,7 +42,7 @@ class EmpleadoController extends Controller
     public function create()
     {
         $bodegas = Bodega::all();
-        $cargos = Cargo::all();
+        $cargos = $this->cargos;
         return view('empleados.create', compact('bodegas', 'cargos'));
     }
 
@@ -46,7 +51,7 @@ class EmpleadoController extends Controller
         $validatedData = $request->validate([
             'email' => 'required',
             'idbodega' => 'required',
-            'codigocargo' => 'required|exists:cargos,codigocargo',
+            'codigocargo' => 'required|in:1,2,3,4,5',
         ]);
 
         try {
@@ -63,44 +68,37 @@ class EmpleadoController extends Controller
             ]);
             return redirect()->route('empleados.index')->with('success', 'Empleado creado con éxito.');
         } catch (\Illuminate\Database\QueryException $e) {
-            // Extraer solo el mensaje exacto del trigger en PostgreSQL
             $errorMessage = $e->getMessage();
-
             if (preg_match("/ERROR:  (.*?)\\n/", $errorMessage, $matches)) {
                 $errorText = trim($matches[1]);
             } else {
                 $errorText = 'Error al crear el empleado.';
             }
-
             return redirect()->back()->withInput()->with('error', $errorText);
         }
     }
-
 
     public function edit($nro_identificacion)
     {
         $empleado = Empleado::findOrFail($nro_identificacion);
         $bodegas = Bodega::all();
-        $cargos = Cargo::all();
-
+        $cargos = $this->cargos;
         return view('empleados.edit', compact('empleado', 'bodegas', 'cargos'));
     }
 
     public function update(Request $request, $nro_identificacion)
     {
-        // Validar los datos
         $validatedData = $request->validate([
             'email' => 'required',
             'nro_telefono' => 'required',
             'direccionemp' => 'required',
             'tipo_identificacion' => 'required|in:Cedula,RUC,Pasaporte',
             'nro_identificacion' => 'required',
-            'codigocargo' => 'required|exists:cargos,codigocargo',
+            'codigocargo' => 'required|in:1,2,3,4,5',
             'idbodega' => 'required|exists:bodegas,idbodega',
         ]);
 
         try {
-            // Buscar el empleado y actualizar sus datos
             $empleado = Empleado::findOrFail($nro_identificacion);
             $empleado->update([
                 'nro_identificacion' => $request->nro_identificacion, 
@@ -113,25 +111,17 @@ class EmpleadoController extends Controller
                 'codigocargo' => $validatedData['codigocargo'],
                 'idbodega' => $validatedData['idbodega'],
             ]);
-
             return redirect()->route('empleados.index')->with('success', 'Empleado actualizado exitosamente.');
         } catch (\Illuminate\Database\QueryException $e) {
-            // Capturar el mensaje de error del trigger
             $errorMessage = $e->getMessage();
-
-            // Extraer solo el mensaje específico del error en PostgreSQL
             if (preg_match("/ERROR:  (.*?)\\n/", $errorMessage, $matches)) {
-                $errorText = trim($matches[1]);  // Mensaje exacto del trigger
+                $errorText = trim($matches[1]);
             } else {
                 $errorText = 'Error al actualizar el empleado.';
             }
-
             return redirect()->back()->withInput()->with('error', $errorText);
         }
     }
-
-
-
 
     public function destroy($nro_identificacion)
     {
@@ -148,27 +138,20 @@ class EmpleadoController extends Controller
         $file = $request->file('excel_file');
         $rows = Excel::toArray([], $file)[0];
 
-        // Mapear bodegas y cargos por nombre (insensible a mayúsculas/minúsculas)
         $bodegas = Bodega::all()->keyBy(function($item) {
             return mb_strtolower(trim($item->nombrebodega));
         });
-        $cargos = Cargo::all()->keyBy(function($item) {
-            return mb_strtolower(trim($item->nombrecargo));
-        });
 
-        // Tipos de identificación válidos (ajusta según tu base de datos)
-        $tiposIdentificacionValidos = [
-            'CEDULA' => 'Cedula',
-            'CEDULA' => 'Cedula',
-            'RUC' => 'RUC',
-            'PASAPORTE' => 'Pasaporte'
-        ];
+        // Cargos fijos por nombre (insensible a mayúsculas/minúsculas)
+        $cargosPorNombre = [];
+        foreach ($this->cargos as $codigo => $nombre) {
+            $cargosPorNombre[mb_strtolower($nombre)] = $codigo;
+        }
 
         $errores = [];
         foreach ($rows as $index => $row) {
             if ($index === 0) continue; // Saltar encabezado
 
-            // Obtener la bodega por nombre (insensible a mayúsculas/minúsculas)
             $nombreBodegaExcel = mb_strtolower(trim($row[6] ?? ''));
             $bodega = Bodega::whereRaw('LOWER(nombrebodega) = ?', [$nombreBodegaExcel])->first();
             if (!$bodega) {
@@ -176,15 +159,13 @@ class EmpleadoController extends Controller
                 continue;
             }
 
-            // Obtener el cargo por nombre (insensible a mayúsculas/minúsculas)
             $nombreCargoExcel = mb_strtolower(trim($row[8] ?? ''));
-            $cargo = Cargo::whereRaw('LOWER(nombrecargo) = ?', [$nombreCargoExcel])->first();
-            if (!$cargo) {
-                $errores[] = "Fila " . ($index + 1) . ": El cargo '{$row[8]}' no existe.";
+            $codigocargo = $cargosPorNombre[$nombreCargoExcel] ?? null;
+            if (!$codigocargo) {
+                $errores[] = "Fila " . ($index + 1) . ": El cargo '{$row[8]}' no es válido.";
                 continue;
             }
 
-            // Validar tipo de identificación
             $tipoIdentificacionExcel = mb_strtoupper(trim($row[7] ?? ''));
             $tipoIdentificacionExcel = str_replace(['Á','É','Í','Ó','Ú','á','é','í','ó','ú'], ['A','E','I','O','U','A','E','I','O','U'], $tipoIdentificacionExcel);
 
@@ -199,7 +180,6 @@ class EmpleadoController extends Controller
                 continue;
             }
 
-            // Insertar usando los IDs correctos
             $data = [
                 'nro_identificacion' => $row[0] ?? null,
                 'nombreemp' => $row[1] ?? null,
@@ -209,7 +189,7 @@ class EmpleadoController extends Controller
                 'direccionemp' => $row[5] ?? null,
                 'idbodega' => $bodega->idbodega,
                 'tipo_identificacion' => $tipoIdentificacionFinal,
-                'codigocargo' => $cargo->codigocargo,
+                'codigocargo' => $codigocargo,
             ];
 
             try {

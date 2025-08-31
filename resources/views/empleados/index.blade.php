@@ -34,7 +34,7 @@
         <div class="mb-3 text-right">
             <a href="{{ route('empleados.create') }}" class="btn btn-primary" style="background-color: #88022D">Añadir
                 Empleado</a>
-            <a href="{{ route('cargo.index') }}" class="btn btn-primary" style="background-color: #88022D">Añadir Cargo</a>
+            <!-- <a href="{{ route('cargo.index') }}" class="btn btn-primary" style="background-color: #88022D">Añadir Cargo</a> -->
         </div>
 
         <!-- Tabla de empleados -->
@@ -60,7 +60,7 @@
                     <td>{{ $empleado->apellidoemp }}</td>
                     <td>{{ $empleado->tipo_identificacion }}</td>
                     <td>{{ $empleado->bodega->nombrebodega ?? 'N/A' }}</td>
-                    <td>{{ $empleado->cargo->nombrecargo ?? 'N/A' }}</td>
+                    <td>{{ $empleado->cargoNombre() }}</td>
 
                     <!-- Columna de Email con ícono para copiar -->
                     <td>

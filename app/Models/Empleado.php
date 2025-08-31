@@ -31,9 +31,21 @@ class Empleado extends Model
         return $this->belongsTo(Bodega::class, 'idbodega', 'idbodega');
     }
 
-    public function cargo()
+    // public function cargo()
+    // {
+    //     return $this->belongsTo(Cargo::class, 'codigocargo', 'codigocargo'); // Cambio en la relación
+    // }
+
+    public function cargoNombre()
     {
-        return $this->belongsTo(Cargo::class, 'codigocargo', 'codigocargo'); // Cambio en la relación
+        $cargos = [
+            1 => 'Administrador',
+            2 => 'Vendedor camión',
+            3 => 'Vendedor',
+            4 => 'Jefe de bodega',
+            5 => 'Gerente',
+        ];
+        return $cargos[$this->codigocargo] ?? 'Desconocido';
     }
 
 }

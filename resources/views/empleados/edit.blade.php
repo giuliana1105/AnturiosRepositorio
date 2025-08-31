@@ -83,12 +83,10 @@
 
             <div class="col-md-6">
                 <label for="codigocargo" class="form-label">Cargo</label>
-                <select name="codigocargo" id="codigocargo" class="form-select" required>
-                    <option value="">Seleccione una opción</option>
-                    @foreach ($cargos as $cargo)
-                        <option value="{{ $cargo->codigocargo }}"
-                            {{ old('codigocargo', $empleado->codigocargo) == $cargo->codigocargo ? 'selected' : '' }}>
-                            {{ $cargo->nombrecargo }}
+                <select name="codigocargo" class="form-control" required>
+                    @foreach($cargos as $codigo => $nombre)
+                        <option value="{{ $codigo }}" {{ old('codigocargo', $empleado->codigocargo ?? '') == $codigo ? 'selected' : '' }}>
+                            {{ $nombre }}
                         </option>
                     @endforeach
                 </select>

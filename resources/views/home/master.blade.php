@@ -1,22 +1,251 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h3 class="mb-4">Bodega Master</h3>
-    <div class="mb-4">
-        
-        <a href="{{ route('productos.index') }}" class="btn btn-primary">Productos</a>
-        @php
-            $cargo = auth()->user()->cargoNombre();
-        @endphp
-        @if($cargo !== 'Jefe de bodega')
-            <a href="{{ route('empleados.index') }}" class="btn btn-primary">Empleados</a>
-            <a href="{{ route('bodegas.index') }}" class="btn btn-primary">Bodegas</a>
-        @endif
-        <a href="{{ route('tipoNota.index') }}" class="btn btn-primary">Tipo Nota</a>
-        <a href="{{ route('transaccionProducto.index') }}" class="btn btn-primary">Transacción Producto</a>
-        
+<div class="container-fluid p-0 m-0">
+    <div class="row g-0 min-vh-100">
+        <!-- Sidebar Navigation -->
+        <div class="col-md-2 bg-light py-3 px-3">
+            <div class="text-center mb-4">
+                <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="fas fa-user text-white fa-lg"></i>
+                </div>
+                <div class="mt-2">
+                    <div class="fw-bold">{{ auth()->user()->name }}</div>
+                    <div class="text-muted small">{{ auth()->user()->email }}</div>
+                    <div class="text-secondary small">{{ auth()->user()->cargoNombre() }}</div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <small class="text-uppercase text-muted fw-bold">NAVEGACIÓN PRINCIPAL</small>
+            </div>
+
+            <nav class="nav flex-column">
+                <a class="nav-link active text-info fw-bold mb-2" href="#">
+                    <i class="fas fa-th-large me-2"></i> Dashboard
+                </a>
+                <a class="nav-link text-dark mb-2" href="{{ route('productos.index') }}">
+                    <i class="fas fa-cube me-2"></i> Productos
+                </a>
+                @php $cargo = auth()->user()->cargoNombre(); @endphp
+                @if($cargo !== 'Jefe de bodega')
+                <a class="nav-link text-dark mb-2" href="{{ route('empleados.index') }}">
+                    <i class="fas fa-users me-2"></i> Empleados
+                </a>
+                @endif
+                <a class="nav-link text-dark mb-2" href="#">
+                    <i class="fas fa-box me-2"></i> Gestión de Productos
+                    <i class="fas fa-plus-circle ms-auto"></i>
+                </a>
+                <a class="nav-link text-dark mb-2" href="#">
+                    <i class="fas fa-clipboard-list me-2"></i> Gestión de Existencias
+                    <i class="fas fa-plus-circle ms-auto"></i>
+                </a>
+                <a class="nav-link text-dark mb-2" href="#">
+                    <i class="fas fa-users-cog me-2"></i> Gestión de usuarios
+                    <i class="fas fa-plus-circle ms-auto"></i>
+                </a>
+                @if($cargo !== 'Jefe de bodega')
+                <a class="nav-link text-dark mb-2" href="{{ route('bodegas.index') }}">
+                    <i class="fas fa-warehouse me-2"></i> Bodegas
+                </a>
+                @endif
+                <a class="nav-link text-dark mb-2" href="#">
+                    <i class="fas fa-chart-bar me-2"></i> Reportes
+                </a>
+                <a class="nav-link text-dark mb-2" href="#">
+                    <i class="fas fa-cog me-2"></i> Configuración
+                    <i class="fas fa-plus-circle ms-auto"></i>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-10 py-3 px-4 bg-white">
+            <h3 class="mb-4 text-dark">Dashboard</h3>
+            
+            <!-- Dashboard Cards Grid -->
+            <div class="row g-3">
+                @if($cargo !== 'Jefe de bodega')
+                <div class="col-md-3 col-sm-6">
+                    <a href="{{ route('empleados.index') }}" class="text-decoration-none">
+                        <div class="card text-white h-100" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); border: none; border-radius: 12px;">
+                            <div class="card-body text-center py-4">
+                                <i class="fas fa-users fa-2x mb-3"></i>
+                                <div class="small">Empleados</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                @endif
+
+                <div class="col-md-3 col-sm-6">
+                    <a href="{{ route('productos.index') }}" class="text-decoration-none">
+                        <div class="card text-white h-100" style="background: linear-gradient(135deg, #7b1fa2 0%, #6a1b9a 100%); border: none; border-radius: 12px;">
+                            <div class="card-body text-center py-4">
+                                <i class="fas fa-cubes fa-2x mb-3"></i>
+                                <div class="small">Productos</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="col-md-3 col-sm-6">
+                    <a href="{{ route('tipoNota.index') }}" class="text-decoration-none">
+                        <div class="card text-white h-100" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); border: none; border-radius: 12px;">
+                            <div class="card-body text-center py-4">
+                                <i class="fas fa-file-alt fa-2x mb-3"></i>
+                                <div class="small">Notas de Pedido</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-md-3 col-sm-6">
+                    <a href="{{ route('transaccionProducto.index') }}" class="text-decoration-none">
+                        <div class="card text-white h-100" style="background: linear-gradient(135deg, #ff5722 0%, #d84315 100%); border: none; border-radius: 12px;">
+                            <div class="card-body text-center py-4">
+                                <i class="fas fa-exchange-alt fa-2x mb-3"></i>
+                                <div class="small">Transacción Producto</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                @if($cargo !== 'Jefe de bodega')
+                <div class="col-md-3 col-sm-6">
+                    <a href="{{ route('bodegas.index') }}" class="text-decoration-none">
+                        <div class="card text-white h-100" style="background: linear-gradient(135deg, #795548 0%, #5d4037 100%); border: none; border-radius: 12px;">
+                            <div class="card-body text-center py-4">
+                                <i class="fas fa-warehouse fa-2x mb-3"></i>
+                                <div class="small">Bodegas</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                @endif
+            </div>
+        </div>
     </div>
-    <!-- Puedes mostrar resúmenes o tablas aquí si lo deseas -->
 </div>
+
+<style>
+/* Reset de márgenes y padding globales */
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.container-fluid {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+.card {
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.nav-link {
+    padding: 0.5rem 0;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    padding-left: 0.5rem;
+}
+
+.nav-link.active {
+    background-color: rgba(23, 162, 184, 0.1);
+    border-left: 3px solid #17a2b8;
+    padding-left: 0.5rem;
+}
+
+.min-vh-100 {
+    min-height: 100vh;
+}
+
+.card-body {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    pointer-events: none;
+}
+
+.h3 {
+    font-size: 2.5rem;
+}
+
+/* Eliminación de gutters y espacios */
+.row.g-0 {
+    margin: 0;
+}
+
+.row.g-3 {
+    margin: 0;
+}
+
+.col-md-2, .col-md-10 {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Asegurar que el sidebar llegue hasta el borde */
+.col-md-2.bg-light {
+    margin: 0;
+    border-radius: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .col-md-2 {
+        display: none;
+    }
+    
+    .col-md-10 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        padding: 15px !important;
+    }
+    
+    .h3 {
+        font-size: 2rem;
+    }
+    
+    .container-fluid {
+        padding: 0 !important;
+    }
+}
+
+/* Asegurar altura completa */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+#app {
+    min-height: 100vh;
+}
+</style>
 @endsection

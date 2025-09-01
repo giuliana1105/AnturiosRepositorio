@@ -15,7 +15,9 @@
 
     <style>
         body {
-            padding-top: 70px;
+            padding-top: 0; /* Eliminado el padding-top que causaba el espacio */
+            margin: 0;
+            padding: 0;
         }
 
         /* Cambia el color de la letra del botón Cerrar Sesión */
@@ -26,6 +28,28 @@
 
         .logout-btn:hover {
             color: #ff4500 !important; /* Cambia el color al pasar el mouse */
+        }
+
+        /* Navbar sin posición fija para que el contenido quede pegado */
+        .navbar {
+            position: relative;
+            margin: 0;
+            border-radius: 0;
+            padding: 0;
+        }
+
+        /* Contenedor principal sin márgenes */
+        .main-container {
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Asegurar que no haya contenedores que agreguen márgenes */
+        .container {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
         }
 
         /* Ajustes para dispositivos móviles */
@@ -53,6 +77,10 @@
             .logout-btn {
                 padding: 0.5rem 1rem; /* Espaciado para el botón de cerrar sesión */
             }
+
+            .main-container {
+                margin-top: 0; /* Sin margen en móvil */
+            }
         }
 
         /* Estilo para que los botones de la navbar se alineen en una columna en pantallas pequeñas */
@@ -69,74 +97,35 @@
                 padding-left: 0;
                 padding-right: 0;
             }
+
+            .main-container {
+                margin-top: 50px; /* Aún menor margen en pantallas muy pequeñas */
+            }
+        }
+
+        /* Asegurar altura completa sin espacios */
+        html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
         }
     </style>
 </head>
 <body>
 <!-- Navbar -->
 @if (Auth::check())
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <nav class="navbar navbar-expand-lg" style="background-color: #0097a7;">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Gestión de Inventario</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-
-                    @can('ver Producto')
-                        <!-- Productos -->
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('productos.index') }}">Productos</a>
-                        </li>
-                    @endcan
-
-                    @can('ver empleado')
-                        <!-- Empleados -->
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('empleados.index') }}">Empleados</a>
-                        </li>
-                    @endcan
-
-                    @can('ver bodega')
-                        <!-- Bodegas -->
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('bodegas.index') }}">Bodegas</a>
-                        </li>
-                    @endcan
-
-                    @can('ver TransaccionProducto')
-                        <!-- Transacción Producto -->
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('transaccionProducto.index') }}" id="navbarDropdownTransaccion" role="button"  >
-                                Transacción Producto
-                            </a>                           
-                        </li>
-                    @endcan
-
-                    
-                    <!-- Tipo Nota -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('tipoNota.index') }}">Tipo Nota</a>
-                    </li>
-
-                    <!-- Cerrar Sesión -->
-                    <li class="nav-item">
-                        <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                            @csrf
-                            <button type="submit" class="btn btn-link logout-btn">
-                                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-            </div>
+            <span class="navbar-brand text-white fw-bold" style="font-size: 1.7rem;">
+                Inventario
+                <i class="fas fa-shopping-cart ms-2"></i>
+            </span>
         </div>
     </nav>
 @endif
 
 <!-- Content -->
-<div class="container">
+<div class="main-container">
     @yield('content')
 </div>
 

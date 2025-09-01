@@ -87,31 +87,48 @@ class TipoNotaController extends Controller
 //     return view('tipoNota.index', compact('tipoNotas'));
 // }
 
-public function index()
+public function index(Request $request)
 {
-    $tipoNotas = TipoNota::with([
+    $bodegas = Bodega::all();
+
+    $query = TipoNota::with([
         'responsableEmpleado',
         'bodega',
         'transaccion',
         'detalles' => function($query) {
             $query->with('producto');
         }
-    ])
-    ->orderBy('created_at', 'desc')  // Ordenar por created_at primero (más preciso)
-    ->orderBy('codigo', 'desc')      // Como respaldo, ordenar por código (secuencial)
-    ->paginate(10);
+    ]);
 
-    // Verificar que los productos se carguen correctamente
+    // Filtro por bodega
+    if ($request->filled('bodega')) {
+        $query->where('idbodega', $request->bodega);
+    }
+
+    // Filtro por tipo
+    if ($request->filled('tipo')) {
+        $query->where('tiponota', $request->tipo);
+    }
+
+    $tipoNotas = $query
+        ->orderBy('created_at', 'desc')
+        ->orderBy('codigo', 'desc')
+        ->paginate(10)
+        ->appends($request->all());
+
+    // Carga productos en detalles
     $tipoNotas->each(function($nota) {
         $nota->detalles->each(function($detalle) {
-            // Si no se cargó el producto por la relación, lo buscamos manualmente
             if (!$detalle->producto) {
                 $detalle->producto = \App\Models\Producto::where('codigo', $detalle->codigoproducto)->first();
             }
         });
     });
 
-    return view('tipoNota.index', compact('tipoNotas'));
+    return view('tipoNota.index', [
+        'tipoNotas' => $tipoNotas,
+        'bodegas' => $bodegas,
+    ]);
 }
 
 
@@ -1075,4 +1092,4 @@ public function productosMaster()
 }
 
 
-} 
+}

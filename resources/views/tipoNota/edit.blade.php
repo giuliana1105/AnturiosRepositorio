@@ -1,105 +1,275 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h3 class="text-center">Editar Nota</h3>
-
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    <form action="{{ route('tipoNota.update', $tipoNota->codigo) }}" method="POST">
-        @csrf
-        @method('PUT')
-
-        <div class="mb-3">
-            <label for="codigo" class="form-label">Código de Nota</label>
-            <input type="text" name="codigo" class="form-control" value="{{ $tipoNota->codigo }}" readonly>
-        </div>
-
-        <div class="mb-3">
-            <label for="tiponota" class="form-label">Tipo de Nota</label>
-            <select id="tiponota-select" name="tiponota" class="form-control" required>
-                <option value="ENVIO" {{ $tipoNota->tiponota == 'ENVIO' ? 'selected' : '' }}>Envío</option>
-                <option value="DEVOLUCION" {{ $tipoNota->tiponota == 'DEVOLUCION' ? 'selected' : '' }}>Devolución</option>
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label for="idbodega" class="form-label">Bodega</label>
-            <select id="bodega-select" name="idbodega" class="form-control" required>
-                @foreach ($bodegas as $bodega)
-                    <option value="{{ $bodega->idbodega }}" {{ $tipoNota->idbodega == $bodega->idbodega ? 'selected' : '' }}>
-                        {{ $bodega->nombrebodega }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label for="nro_identificacion" class="form-label">Solicitante</label>
-            <select name="nro_identificacion" class="form-control" required>
-                @foreach ($empleados as $empleado)
-                    <option value="{{ $empleado->nro_identificacion }}" {{ $tipoNota->nro_identificacion == $empleado->nro_identificacion ? 'selected' : '' }}>
-                        {{ $empleado->nombreemp }} {{ $empleado->apellidoemp }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <div id="productos-container">
-            @foreach ($tipoNota->detalles as $detalle)
-                <div class="row row-producto mb-3">
-                    <input type="hidden" name="detalle_ids[]" value="{{ $detalle->id }}">
-                    <div class="col-md-4">
-                        <label for="codigoproducto[]" class="form-label">Producto</label>
-                        <select name="codigoproducto[]" class="form-control producto-select" required>
-                            <option value="">Seleccione un producto</option>
-                            @foreach ($productos as $producto)
-                                <option value="{{ $producto->codigo }}"
-                                    data-stock="{{ $producto->cantidad }}"
-                                    data-empaque="{{ $producto->tipoempaque }}"
-                                    {{ $detalle->codigoproducto == $producto->codigo ? 'selected' : '' }}>
-                                    {{ $producto->codigo }} - {{ $producto->nombre }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="cantidad[]" class="form-label">Cantidad</label>
-                        <input type="number" name="cantidad[]" class="form-control cantidad-input"
-                            value="{{ $detalle->cantidad }}"
-                            min="1"
-                            max="{{ optional($productos->firstWhere('codigo', $detalle->codigoproducto))->cantidad }}"
-                            required>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="empaque[]" class="form-label">Tipo de Empaque</label>
-                        <input type="text" name="empaque[]" class="form-control empaque-input"
-                            value="{{ optional($productos->firstWhere('codigo', $detalle->codigoproducto))->tipoempaque }}"
-                            readonly>
-                    </div>
-                    <div class="col-md-1 d-flex align-items-end">
-                        <button type="button" class="btn btn-danger btn-remove-producto">x</button>
-                    </div>
+<div class="container-fluid p-0 m-0">
+    <div class="row g-0 min-vh-100">
+        <!-- Sidebar Navigation -->
+        <div class="col-md-2 bg-light py-3 px-3">
+            <div class="text-center mb-4">
+                <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="fas fa-user text-white fa-lg"></i>
                 </div>
-            @endforeach
+                <div class="mt-2">
+                    <div class="fw-bold">{{ auth()->user()->name }}</div>
+                    <div class="text-muted small">{{ auth()->user()->email }}</div>
+                    <div class="text-secondary small">{{ auth()->user()->cargoNombre() }}</div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <small class="text-uppercase text-muted fw-bold">NAVEGACIÓN PRINCIPAL</small>
+            </div>
+            <nav class="nav flex-column">
+                <a class="nav-link text-dark mb-2" href="{{ route('tipoNota.index') }}">
+                    <i class="fas fa-file-alt me-2"></i> Notas de Pedido
+                </a>
+                <a class="nav-link text-dark mb-2" href="{{ route('productos.index') }}">
+                    <i class="fas fa-cube me-2"></i> Productos
+                </a>
+                <a class="nav-link text-dark mb-2" href="{{ route('transaccionProducto.index') }}">
+                    <i class="fas fa-exchange-alt me-2"></i> Transacción Producto
+                </a>
+                <!-- Agrega más enlaces según tu menú -->
+            </nav>
         </div>
-        <button type="button" class="btn btn-success btn-add-producto mb-3">+</button>
 
-        <button type="submit" class="btn btn-primary">Actualizar Nota</button>
-        <a href="{{ route('tipoNota.index') }}" class="btn btn-secondary">Cancelar</a>
-    </form>
+        <!-- Main Content -->
+        <div class="col-md-10 py-3 px-4 bg-white">
+            <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 700px;">
+                <div class="card-header bg-info text-white rounded-top-4 text-center">
+                    <h3 class="mb-0">Editar Nota</h3>
+                </div>
+                <div class="card-body">
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    <form action="{{ route('tipoNota.update', $tipoNota->codigo) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="mb-3">
+                            <label for="codigo" class="form-label fw-bold">Código de Nota</label>
+                            <input type="text" name="codigo" class="form-control" value="{{ $tipoNota->codigo }}" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tiponota" class="form-label fw-bold">Tipo de Nota</label>
+                            <select id="tiponota-select" name="tiponota" class="form-select" required>
+                                <option value="ENVIO" {{ $tipoNota->tiponota == 'ENVIO' ? 'selected' : '' }}>Envío</option>
+                                <option value="DEVOLUCION" {{ $tipoNota->tiponota == 'DEVOLUCION' ? 'selected' : '' }}>Devolución</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="idbodega" class="form-label fw-bold">Bodega</label>
+                            <select id="bodega-select" name="idbodega" class="form-select" required>
+                                @foreach ($bodegas as $bodega)
+                                    <option value="{{ $bodega->idbodega }}" {{ $tipoNota->idbodega == $bodega->idbodega ? 'selected' : '' }}>
+                                        {{ $bodega->nombrebodega }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nro_identificacion" class="form-label fw-bold">Solicitante</label>
+                            <select name="nro_identificacion" class="form-select" required>
+                                @foreach ($empleados as $empleado)
+                                    <option value="{{ $empleado->nro_identificacion }}" {{ $tipoNota->nro_identificacion == $empleado->nro_identificacion ? 'selected' : '' }}>
+                                        {{ $empleado->nombreemp }} {{ $empleado->apellidoemp }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div id="productos-container">
+                            @foreach ($tipoNota->detalles as $detalle)
+                                <div class="row row-producto mb-3 align-items-end">
+                                    <input type="hidden" name="detalle_ids[]" value="{{ $detalle->id }}">
+                                    <div class="col-md-4">
+                                        <label for="codigoproducto[]" class="form-label fw-bold">Producto</label>
+                                        <select name="codigoproducto[]" class="form-select producto-select" required>
+                                            <option value="">Seleccione un producto</option>
+                                            @foreach ($productos as $producto)
+                                                <option value="{{ $producto->codigo }}"
+                                                    data-stock="{{ $producto->cantidad }}"
+                                                    data-empaque="{{ $producto->tipoempaque }}"
+                                                    {{ $detalle->codigoproducto == $producto->codigo ? 'selected' : '' }}>
+                                                    {{ $producto->codigo }} - {{ $producto->nombre }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="cantidad[]" class="form-label fw-bold">Cantidad</label>
+                                        <input type="number" name="cantidad[]" class="form-control cantidad-input"
+                                            value="{{ $detalle->cantidad }}"
+                                            min="1"
+                                            max="{{ optional($productos->firstWhere('codigo', $detalle->codigoproducto))->cantidad }}"
+                                            required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="empaque[]" class="form-label fw-bold">Tipo de Empaque</label>
+                                        <input type="text" name="empaque[]" class="form-control empaque-input"
+                                            value="{{ optional($productos->firstWhere('codigo', $detalle->codigoproducto))->tipoempaque }}"
+                                            readonly>
+                                    </div>
+                                    <div class="col-md-2 d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-danger btn-remove-producto rounded-circle" style="width: 38px; height: 38px;">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="d-grid mb-3">
+                            <button type="button" class="btn btn-outline-success btn-add-producto rounded-pill py-2">
+                                <i class="fas fa-plus"></i> Agregar producto
+                            </button>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-info text-white fw-bold rounded-pill py-2">
+                                <i class="fas fa-save me-2"></i> Actualizar Nota
+                            </button>
+                            <a href="{{ route('tipoNota.index') }}" class="btn btn-secondary rounded-pill py-2">
+                                <i class="fas fa-arrow-left me-2"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+}
+.container-fluid {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+.card {
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0;
+}
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+.nav-link {
+    padding: 0.5rem 0;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+.nav-link:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    padding-left: 0.5rem;
+}
+.nav-link.active {
+    background-color: rgba(23, 162, 184, 0.1);
+    border-left: 3px solid #17a2b8;
+    padding-left: 0.5rem;
+}
+.min-vh-100 {
+    min-height: 100vh;
+}
+.card-body {
+    position: relative;
+    overflow: hidden;
+}
+.card-body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    pointer-events: none;
+}
+.h3 {
+    font-size: 2.5rem;
+}
+.row.g-0 {
+    margin: 0;
+}
+.row.g-3 {
+    margin: 0;
+}
+.col-md-2, .col-md-10 {
+    padding-left: 0;
+    padding-right: 0;
+}
+.col-md-2.bg-light {
+    margin: 0;
+    border-radius: 0;
+}
+.btn-info {
+    background-color: #0097a7;
+    border-color: #0097a7;
+}
+.btn-info:hover, .btn-info:focus {
+    background-color: #00796b;
+    border-color: #00796b;
+}
+.btn-outline-success, .btn-outline-danger {
+    border-width: 2px;
+}
+.btn-outline-success:hover, .btn-outline-success:focus {
+    background-color: #43a047;
+    color: #fff;
+    border-color: #43a047;
+}
+.btn-outline-danger:hover, .btn-outline-danger:focus {
+    background-color: #e53935;
+    color: #fff;
+    border-color: #e53935;
+}
+.rounded-pill {
+    border-radius: 50rem !important;
+}
+@media (max-width: 768px) {
+    .col-md-2 {
+        display: none;
+    }
+    .col-md-10 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        padding: 15px !important;
+    }
+    .h3 {
+        font-size: 2rem;
+    }
+    .container-fluid {
+        padding: 0 !important;
+    }
+}
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+#app {
+    min-height: 100vh;
+}
+</style>
 @endsection
 
 @section('scripts')
+@parent
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const tipoNotaSelect = document.getElementById('tiponota-select');

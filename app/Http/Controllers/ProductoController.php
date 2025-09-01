@@ -26,11 +26,15 @@ class ProductoController extends Controller
     {
         $query = Producto::query();
 
-        if ($request->filled('search')) {
-            $query->where('nombre', 'like', '%' . $request->search . '%');
+        if ($request->filled('search_codigo')) {
+            $query->whereRaw('LOWER(codigo) LIKE ?', ['%' . strtolower($request->search_codigo) . '%']);
         }
 
-        $productos = $query->orderBy('nombre', 'ASC')->paginate(5);
+        if ($request->filled('search_nombre')) {
+            $query->whereRaw('LOWER(nombre) LIKE ?', ['%' . strtolower($request->search_nombre) . '%']);
+        }
+
+        $productos = $query->orderBy('nombre', 'ASC')->paginate(5)->appends($request->all());
 
         return view('producto.index', compact('productos'));
     }

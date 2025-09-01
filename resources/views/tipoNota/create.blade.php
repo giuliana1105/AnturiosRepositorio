@@ -20,6 +20,13 @@
             </div>
         @endif
 
+        @php
+            $cargo = auth()->user()->cargoNombre();
+            $usuario = auth()->user();
+            $empleado = $usuario->empleado ?? null;
+            $bodegaAsignada = $empleado ? $empleado->bodega : null;
+        @endphp
+
         <form action="{{ route('tipoNota.store') }}" method="POST">
             @csrf
 
@@ -34,22 +41,41 @@
 
             <div class="mb-3">
                 <label for="nro_identificacion" class="form-label">Solicitante</label>
-                <select name="nro_identificacion" class="form-control" required>
-                    @foreach ($empleados as $empleado)
-                        <option value="{{ $empleado->nro_identificacion }}">
-                            {{ $empleado->nombreemp }} {{ $empleado->apellidoemp }}
-                        </option>
-                    @endforeach
-                </select>
+                @if(in_array($cargo, ['Vendedor', 'Vendedor camión']))
+                    <input type="text" class="form-control" 
+                        value="{{ $empleado ? $empleado->nombreemp . ' ' . $empleado->apellidoemp : $usuario->name }}" 
+                        readonly>
+                    <input type="hidden" name="nro_identificacion" 
+                        value="{{ $empleado ? $empleado->nro_identificacion : '' }}">
+                @else
+                    <select name="nro_identificacion" class="form-control" required>
+                        @foreach ($empleados as $empleado)
+                            <option value="{{ $empleado->nro_identificacion }}">
+                                {{ $empleado->nombreemp }} {{ $empleado->apellidoemp }}
+                            </option>
+                        @endforeach
+                    </select>
+                @endif
             </div>
 
             <div class="mb-3">
                 <label for="idbodega" class="form-label">Bodega</label>
-                <select name="idbodega" class="form-control" required>
-                    @foreach ($bodegas as $bodega)
-                        <option value="{{ $bodega->idbodega }}">{{ $bodega->nombrebodega }}</option>
-                    @endforeach
-                </select>
+                @if(in_array($cargo, ['Vendedor', 'Vendedor camión']))
+                    <input type="text" class="form-control mb-1"
+                        value="{{ $bodegaAsignada ? $bodegaAsignada->nombrebodega : '' }}"
+                        readonly>
+                    <select name="idbodega" class="form-control d-none" tabindex="-1" aria-hidden="true">
+                        <option value="{{ $bodegaAsignada ? $bodegaAsignada->idbodega : '' }}" selected>
+                            {{ $bodegaAsignada ? $bodegaAsignada->nombrebodega : '' }}
+                        </option>
+                    </select>
+                @else
+                    <select name="idbodega" class="form-control" required>
+                        @foreach ($bodegas as $bodega)
+                            <option value="{{ $bodega->idbodega }}">{{ $bodega->nombrebodega }}</option>
+                        @endforeach
+                    </select>
+                @endif
             </div>
 
             <div id="productos-container">

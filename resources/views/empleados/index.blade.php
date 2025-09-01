@@ -122,3 +122,11 @@
     </script>
 @endsection
 
+@php
+    $cargo = auth()->user()->cargoNombre();
+@endphp
+
+@if(!in_array($cargo, ['Jefe de bodega']))
+    <!-- Botones de editar/eliminar empleados o bodegas -->
+@endif
+

@@ -4,6 +4,7 @@
 @php
     $cargo = auth()->user()->cargoNombre();
 @endphp
+
 <div class="container">
     <h3 class="mb-4">Productos en {{ $bodega->nombrebodega }}</h3>
 
@@ -139,7 +140,9 @@
 
     <div class="mt-4">
         <a href="{{ route('home') }}" class="btn btn-secondary">Volver al inicio</a>
-        <a href="{{ route('tipoNota.create') }}" class="btn btn-primary">Crear Nueva Nota</a>
+        @if(!in_array($cargo, ['Jefe de bodega']))
+            <a href="{{ route('tipoNota.create') }}" class="btn btn-primary">Crear Nueva Nota</a>
+        @endif
         @if(in_array($cargo, ['Administrador', 'Gerente', 'Vendedor camión']))
             <a href="{{ route('venta.create', $bodega->idbodega) }}" class="btn btn-warning">Registrar venta</a>
             <a href="{{ route('venta.index.bodega', $bodega->idbodega) }}" class="btn btn-info">Ver ventas</a>

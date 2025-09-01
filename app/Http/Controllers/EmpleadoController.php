@@ -28,6 +28,11 @@ class EmpleadoController extends Controller
 
     public function index(Request $request)
     {
+        $cargo = auth()->user()->cargoNombre();
+        if ($cargo === 'Jefe de bodega') {
+            abort(403, 'No tienes permiso para acceder a empleados.');
+        }
+
         $search = $request->input('search');
         $empleados = Empleado::with('bodega')
             ->when($search, function ($query, $search) {
@@ -41,6 +46,11 @@ class EmpleadoController extends Controller
 
     public function create()
     {
+        $cargo = auth()->user()->cargoNombre();
+        if ($cargo === 'Jefe de bodega') {
+            abort(403, 'No tienes permiso para crear empleados.');
+        }
+
         $bodegas = Bodega::all();
         $cargos = $this->cargos;
         return view('empleados.create', compact('bodegas', 'cargos'));
@@ -48,6 +58,11 @@ class EmpleadoController extends Controller
 
     public function store(Request $request)
     {
+        $cargo = auth()->user()->cargoNombre();
+        if ($cargo === 'Jefe de bodega') {
+            abort(403, 'No tienes permiso para crear empleados.');
+        }
+
         $validatedData = $request->validate([
             'email' => 'required',
             'idbodega' => 'required',
@@ -80,6 +95,11 @@ class EmpleadoController extends Controller
 
     public function edit($nro_identificacion)
     {
+        $cargo = auth()->user()->cargoNombre();
+        if ($cargo === 'Jefe de bodega') {
+            abort(403, 'No tienes permiso para editar empleados.');
+        }
+
         $empleado = Empleado::findOrFail($nro_identificacion);
         $bodegas = Bodega::all();
         $cargos = $this->cargos;
@@ -88,6 +108,11 @@ class EmpleadoController extends Controller
 
     public function update(Request $request, $nro_identificacion)
     {
+        $cargo = auth()->user()->cargoNombre();
+        if ($cargo === 'Jefe de bodega') {
+            abort(403, 'No tienes permiso para actualizar empleados.');
+        }
+
         $validatedData = $request->validate([
             'email' => 'required',
             'nro_telefono' => 'required',
@@ -125,6 +150,11 @@ class EmpleadoController extends Controller
 
     public function destroy($nro_identificacion)
     {
+        $cargo = auth()->user()->cargoNombre();
+        if ($cargo === 'Jefe de bodega') {
+            abort(403, 'No tienes permiso para eliminar empleados.');
+        }
+
         Empleado::findOrFail($nro_identificacion)->delete();
         return redirect()->route('empleados.index')->with('success', 'Empleado eliminado exitosamente.');
     }

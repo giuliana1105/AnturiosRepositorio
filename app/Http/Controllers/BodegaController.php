@@ -25,6 +25,11 @@ class BodegaController extends Controller
      */
     public function index()
     {
+        $cargo = auth()->user()->cargoNombre();
+        if ($cargo === 'Jefe de bodega') {
+            abort(403, 'No tienes permiso para acceder a la lista de bodegas.');
+        }
+
         $bodegas = Bodega::orderBy('nombrebodega', 'ASC')->paginate(5);
         return view('bodegas.index', compact('bodegas'));
     }
@@ -34,6 +39,11 @@ class BodegaController extends Controller
      */
     public function create()
     {
+        $cargo = auth()->user()->cargoNombre();
+        if ($cargo === 'Jefe de bodega') {
+            abort(403, 'No tienes permiso para crear bodegas.');
+        }
+
         return view('bodegas.create');
     }
 
@@ -136,6 +146,11 @@ class BodegaController extends Controller
      */
     public function destroy(string $idbodega)
     {
+        $cargo = auth()->user()->cargoNombre();
+        if ($cargo === 'Jefe de bodega') {
+            abort(403, 'No tienes permiso para eliminar bodegas.');
+        }
+
         Bodega::findOrFail($idbodega)->delete();
         return redirect()->route('bodegas.index')->with('success', 'Registro eliminado satisfactoriamente');
     }

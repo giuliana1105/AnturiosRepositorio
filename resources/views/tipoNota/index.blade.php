@@ -3,7 +3,14 @@
 @section('content')
     <div class="container">
         <h3 class="text-center mb-4">Lista de Notas</h3>
-        <a href="{{ route('tipoNota.create') }}" class="btn mb-3" style="background-color: #88022D; color: white;">Crear Nota</a>
+
+        @php
+            $cargo = auth()->user()->cargoNombre();
+        @endphp
+
+        @if(!in_array($cargo, ['Jefe de bodega']))
+            <a href="{{ route('tipoNota.create') }}" class="btn btn-success mb-3">Crear Nota</a>
+        @endif
 
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>

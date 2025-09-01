@@ -6,8 +6,13 @@
     <div class="mb-4">
         
         <a href="{{ route('productos.index') }}" class="btn btn-primary">Productos</a>
-        <a href="{{ route('empleados.index') }}" class="btn btn-primary">Empleados</a>
-        <a href="{{ route('bodegas.index') }}" class="btn btn-primary">Bodegas</a>
+        @php
+            $cargo = auth()->user()->cargoNombre();
+        @endphp
+        @if($cargo !== 'Jefe de bodega')
+            <a href="{{ route('empleados.index') }}" class="btn btn-primary">Empleados</a>
+            <a href="{{ route('bodegas.index') }}" class="btn btn-primary">Bodegas</a>
+        @endif
         <a href="{{ route('tipoNota.index') }}" class="btn btn-primary">Tipo Nota</a>
         <a href="{{ route('transaccionProducto.index') }}" class="btn btn-primary">Transacción Producto</a>
         

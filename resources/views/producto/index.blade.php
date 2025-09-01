@@ -10,7 +10,7 @@
         $cargo = auth()->user()->cargoNombre();
     @endphp
 
-    @if(in_array($cargo, ['Administrador', 'Gerente']))
+    @if(in_array($cargo, ['Administrador', 'Gerente', 'Jefe de bodega']))
         <a href="{{ route('productos.create') }}" class="btn btn-primary mb-3">Añadir Producto</a>
     @endif
 
@@ -35,7 +35,7 @@
                     <td>{{ $producto->tipoempaque }}</td> <!-- Muestra el tipo de empaque -->
                     <td>
                         <!-- <a href="{{ route('productos.show', $producto->codigo) }}" class="btn btn-info btn-sm">Ver</a> -->
-                        @if(in_array($cargo, ['Administrador', 'Gerente']))
+                        @if(in_array($cargo, ['Administrador', 'Gerente', 'Jefe de bodega']))
                             <a href="{{ route('productos.edit', $producto->codigo) }}" class="btn btn-warning btn-sm">Editar</a>
                             <form action="{{ route('productos.destroy', $producto->codigo) }}" method="POST" style="display:inline;">
                                 @csrf

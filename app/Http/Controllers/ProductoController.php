@@ -41,7 +41,7 @@ class ProductoController extends Controller
     public function create()
     {
         $cargo = auth()->user()->cargoNombre();
-        if (!in_array($cargo, ['Administrador', 'Gerente'])) {
+        if (!in_array($cargo, ['Administrador', 'Gerente', 'Jefe de bodega'])) {
             abort(403, 'No tienes permiso para añadir productos.');
         }
 
@@ -89,7 +89,7 @@ class ProductoController extends Controller
     public function edit($id)
     {
         $cargo = auth()->user()->cargoNombre();
-        if (!in_array($cargo, ['Administrador', 'Gerente'])) {
+        if (!in_array($cargo, ['Administrador', 'Gerente', 'Jefe de bodega'])) {
             abort(403, 'No tienes permiso para editar productos.');
         }
 
@@ -127,7 +127,7 @@ class ProductoController extends Controller
     public function destroy($id)
     {
         $cargo = auth()->user()->cargoNombre();
-        if (!in_array($cargo, ['Administrador', 'Gerente'])) {
+        if (!in_array($cargo, ['Administrador', 'Gerente', 'Jefe de bodega'])) {
             abort(403, 'No tienes permiso para eliminar productos.');
         }
 

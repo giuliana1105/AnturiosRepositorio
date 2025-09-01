@@ -18,17 +18,60 @@ class HomeController extends Controller
 
         if (in_array($cargo, ['Vendedor', 'Vendedor camión'])) {
             $bodega = $user->empleado->bodega;
-            // Pasa las variables necesarias a la vista
+            $id = $bodega->idbodega;
+
+            // Productos enviados a esta bodega
+            $productosEnviados = DB::table('productos_bodega as pb')
+                ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
+                ->where('pb.bodega_id', $id)
+                ->where('pb.es_devolucion', false)
+                ->select('p.codigo', 'p.nombre', 'pb.cantidad', 'pb.fecha')
+                ->orderBy('pb.fecha', 'desc')
+                ->get();
+
+            // Productos devueltos desde esta bodega
+            $productosDevueltos = DB::table('productos_bodega as pb')
+                ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
+                ->where('pb.bodega_id', $id)
+                ->where('pb.es_devolucion', true)
+                ->select('p.codigo', 'p.nombre', 'pb.cantidad', 'pb.fecha')
+                ->orderBy('pb.fecha', 'desc')
+                ->get();
+
+            // Productos en bodega (stock actual)
+            $productosEnBodega = DB::table('productos_bodega')
+                ->select(
+                    'producto_id',
+                    DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) as enviados'),
+                    DB::raw('SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as devueltos')
+                )
+                ->where('bodega_id', $id)
+                ->groupBy('producto_id')
+                ->havingRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) > 0')
+                ->get()
+                ->map(function($row) {
+                    $producto = Producto::where('codigo', $row->producto_id)->first();
+                    return [
+                        'codigo'      => $producto->codigo ?? $row->producto_id,
+                        'nombre'      => $producto->nombre ?? 'Producto no encontrado',
+                        'descripcion' => $producto->descripcion ?? '',
+                        'cantidad'    => ($row->enviados - $row->devueltos),
+                    ];
+                })
+                ->filter(function($item) {
+                    return $item['cantidad'] > 0;
+                });
+
             return view('home.bodega', [
                 'bodega' => $bodega,
-                'productosEnBodega' => $productosEnBodega ?? collect(),
-                'productos' => $productos ?? collect(),
-                'devueltos' => $devueltos ?? collect(),
+                'productosEnBodega' => $productosEnBodega,
+                'productos' => $productosEnviados,
+                'devueltos' => $productosDevueltos,
             ]);
         }
 
         // Otros cargos ven todas las bodegas
-        $bodegas = \App\Models\Bodega::all();
+        $bodegas = Bodega::all();
         return view('home', compact('bodegas'));
     }
 
@@ -46,20 +89,20 @@ class HomeController extends Controller
     {
         $bodega = Bodega::findOrFail($id);
 
-        // Productos enviados a esta bodega (entradas desde la bodega MASTER conceptual)
+        // Productos enviados a esta bodega
         $productosEnviados = DB::table('productos_bodega as pb')
             ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
             ->where('pb.bodega_id', $id)
-            ->where('pb.es_devolucion', false) // Entradas/sumas
+            ->where('pb.es_devolucion', false)
             ->select('p.codigo', 'p.nombre', 'pb.cantidad', 'pb.fecha')
             ->orderBy('pb.fecha', 'desc')
             ->get();
 
-        // Productos devueltos desde esta bodega (salidas hacia la bodega MASTER conceptual)
+        // Productos devueltos desde esta bodega
         $productosDevueltos = DB::table('productos_bodega as pb')
             ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
             ->where('pb.bodega_id', $id)
-            ->where('pb.es_devolucion', true) // Salidas/restas
+            ->where('pb.es_devolucion', true)
             ->select('p.codigo', 'p.nombre', 'pb.cantidad', 'pb.fecha')
             ->orderBy('pb.fecha', 'desc')
             ->get();
@@ -67,8 +110,8 @@ class HomeController extends Controller
         // Productos en bodega (stock actual)
         $productosEnBodega = DB::table('productos_bodega')
             ->select(
-                'producto_id', 
-                DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) as enviados'), 
+                'producto_id',
+                DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) as enviados'),
                 DB::raw('SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as devueltos')
             )
             ->where('bodega_id', $id)

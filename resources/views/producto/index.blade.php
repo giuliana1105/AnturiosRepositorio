@@ -6,7 +6,14 @@
     <form action="{{ route('productos.index') }}" method="GET" class="mb-3">
         <!-- filtros o búsqueda aquí -->
     </form>
-    <a href="{{ route('productos.create') }}" class="btn btn-primary mb-3">Añadir Producto</a>
+    @php
+        $cargo = auth()->user()->cargoNombre();
+    @endphp
+
+    @if(in_array($cargo, ['Administrador', 'Gerente']))
+        <a href="{{ route('productos.create') }}" class="btn btn-primary mb-3">Añadir Producto</a>
+    @endif
+
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -27,12 +34,14 @@
                     <td>{{ $producto->cantidad }}</td>
                     <td>{{ $producto->tipoempaque }}</td> <!-- Muestra el tipo de empaque -->
                     <td>
-                        <a href="{{ route('productos.edit', $producto->codigo) }}" class="btn btn-sm btn-primary">Editar</a>
-                        <form action="{{ route('productos.destroy', $producto->codigo) }}" method="POST" class="d-inline-block">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
-                        </form>
+                        <a href="{{ route('productos.show', $producto->id) }}" class="btn btn-info">Ver</a>
+                        @if(in_array($cargo, ['Administrador', 'Gerente']))
+                            <a href="{{ route('productos.edit', $producto->id) }}" class="btn btn-warning">Editar</a>
+                            <form action="{{ route('productos.destroy', $producto->id) }}" method="POST" style="display:inline;">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn btn-danger">Eliminar</button>
+                            </form>
+                        @endif
                     </td>
                 </tr>
             @endforeach

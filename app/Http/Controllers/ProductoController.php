@@ -40,6 +40,11 @@ class ProductoController extends Controller
      */
     public function create()
     {
+        $cargo = auth()->user()->cargoNombre();
+        if (!in_array($cargo, ['Administrador', 'Gerente'])) {
+            abort(403, 'No tienes permiso para añadir productos.');
+        }
+
         return view('producto.create');
     }
 
@@ -83,6 +88,11 @@ class ProductoController extends Controller
 
     public function edit($id)
     {
+        $cargo = auth()->user()->cargoNombre();
+        if (!in_array($cargo, ['Administrador', 'Gerente'])) {
+            abort(403, 'No tienes permiso para editar productos.');
+        }
+
         $producto = Producto::findOrFail($id);
         return view('producto.edit', compact('producto'));
     }
@@ -116,6 +126,11 @@ class ProductoController extends Controller
 
     public function destroy($id)
     {
+        $cargo = auth()->user()->cargoNombre();
+        if (!in_array($cargo, ['Administrador', 'Gerente'])) {
+            abort(403, 'No tienes permiso para eliminar productos.');
+        }
+
         $producto = Producto::findOrFail($id);
         $producto->delete();
         return redirect()->route('productos.index')->with('success', 'Producto eliminado correctamente.');

@@ -29,4 +29,14 @@ class User extends Authenticatable
     {
         $this->attributes['password'] = bcrypt($value);
     }
+
+    public function empleado()
+    {
+        return $this->hasOne(\App\Models\Empleado::class, 'email', 'email');
+    }
+
+    public function cargoNombre()
+    {
+        return $this->empleado ? $this->empleado->cargoNombre() : null;
+    }
 }

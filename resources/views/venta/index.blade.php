@@ -18,6 +18,7 @@
         <div class="col-md-4">
             <select class="form-control" id="filtro-ciudad">
                 <option value="">Todas las ciudades</option>
+                
                 @php
                     $ciudades = $ventas->pluck('ciudad')->unique()->filter()->sort();
                 @endphp
@@ -87,6 +88,10 @@
         </button>
     </div>
 
+    @php
+        $cargo = auth()->user()->cargoNombre();
+    @endphp
+
     <div id="reporte-ventas">
         <table class="table table-bordered">
             <thead>
@@ -130,12 +135,14 @@
                             @if($venta->tipo_pago === 'Crédito' && isset($venta->saldo) && $venta->saldo > 0)
                                 <a href="{{ route('venta.abono', $venta->id) }}" class="btn btn-warning btn-sm">Agregar abono</a>
                             @endif
-                            <a href="{{ route('venta.edit', $venta->id) }}" class="btn btn-primary btn-sm">Editar</a>
-                            <form action="{{ route('venta.destroy', $venta->id) }}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Está seguro de eliminar esta venta?')">Eliminar</button>
-                            </form>
+                            @if(in_array($cargo, ['Administrador', 'Gerente']))
+                                <a href="{{ route('venta.edit', $venta->id) }}" class="btn btn-primary btn-sm">Editar</a>
+                                <form action="{{ route('venta.destroy', $venta->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Está seguro de eliminar esta venta?')">Eliminar</button>
+                                </form>
+                            @endif
                         </td>
                     </tr>
                 @endforeach

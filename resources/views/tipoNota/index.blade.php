@@ -44,62 +44,40 @@
                             <td>{{ $nota->codigo }}</td>
                             <td>{{ $nota->tiponota }}</td>
                             <td>{{ optional($nota->responsableEmpleado)->nombreemp ?? 'N/A' }} {{ optional($nota->responsableEmpleado)->apellidoemp ?? '' }}</td>
-
-                            {{-- Mostrar productos asociados a la nota --}}
-                            <td>
+                            {{-- PRODUCTOS, CANTIDAD Y TIPO EMPAQUE --}}
+                            <td colspan="3" style="vertical-align:top; padding:0;">
                                 @if($nota->detalles && $nota->detalles->count() > 0)
-                                    <ul class="list-unstyled mb-0">
-                                        @foreach ($nota->detalles as $detalle)
-                                            <li>
-                                                @if($detalle->producto)
-                                                    {{ $detalle->producto->nombre }}
-                                                @else
-                                                    {{ $detalle->codigoproducto }}
-                                                @endif
-                                            </li>
-                                        @endforeach
-                                    </ul>
+                                    <table style="width: 100%; border-collapse: collapse; table-layout: fixed; margin:0;">
+                                        <tbody>
+                                            @foreach ($nota->detalles as $index => $detalle)
+                                                <tr style="{{ $index > 0 ? 'border-top: 1px solid #dee2e6;' : '' }}">
+                                                    <td style="width: 33.33%; padding: 8px; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; border:none;">
+                                                        {{ $detalle->producto->nombre ?? $detalle->codigoproducto }}
+                                                    </td>
+                                                    <td style="width: 33.33%; padding: 8px; vertical-align: top; text-align: center; border:none;">
+                                                        {{ $detalle->cantidad ?? 0 }}
+                                                    </td>
+                                                    <td style="width: 33.34%; padding: 8px; vertical-align: top; text-align: center; word-wrap: break-word; border:none;">
+                                                        {{ $detalle->producto->tipoempaque ?? 'Sin empaque' }}
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
                                 @else
-                                    <span class="text-muted">Sin productos</span>
+                                    <table style="width: 100%; border-collapse: collapse; table-layout: fixed; margin:0;">
+                                        <tbody>
+                                            <tr>
+                                                <td style="width: 33.33%; padding: 8px; text-align: center; border:none;" class="text-muted">Sin productos</td>
+                                                <td style="width: 33.33%; padding: 8px; text-align: center; border:none;" class="text-muted">-</td>
+                                                <td style="width: 33.34%; padding: 8px; text-align: center; border:none;" class="text-muted">-</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 @endif
                             </td>
-
-                            {{-- Mostrar cantidad de productos --}}
-                            <td>
-                                @if($nota->detalles && $nota->detalles->count() > 0)
-                                    <ul class="list-unstyled mb-0">
-                                        @foreach ($nota->detalles as $detalle)
-                                            <li>{{ $detalle->cantidad ?? 0 }}</li>
-                                        @endforeach
-                                    </ul>
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </td>
-
-                            {{-- Mostrar tipo de empaque --}}
-                            <td>
-                                @if($nota->detalles && $nota->detalles->count() > 0)
-                                    <ul class="list-unstyled mb-0">
-                                        @foreach ($nota->detalles as $detalle)
-                                            <li>
-                                                @if($detalle->producto && $detalle->producto->tipoempaque)
-                                                    {{ $detalle->producto->tipoempaque }}
-                                                @else
-                                                    <span class="text-muted">Sin empaque</span>
-                                                @endif
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </td>
-
                             <td>{{ optional($nota->bodega)->nombrebodega ?? 'N/A' }}</td>
                             <td>{{ $nota->fechanota ? \Carbon\Carbon::parse($nota->fechanota)->format('d/m/Y H:i') : 'N/A' }}</td>
-
-                            {{-- Estado de la nota --}}
                             <td>
                                 @if(optional($nota->transaccion)->estado)
                                     <span class="badge bg-info">{{ $nota->transaccion->estado }}</span>
@@ -107,20 +85,13 @@
                                     <span class="badge bg-secondary">Sin Confirmar</span>
                                 @endif
                             </td>
-
-                            {{-- Acciones --}}
                             <td>
                                 @if(!$nota->transaccion)
-                                    {{-- Solo mostrar botón confirmar si no está confirmada --}}
                                     <form action="{{ route('tipoNota.confirmar', $nota->codigo) }}" method="POST" style="display:inline;">
                                         @csrf
                                         <button type="submit" class="btn btn-success btn-sm mb-2">Confirmar</button>
                                     </form>
-
-                                    {{-- Solo mostrar botón editar si no está confirmada --}}
                                     <a href="{{ route('tipoNota.edit', $nota->codigo) }}" class="btn btn-warning btn-sm mb-2">Editar</a>
-
-                                    {{-- Solo mostrar botón eliminar si no está confirmada --}}
                                     @can('eliminar TipoNota')
                                         <form action="{{ route('tipoNota.destroy', $nota->codigo) }}" method="POST" style="display:inline;">
                                             @csrf @method('DELETE')
@@ -128,12 +99,9 @@
                                         </form>
                                     @endcan
                                 @else
-                                    {{-- Si está confirmada, mostrar mensaje informativo --}}
                                     <span class="text-muted small">Nota confirmada</span>
                                 @endif
                             </td>
-
-                            {{-- Botón de PDF --}}
                             <td>
                                 <a href="{{ route('tipoNota.pdf', $nota->codigo) }}" class="btn btn-danger btn-sm">
                                     Descargar PDF

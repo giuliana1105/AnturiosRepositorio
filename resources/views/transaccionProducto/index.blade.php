@@ -66,10 +66,13 @@
                         <td>
                             <ul class="list-unstyled">
                                 @foreach ($transaccion->tipoNota->detalles as $detalle)
-                                    <li>
+                                    <li style="padding-bottom:8px;">
                                         <strong>Producto:</strong> {{ $detalle->producto->nombre ?? 'N/A' }}<br>
                                         <strong>Cantidad:</strong> {{ $detalle->cantidad }}<br>
                                         <strong>Empaque:</strong> {{ $detalle->producto->tipoempaque ?? 'Sin Empaque' }}
+                                        @if(!$loop->last)
+                                            <hr style="margin:8px 0; border-top:1.5px solid #bbb;">
+                                        @endif
                                     </li>
                                 @endforeach
                             </ul>

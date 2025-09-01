@@ -34,12 +34,13 @@
                     <td>{{ $producto->cantidad }}</td>
                     <td>{{ $producto->tipoempaque }}</td> <!-- Muestra el tipo de empaque -->
                     <td>
-                        <a href="{{ route('productos.show', $producto->id) }}" class="btn btn-info">Ver</a>
+                        <!-- <a href="{{ route('productos.show', $producto->codigo) }}" class="btn btn-info btn-sm">Ver</a> -->
                         @if(in_array($cargo, ['Administrador', 'Gerente']))
-                            <a href="{{ route('productos.edit', $producto->id) }}" class="btn btn-warning">Editar</a>
-                            <form action="{{ route('productos.destroy', $producto->id) }}" method="POST" style="display:inline;">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-danger">Eliminar</button>
+                            <a href="{{ route('productos.edit', $producto->codigo) }}" class="btn btn-warning btn-sm">Editar</a>
+                            <form action="{{ route('productos.destroy', $producto->codigo) }}" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro de eliminar?')">Eliminar</button>
                             </form>
                         @endif
                     </td>

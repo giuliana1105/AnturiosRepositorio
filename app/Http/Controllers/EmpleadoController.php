@@ -14,7 +14,7 @@ class EmpleadoController extends Controller
     use AuthorizesRequests; 
     public function __construct()
     {
-        $this->authorizeResource(Empleado::class, 'empleado');
+        //$this->authorizeResource(Empleado::class, 'empleado');
     }
 
     // Cargos fijos

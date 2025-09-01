@@ -15,6 +15,11 @@ class VentaBodegaController extends Controller
 {
     public function create($bodega_id)
     {
+        $cargo = auth()->user()->cargoNombre();
+        if ($cargo === 'Vendedor') {
+            abort(403, 'No tienes permiso para registrar ventas.');
+        }
+
         $bodega = Bodega::findOrFail($bodega_id);
 
         // Calcula el próximo número de venta SOLO para esta bodega
@@ -140,6 +145,11 @@ class VentaBodegaController extends Controller
 
     public function indexPorBodega($bodega_id)
     {
+        $cargo = auth()->user()->cargoNombre();
+        if ($cargo === 'Vendedor') {
+            abort(403, 'No tienes permiso para ver ventas.');
+        }
+
         $bodega = Bodega::findOrFail($bodega_id);
         $ventas = Venta::where('bodega_id', $bodega_id)->with('bodega')->get();
 

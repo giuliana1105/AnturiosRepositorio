@@ -17,7 +17,7 @@ class BodegaController extends Controller
 
     public function __construct()
     {  
-        $this->authorizeResource(Bodega::class, 'bodega'); // ✅ Debe coincidir con la ruta
+        //$this->authorizeResource(Bodega::class, 'bodega'); // ✅ Debe coincidir con la ruta
     }
 
     /**

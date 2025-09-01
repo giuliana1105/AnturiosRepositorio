@@ -17,7 +17,7 @@ class TransaccionProductoController extends Controller
     public function __construct()
 {
     
-    $this->authorizeResource(TransaccionProducto::class, 'transaccionProducto'); // ✅ Debe coincidir con la ruta
+    //$this->authorizeResource(TransaccionProducto::class, 'transaccionProducto'); // ✅ Debe coincidir con la ruta
 }
 
     /**

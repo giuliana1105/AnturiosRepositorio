@@ -16,42 +16,19 @@ class HomeController extends Controller
         $user = auth()->user();
         $cargo = $user->cargoNombre();
 
-        if ($cargo === 'Vendedor camión') {
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión'])) {
             $bodega = $user->empleado->bodega;
-            $productos = $bodega ? $bodega->productos()->get() : collect();
-            $devueltos = $bodega ? $bodega->productosDevueltos()->get() : collect();
-
-            // Calcula el stock actual de productos en la bodega
-            $productosEnBodega = collect();
-            if ($bodega) {
-                $productosEnBodega = DB::table('productos_bodega')
-                    ->select(
-                        'producto_id',
-                        DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) as enviados'),
-                        DB::raw('SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as devueltos')
-                    )
-                    ->where('bodega_id', $bodega->idbodega)
-                    ->groupBy('producto_id')
-                    ->havingRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) > 0')
-                    ->get()
-                    ->map(function($row) {
-                        $producto = \App\Models\Producto::where('codigo', $row->producto_id)->first();
-                        return [
-                            'codigo'      => $producto->codigo ?? $row->producto_id,
-                            'nombre'      => $producto->nombre ?? 'Producto no encontrado',
-                            'descripcion' => $producto->descripcion ?? '',
-                            'cantidad'    => ($row->enviados - $row->devueltos),
-                        ];
-                    })
-                    ->filter(function($item) {
-                        return $item['cantidad'] > 0;
-                    });
-            }
-
-            return view('home.bodega', compact('bodega', 'productos', 'devueltos', 'productosEnBodega'));
+            // Pasa las variables necesarias a la vista
+            return view('home.bodega', [
+                'bodega' => $bodega,
+                'productosEnBodega' => $productosEnBodega ?? collect(),
+                'productos' => $productos ?? collect(),
+                'devueltos' => $devueltos ?? collect(),
+            ]);
         }
 
-        $bodegas = Bodega::all();
+        // Otros cargos ven todas las bodegas
+        $bodegas = \App\Models\Bodega::all();
         return view('home', compact('bodegas'));
     }
 

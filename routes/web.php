@@ -102,6 +102,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/password/change', [AuthController::class, 'showChangePasswordForm'])->name('password.change.form');
     Route::post('/password/change', [AuthController::class, 'changePassword'])->name('password.change');
+
+    Route::get('bodega/{id}/stock/pdf', [BodegaController::class, 'stockPdf'])->name('bodega.stock.pdf');
 });
 
 // Password Reset Routes

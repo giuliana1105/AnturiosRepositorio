@@ -23,6 +23,7 @@ class BodegaController extends Controller
     /**
      * Display a listing of the resource.
      */
+
     public function index()
     {
         $cargo = auth()->user()->cargoNombre();
@@ -34,6 +35,36 @@ class BodegaController extends Controller
         return view('bodegas.index', compact('bodegas'));
     }
 
+    
+public function stockPdf($id)
+{
+    $bodega = Bodega::findOrFail($id);
+
+    $productosEnBodega = DB::table('productos_bodega')
+        ->select('producto_id', DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) as enviados'), DB::raw('SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as devueltos'))
+        ->where('bodega_id', $id)
+        ->groupBy('producto_id')
+        ->get()
+        ->map(function($row) {
+            $producto = \App\Models\Producto::where('codigo', $row->producto_id)->first();
+            $cantidad = ($row->enviados - $row->devueltos);
+            return $cantidad > 0 && $producto ? [
+                'codigo'      => $producto->codigo,
+                'nombre'      => $producto->nombre,
+                'descripcion' => $producto->descripcion,
+                'cantidad'    => $cantidad,
+                'empaque'     => $producto->tipoempaque ?? '',
+            ] : null;
+        })
+        ->filter()
+        ->values();
+
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.stock_bodega', [
+        'bodega' => $bodega,
+        'productosEnBodega' => $productosEnBodega,
+    ]);
+    return $pdf->stream('stock_bodega_' . $bodega->nombrebodega . '.pdf');
+}
     /**
      * Show the form for creating a new resource.
      */

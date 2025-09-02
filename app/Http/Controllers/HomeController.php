@@ -20,19 +20,11 @@ class HomeController extends Controller
             $bodega = $user->empleado->bodega;
             $id = $bodega->idbodega;
 
-            // // Productos enviados a esta bodega
-            // $productosEnviados = DB::table('productos_bodega as pb')
-            //     ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
-            //     ->where('pb.bodega_id', $id)
-            //     ->where('pb.tipo_movimiento', 'envio') // Solo envíos, no ventas
-            //     ->select('p.codigo', 'p.nombre', 'pb.cantidad', 'pb.fecha')
-            //     ->orderBy('pb.fecha', 'desc')
-            //     ->get();
-                   // Productos devueltos desde esta bodega
+            // Productos enviados a esta bodega (envíos normales, no devoluciones)
             $productosEnviados = DB::table('productos_bodega as pb')
                 ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
                 ->where('pb.bodega_id', $id)
-                ->where('pb.tipo_movimiento', 'envio') // Solo envíos
+                ->where('pb.es_envio', true) // Solo envíos normales
                 ->select('p.codigo', 'p.nombre', 'pb.cantidad', 'pb.fecha')
                 ->orderBy('pb.fecha', 'desc')
                 ->get();
@@ -97,20 +89,11 @@ class HomeController extends Controller
     {
         $bodega = Bodega::findOrFail($id);
 
-        // // Productos enviados a esta bodega
-        // $productosEnviados = DB::table('productos_bodega as pb')
-        //     ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
-        //     ->where('pb.bodega_id', $id)
-        //     ->where('pb.tipo_movimiento', 'envio') // Solo envíos, no ventas
-        //     ->select('p.codigo', 'p.nombre', 'pb.cantidad', 'pb.fecha')
-        //     ->orderBy('pb.fecha', 'desc')
-        //     ->get();
-
-        // Productos devueltos desde esta bodega
+        // Productos enviados a esta bodega (envíos normales, no devoluciones)
         $productosEnviados = DB::table('productos_bodega as pb')
             ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
             ->where('pb.bodega_id', $id)
-            ->where('pb.tipo_movimiento', 'envio') // Solo envíos
+            ->where('pb.es_devolucion', false) // Solo envíos normales
             ->select('p.codigo', 'p.nombre', 'pb.cantidad', 'pb.fecha')
             ->orderBy('pb.fecha', 'desc')
             ->get();
@@ -154,5 +137,18 @@ class HomeController extends Controller
             'devueltos' => $productosDevueltos,
             'productosEnBodega' => $productosEnBodega,
         ]);
+    }
+
+    // Método para debug - ver todos los registros de una bodega
+    public function debugBodega($id)
+    {
+        $registros = DB::table('productos_bodega as pb')
+            ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
+            ->where('pb.bodega_id', $id)
+            ->select('p.codigo', 'p.nombre', 'pb.cantidad', 'pb.fecha', 'pb.es_devolucion', 'pb.tipo_movimiento')
+            ->orderBy('pb.fecha', 'desc')
+            ->get();
+        
+        dd($registros);
     }
 }

@@ -61,7 +61,7 @@ class TransaccionProductoController extends Controller
     public function confirmar($codigo)
     {
         $cargo = auth()->user()->cargoNombre();
-        if (in_array($cargo, ['Vendedor', 'Vendedor camión'])) {
+        if (in_array($cargo, ['Jefe de bodega'])) {
             abort(403, 'No tienes permiso para acceder a esta sección.');
         }
 

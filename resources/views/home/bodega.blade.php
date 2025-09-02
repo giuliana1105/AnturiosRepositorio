@@ -87,6 +87,8 @@
                 <button class="btn btn-outline-success" id="btn-stock">
                     <i class="fas fa-boxes me-1"></i> Productos en Bodega (Stock Actual)
                 </button>
+
+                
             </div>
 
             <!-- Sección: Productos Enviados -->

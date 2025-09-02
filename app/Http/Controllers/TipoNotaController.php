@@ -835,7 +835,7 @@ public function store(Request $request)
 
     } catch (\Exception $e) {
         DB::rollBack();
-        \Log::error('Error al crear nota: ' . $e->getMessage(), [
+        Log::error('Error al crear nota: ' . $e->getMessage(), [
             'request_data' => $request->all(),
             'stack_trace' => $e->getTraceAsString()
         ]);

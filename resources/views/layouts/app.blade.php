@@ -14,10 +14,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url("{{ asset('images/logo-empresa.png') }}") no-repeat center center;
+            background-size: 600px 600px; /* <-- Cambia aquí el tamaño */
+            opacity: 0.08; /* Ajusta la transparencia si lo deseas */
+            pointer-events: none;
+            z-index: 0;
+        }
         body {
+            position: relative;
+            z-index: 1;
             padding-top: 0; /* Eliminado el padding-top que causaba el espacio */
             margin: 0;
             padding: 0;
+            background: url("{{ asset('images/logo-empresa.png') }}") no-repeat center center;
+            background-size: 350px 350px;
+            background-attachment: fixed;
+            /* Si quieres que el fondo sea más tenue, usa opacity en un pseudo-elemento */
         }
 
         /* Cambia el color de la letra del botón Cerrar Sesión */
@@ -117,7 +133,7 @@
     <nav class="navbar navbar-expand-lg" style="background-color: #0097a7;">
         <div class="container-fluid">
             <span class="navbar-brand text-white fw-bold" style="font-size: 1.7rem;">
-                Inventario
+                Gestión de inventario - Los Anturios
                 <i class="fas fa-shopping-cart ms-2"></i>
             </span>
             <div class="collapse navbar-collapse" id="navbarNav">

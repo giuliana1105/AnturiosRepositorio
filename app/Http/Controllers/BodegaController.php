@@ -26,8 +26,8 @@ class BodegaController extends Controller
     public function index()
     {
         $cargo = auth()->user()->cargoNombre();
-        if ($cargo === 'Jefe de bodega') {
-            abort(403, 'No tienes permiso para acceder a la lista de bodegas.');
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
         }
 
         $bodegas = Bodega::orderBy('nombrebodega', 'ASC')->paginate(5);
@@ -39,9 +39,9 @@ class BodegaController extends Controller
      */
     public function create()
     {
-        $cargo = auth()->user()->cargoNombre();
-        if ($cargo === 'Jefe de bodega') {
-            abort(403, 'No tienes permiso para crear bodegas.');
+       $cargo = auth()->user()->cargoNombre();
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
         }
 
         return view('bodegas.create');
@@ -52,6 +52,10 @@ class BodegaController extends Controller
      */
     public function store(Request $request)
     {
+         $cargo = auth()->user()->cargoNombre();
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
         // Ya no es necesario validar el idbodega porque es autoincremental
         $request->validate([
             'nombrebodega' => 'required|max:10',  // Solo validamos el nombre
@@ -66,6 +70,10 @@ class BodegaController extends Controller
      */
     public function show($id)
     {
+         $cargo = auth()->user()->cargoNombre();
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
         $bodega = Bodega::findOrFail($id);
 
         // Productos en stock en la bodega
@@ -121,6 +129,10 @@ class BodegaController extends Controller
      */
     public function edit(string $idbodega)
     {
+         $cargo = auth()->user()->cargoNombre();
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
         $bodega = Bodega::findOrFail($idbodega);
         return view('bodegas.edit', compact('bodega'));
     }
@@ -130,6 +142,10 @@ class BodegaController extends Controller
      */
     public function update(Request $request, string $idbodega)
     {
+         $cargo = auth()->user()->cargoNombre();
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
         $request->validate([
             'nombrebodega' => 'required|max:10',  // Solo validamos el nombre
         ]);
@@ -146,9 +162,10 @@ class BodegaController extends Controller
      */
     public function destroy(string $idbodega)
     {
+        
         $cargo = auth()->user()->cargoNombre();
-        if ($cargo === 'Jefe de bodega') {
-            abort(403, 'No tienes permiso para eliminar bodegas.');
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
         }
 
         Bodega::findOrFail($idbodega)->delete();

@@ -1,4 +1,7 @@
 @extends('layouts.app')
+@php
+                        $cargo = auth()->user()->cargoNombre();
+                    @endphp
 
 @section('content')
 <div class="container-fluid p-0 m-0">
@@ -25,9 +28,11 @@
                 <a class="nav-link active text-info fw-bold mb-2" href="{{ route('productos.index') }}">
                     <i class="fas fa-cube me-2"></i> Productos
                 </a>
+                 @if(!in_array($cargo, ['Vendedor camión', 'Vendedor']))
                 <a class="nav-link text-dark mb-2" href="{{ route('transaccionProducto.index') }}">
                     <i class="fas fa-exchange-alt me-2"></i> Transacción Producto
                 </a>
+                @endif
                 <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
                     <i class="fas fa-home me-2"></i> Home
                 </a>

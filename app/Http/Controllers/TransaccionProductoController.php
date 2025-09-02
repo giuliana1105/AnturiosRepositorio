@@ -25,6 +25,10 @@ class TransaccionProductoController extends Controller
      */
     public function index(Request $request)
     {
+         $cargo = auth()->user()->cargoNombre();
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
         $search = $request->input('search');
         $estado = $request->input('estado');
 
@@ -47,138 +51,15 @@ class TransaccionProductoController extends Controller
 
         return view('transaccionProducto.index', compact('transacciones', 'pendientes', 'finalizadas', 'search', 'estado'));
     }
-
-    /**
-     * Confirma la nota, pero NO modifica el stock.
-     */
-    // public function confirmar($codigo)
-    // {
-    //     try {
-    //         DB::beginTransaction();
-
-    //         // Buscar la nota
-    //         $nota = TipoNota::with('detalles')->where('codigo', $codigo)->firstOrFail();
-
-    //         // Crear la transacción sin modificar el stock aún
-    //         TransaccionProducto::create([
-    //             'tipo_nota_id' => $nota->codigo,
-    //             'estado' => 'PENDIENTE',
-    //         ]);
-
-    //         DB::commit();
-    //         return redirect()->route('tipoNota.index')->with('success', 'Nota confirmada. Ahora debes finalizar la transacción.');
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         return redirect()->back()->with('error', 'Error al confirmar la nota: ' . $e->getMessage());
-    //     }
-    // }
-/**
- * Confirma la nota y EJECUTA los movimientos de inventario.
- */
-// public function confirmar($codigo)
-// {
-//     try {
-//         DB::beginTransaction();
-
-//         // Buscar la nota con sus detalles
-//         $nota = TipoNota::with('detalles')->where('codigo', $codigo)->firstOrFail();
-        
-//         // Verificar que no esté ya confirmada
-//         $transaccionExistente = TransaccionProducto::where('tipo_nota_id', $nota->codigo)->first();
-//         if ($transaccionExistente) {
-//             return redirect()->back()->with('error', 'Esta nota ya está confirmada.');
-//         }
-
-//         // Realizar los movimientos de inventario AQUÍ (no en finalizar)
-//         foreach ($nota->detalles as $detalle) {
-//             $producto = \App\Models\Producto::where('codigo', $detalle->codigoproducto)->first();
-//             if (!$producto) {
-//                 throw new \Exception("El producto con código {$detalle->codigoproducto} no existe.");
-//             }
-
-//             $cantidad = $detalle->cantidad;
-
-//             if ($nota->tiponota === 'ENVIO') {
-//                 // ENVÍO: De bodega MASTER (tabla productos) a bodega específica
-                
-//                 // Verificar stock disponible nuevamente
-//                 if ($producto->cantidad < $cantidad) {
-//                     throw new \Exception("Stock insuficiente para el producto {$producto->nombre}. Disponible: {$producto->cantidad}");
-//                 }
-                
-//                 // 1. Restar del stock general (tabla productos = bodega MASTER)
-//                 DB::table('productos')
-//                     ->where('codigo', $detalle->codigoproducto)
-//                     ->decrement('cantidad', $cantidad);
-
-//                 // 2. Registrar entrada en bodega destino
-//                 DB::table('productos_bodega')->insert([
-//                     'bodega_id' => $nota->idbodega,
-//                     'producto_id' => $detalle->codigoproducto,
-//                     'cantidad' => $cantidad,
-//                     'fecha' => now(),
-//                     'es_devolucion' => false,
-//                     'created_at' => now(),
-//                     'updated_at' => now(),
-//                 ]);
-                
-//             } elseif ($nota->tiponota === 'DEVOLUCION') {
-//                 // DEVOLUCIÓN: De bodega específica a bodega MASTER
-                
-//                 // Verificar stock en bodega nuevamente
-//                 $stockBodega = DB::table('productos_bodega')
-//                     ->where('bodega_id', $nota->idbodega)
-//                     ->where('producto_id', $detalle->codigoproducto)
-//                     ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
-//                     ->value('stock') ?? 0;
-
-//                 if ($stockBodega < $cantidad) {
-//                     throw new \Exception("Stock insuficiente en bodega para el producto {$producto->nombre}. Disponible: {$stockBodega}");
-//                 }
-                
-//                 // 1. Registrar salida de bodega origen
-//                 DB::table('productos_bodega')->insert([
-//                     'bodega_id' => $nota->idbodega,
-//                     'producto_id' => $detalle->codigoproducto,
-//                     'cantidad' => $cantidad,
-//                     'fecha' => now(),
-//                     'es_devolucion' => true,
-//                     'created_at' => now(),
-//                     'updated_at' => now(),
-//                 ]);
-
-//                 // 2. Sumar al stock general (tabla productos = bodega MASTER)
-//                 DB::table('productos')
-//                     ->where('codigo', $detalle->codigoproducto)
-//                     ->increment('cantidad', $cantidad);
-//             }
-//         }
-
-//         // Crear la transacción como FINALIZADA directamente
-//         TransaccionProducto::create([
-//             'tipo_nota_id' => $nota->codigo,
-//             'estado' => 'FINALIZADA',
-//         ]);
-
-//         DB::commit();
-//         return redirect()->route('tipoNota.index')->with('success', 'Nota confirmada y transacción procesada exitosamente.');
-        
-//     } catch (\Exception $e) {
-//         DB::rollBack();
-//         Log::error('Error al confirmar nota: ' . $e->getMessage(), [
-//             'codigo_nota' => $codigo,
-//             'stack_trace' => $e->getTraceAsString()
-//         ]);
-//         return redirect()->back()->with('error', 'Error al confirmar la nota: ' . $e->getMessage());
-//     }
-// }
-
-
 /**
  * Confirma la nota, pero NO modifica el stock.
  */
 public function confirmar($codigo)
 {
+     $cargo = auth()->user()->cargoNombre();
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
     try {
         DB::beginTransaction();
 
@@ -310,6 +191,10 @@ public function confirmar($codigo)
  */
 public function finalizar($id)
 {
+     $cargo = auth()->user()->cargoNombre();
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
     try {
         DB::beginTransaction();
 

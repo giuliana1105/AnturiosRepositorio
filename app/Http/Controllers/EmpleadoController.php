@@ -29,8 +29,8 @@ class EmpleadoController extends Controller
     public function index(Request $request)
     {
         $cargo = auth()->user()->cargoNombre();
-        if ($cargo === 'Jefe de bodega') {
-            abort(403, 'No tienes permiso para acceder a empleados.');
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
         }
 
         $search = $request->input('search');
@@ -46,9 +46,9 @@ class EmpleadoController extends Controller
 
     public function create()
     {
-        $cargo = auth()->user()->cargoNombre();
-        if ($cargo === 'Jefe de bodega') {
-            abort(403, 'No tienes permiso para crear empleados.');
+       $cargo = auth()->user()->cargoNombre();
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
         }
 
         $bodegas = Bodega::all();
@@ -58,11 +58,10 @@ class EmpleadoController extends Controller
 
     public function store(Request $request)
     {
-        $cargo = auth()->user()->cargoNombre();
-        if ($cargo === 'Jefe de bodega') {
-            abort(403, 'No tienes permiso para crear empleados.');
+       $cargo = auth()->user()->cargoNombre();
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
         }
-
         $validatedData = $request->validate([
             'email' => 'required',
             'idbodega' => 'required',
@@ -95,9 +94,9 @@ class EmpleadoController extends Controller
 
     public function edit($nro_identificacion)
     {
-        $cargo = auth()->user()->cargoNombre();
-        if ($cargo === 'Jefe de bodega') {
-            abort(403, 'No tienes permiso para editar empleados.');
+       $cargo = auth()->user()->cargoNombre();
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
         }
 
         $empleado = Empleado::findOrFail($nro_identificacion);
@@ -109,10 +108,9 @@ class EmpleadoController extends Controller
     public function update(Request $request, $nro_identificacion)
     {
         $cargo = auth()->user()->cargoNombre();
-        if ($cargo === 'Jefe de bodega') {
-            abort(403, 'No tienes permiso para actualizar empleados.');
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
         }
-
         $validatedData = $request->validate([
             'email' => 'required',
             'nro_telefono' => 'required',
@@ -150,17 +148,21 @@ class EmpleadoController extends Controller
 
     public function destroy($nro_identificacion)
     {
-        $cargo = auth()->user()->cargoNombre();
-        if ($cargo === 'Jefe de bodega') {
-            abort(403, 'No tienes permiso para eliminar empleados.');
+       $cargo = auth()->user()->cargoNombre();
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
         }
-
         Empleado::findOrFail($nro_identificacion)->delete();
         return redirect()->route('empleados.index')->with('success', 'Empleado eliminado exitosamente.');
     }
 
     public function import(Request $request)
     {
+         $cargo = auth()->user()->cargoNombre();
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
+
         $request->validate([
             'excel_file' => 'required|file|mimes:xlsx,xls'
         ]);
@@ -248,6 +250,10 @@ class EmpleadoController extends Controller
 
     public function resetPassword($nro_identificacion)
     {
+         $cargo = auth()->user()->cargoNombre();
+        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
+         abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
         $empleado = \App\Models\Empleado::findOrFail($nro_identificacion);
         $user = \App\Models\User::where('email', $empleado->email)->first();
 

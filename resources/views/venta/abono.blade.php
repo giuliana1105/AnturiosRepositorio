@@ -1,4 +1,7 @@
 @extends('layouts.app')
+ @php
+                        $cargo = auth()->user()->cargoNombre();
+                    @endphp
 
 @section('content')
 <div class="container-fluid p-0 m-0">
@@ -22,9 +25,12 @@
                 <a class="nav-link text-dark mb-2" href="{{ route('tipoNota.index') }}">
                     <i class="fas fa-file-alt me-2"></i> Notas de Pedido
                 </a>
+                  @if(!in_array($cargo, ['Vendedor camión', 'Vendedor']))
                 <a class="nav-link text-dark mb-2" href="{{ route('productos.index') }}">
                     <i class="fas fa-cube me-2"></i> Productos
                 </a>
+                                 
+
                 <a class="nav-link text-dark mb-2" href="{{ route('empleados.index') }}">
                     <i class="fas fa-users me-2"></i> Empleados
                 </a>
@@ -34,9 +40,20 @@
                 <a class="nav-link text-dark mb-2" href="{{ route('transaccionProducto.index') }}">
                     <i class="fas fa-exchange-alt me-2"></i> Transacción Producto
                 </a>
+                @endif
                 <a class="nav-link active text-info fw-bold mb-2" href="#">
                     <i class="fas fa-shopping-cart me-2"></i> Ventas
                 </a>
+                
+                <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
+                    <i class="fas fa-home me-2"></i> Home
+                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="nav-link text-dark btn btn-link mb-2" style="text-align:left;">
+                        <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
+                    </button>
+                </form>
             </nav>
         </div>
 

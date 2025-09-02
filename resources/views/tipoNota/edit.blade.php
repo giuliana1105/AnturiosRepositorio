@@ -1,4 +1,10 @@
 @extends('layouts.app')
+ @php
+    $cargo = auth()->user()->cargoNombre();
+    $usuario = auth()->user();
+    $empleado = $usuario->empleado ?? null;
+    $bodegaAsignada = $empleado ? $empleado->bodega : null;
+@endphp
 
 @section('content')
 <div class="container-fluid p-0 m-0">
@@ -22,12 +28,15 @@
                 <a class="nav-link active text-info fw-bold mb-2" href="{{ route('tipoNota.index') }}">
                     <i class="fas fa-file-alt me-2"></i> Notas de Pedido
                 </a>
+                @if(!in_array($cargo, ['Vendedor camión', 'Vendedor']))
                 <a class="nav-link text-dark mb-2" href="{{ route('productos.index') }}">
                     <i class="fas fa-cube me-2"></i> Productos
                 </a>
+                  
                 <a class="nav-link text-dark mb-2" href="{{ route('transaccionProducto.index') }}">
                     <i class="fas fa-exchange-alt me-2"></i> Transacción Producto
                 </a>
+                @endif
                 <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
                     <i class="fas fa-home me-2"></i> Home
                 </a>
@@ -110,26 +119,40 @@
                             <label for="idbodega" class="form-label fw-bold">
                                 <i class="fas fa-warehouse me-2 text-info"></i> Bodega
                             </label>
-                            <select id="bodega-select" name="idbodega" class="form-select rounded-pill" required>
-                                @foreach ($bodegas as $bodega)
-                                    <option value="{{ $bodega->idbodega }}" {{ $tipoNota->idbodega == $bodega->idbodega ? 'selected' : '' }}>
-                                        {{ $bodega->nombrebodega }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            @if(in_array($cargo, ['Vendedor', 'Vendedor camión']))
+                                <input type="text" class="form-control rounded-pill mb-1"
+                                    value="{{ $bodegaAsignada ? $bodegaAsignada->nombrebodega : '' }}"
+                                    readonly>
+                                <input type="hidden" name="idbodega" value="{{ $bodegaAsignada ? $bodegaAsignada->idbodega : '' }}">
+                            @else
+                                <select id="bodega-select" name="idbodega" class="form-select rounded-pill" required>
+                                    @foreach ($bodegas as $bodega)
+                                        <option value="{{ $bodega->idbodega }}" {{ $tipoNota->idbodega == $bodega->idbodega ? 'selected' : '' }}>
+                                            {{ $bodega->nombrebodega }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @endif
                         </div>
 
                         <div class="col-md-6">
                             <label for="nro_identificacion" class="form-label fw-bold">
                                 <i class="fas fa-user-tie me-2 text-info"></i> Solicitante
                             </label>
-                            <select name="nro_identificacion" class="form-select rounded-pill" required>
-                                @foreach ($empleados as $empleado)
-                                    <option value="{{ $empleado->nro_identificacion }}" {{ $tipoNota->nro_identificacion == $empleado->nro_identificacion ? 'selected' : '' }}>
-                                        {{ $empleado->nombreemp }} {{ $empleado->apellidoemp }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            @if(in_array($cargo, ['Vendedor', 'Vendedor camión']))
+                                <input type="text" class="form-control rounded-pill"
+                                    value="{{ $empleado ? $empleado->nombreemp . ' ' . $empleado->apellidoemp : $usuario->name }}"
+                                    readonly>
+                                <input type="hidden" name="nro_identificacion" value="{{ $empleado ? $empleado->nro_identificacion : '' }}">
+                            @else
+                                <select name="nro_identificacion" class="form-select rounded-pill" required>
+                                    @foreach ($empleados as $empleado)
+                                        <option value="{{ $empleado->nro_identificacion }}" {{ $tipoNota->nro_identificacion == $empleado->nro_identificacion ? 'selected' : '' }}>
+                                            {{ $empleado->nombreemp }} {{ $empleado->apellidoemp }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @endif
                         </div>
 
                         <!-- Sección de Productos -->

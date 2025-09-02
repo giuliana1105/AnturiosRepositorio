@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+ @php
+                        $cargo = auth()->user()->cargoNombre();
+                    @endphp
+
 @section('content')
 <div class="container-fluid p-0 m-0">
     <div class="row g-0 min-vh-100">
@@ -22,12 +26,16 @@
                 <a class="nav-link text-dark mb-2" href="{{ route('tipoNota.index') }}">
                     <i class="fas fa-file-alt me-2"></i> Notas de Pedido
                 </a>
+                @if(!in_array($cargo, ['Vendedor camión', 'Vendedor']))
                 <a class="nav-link text-dark mb-2" href="{{ route('productos.index') }}">
                     <i class="fas fa-cube me-2"></i> Productos
                 </a>
+                 
                 <a class="nav-link text-dark mb-2" href="{{ route('transaccionProducto.index') }}">
                     <i class="fas fa-exchange-alt me-2"></i> Transacción Producto
                 </a>
+                   @endif
+
 
                 <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
                     <i class="fas fa-home me-2"></i> Home
@@ -47,7 +55,12 @@
         <div class="col-md-10 py-3 px-4 bg-white">
             <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 1200px;">
                 <div class="card-header bg-info text-white rounded-top-4 text-center">
-                    <h3 class="mb-0">Lista de Notas</h3>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h3 class="mb-0">Lista de Notas</h3>
+                        <a href="{{ route('home') }}" class="btn btn-light btn-sm rounded-pill">
+                            <i class="fas fa-arrow-left me-2"></i> Volver
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     @php

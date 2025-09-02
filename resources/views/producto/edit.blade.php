@@ -28,59 +28,113 @@
                 <a class="nav-link text-dark mb-2" href="{{ route('transaccionProducto.index') }}">
                     <i class="fas fa-exchange-alt me-2"></i> Transacción Producto
                 </a>
-                <!-- Agrega más enlaces según tu menú -->
+                <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
+                    <i class="fas fa-home me-2"></i> Home
+                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="nav-link text-dark btn btn-link mb-2" style="text-align:left;">
+                        <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
+                    </button>
+                </form>
             </nav>
         </div>
 
         <!-- Main Content -->
         <div class="col-md-10 py-3 px-4 bg-white">
-            <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 700px;">
-                <div class="card-header bg-info text-white rounded-top-4 text-center">
-                    <h3 class="mb-0">Editar Producto</h3>
+            <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 1000px;">
+                <div class="card-header bg-info text-white rounded-top-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h3 class="mb-0">
+                            <i class="fas fa-edit me-2"></i> Editar Producto
+                        </h3>
+                        <a href="{{ route('productos.index') }}" class="btn btn-light btn-sm rounded-pill">
+                            <i class="fas fa-arrow-left me-2"></i> Volver
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
+                    <!-- Alertas -->
                     @if (session('error'))
-                        <div class="alert alert-danger">
-                            {{ session('error') }}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Error:</strong> {!! session('error') !!}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @endif
 
-                    <form action="{{ route('productos.update', $producto->codigo) }}" method="POST">
+                    @if (session('success'))
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Éxito:</strong> {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
+                    <!-- Formulario de Edición -->
+                    <form action="{{ route('productos.update', $producto->codigo) }}" method="POST" class="row g-3">
                         @csrf
                         @method('PUT')
 
-                        <div class="row">
-                            <div class="col-12 col-md-6 mb-3">
-                                <label for="codigo" class="form-label">Código</label>
-                                <input type="text" name="codigo" class="form-control"
-                                       value="{{ $producto->codigo }}" required>
-                            </div>
-                            <div class="col-12 col-md-6 mb-3">
-                                <label for="nombre" class="form-label">Nombre</label>
-                                <input type="text" name="nombre" class="form-control"
-                                       value="{{ $producto->nombre }}" required>
-                            </div>
+                        <div class="col-md-6">
+                            <label for="codigo" class="form-label fw-bold">
+                                <i class="fas fa-barcode me-2 text-info"></i> Código
+                            </label>
+                            <input type="text" name="codigo" id="codigo" 
+                                   class="form-control rounded-pill @error('codigo') is-invalid @enderror" 
+                                   required value="{{ old('codigo', $producto->codigo) }}" 
+                                   placeholder="Ingrese el código del producto">
+                            @error('codigo')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <div class="row">
-                            <div class="col-12 mb-3">
-                                <label for="descripcion" class="form-label">Descripción</label>
-                                <textarea name="descripcion" class="form-control" required>{{ $producto->descripcion }}</textarea>
-                            </div>
+                        
+                        <div class="col-md-6">
+                            <label for="nombre" class="form-label fw-bold">
+                                <i class="fas fa-cube me-2 text-info"></i> Nombre
+                            </label>
+                            <input type="text" name="nombre" id="nombre" 
+                                   class="form-control rounded-pill @error('nombre') is-invalid @enderror" 
+                                   required value="{{ old('nombre', $producto->nombre) }}" 
+                                   placeholder="Ingrese el nombre del producto">
+                            @error('nombre')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <div class="row">
-                            <div class="col-12 col-md-6 mb-3">
-                                <label for="cantidad" class="form-label">Cantidad</label>
-                                <input type="number" name="cantidad" class="form-control"
-                                       value="{{ $producto->cantidad }}" required min="1">
-                            </div>
+                        
+                        <div class="col-12">
+                            <label for="descripcion" class="form-label fw-bold">
+                                <i class="fas fa-align-left me-2 text-info"></i> Descripción
+                            </label>
+                            <textarea name="descripcion" id="descripcion" 
+                                      class="form-control @error('descripcion') is-invalid @enderror" 
+                                      required rows="4" 
+                                      placeholder="Ingrese la descripción del producto">{{ old('descripcion', $producto->descripcion) }}</textarea>
+                            @error('descripcion')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <div class="d-flex gap-2 mt-4 justify-content-end">
-                            <a href="{{ route('productos.index') }}" class="btn btn-secondary rounded-pill py-2">
-                                <i class="fas fa-arrow-left me-2"></i> Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-info text-white fw-bold rounded-pill py-2">
-                                <i class="fas fa-save me-2"></i> Actualizar
+                        
+                        <div class="col-md-6">
+                            <label for="cantidad" class="form-label fw-bold">
+                                <i class="fas fa-sort-numeric-up me-2 text-info"></i> Cantidad
+                            </label>
+                            <input type="number" name="cantidad" id="cantidad" 
+                                   class="form-control rounded-pill @error('cantidad') is-invalid @enderror" 
+                                   required value="{{ old('cantidad', $producto->cantidad) }}" 
+                                   placeholder="Ingrese la cantidad" min="0">
+                            @error('cantidad')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="col-12 text-center mt-4">
+                            <button type="submit" class="btn btn-info text-white fw-bold rounded-pill px-5 py-3">
+                                <i class="fas fa-save me-2"></i> Actualizar Producto
                             </button>
+                            <a href="{{ route('productos.index') }}" class="btn btn-secondary rounded-pill px-5 py-3 ms-3">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -147,9 +201,6 @@ body {
 .row.g-0 {
     margin: 0;
 }
-.row.g-3 {
-    margin: 0;
-}
 .col-md-2, .col-md-10 {
     padding-left: 0;
     padding-right: 0;
@@ -166,6 +217,14 @@ body {
     background-color: #00796b;
     border-color: #00796b;
 }
+.btn-success {
+    background-color: #4caf50;
+    border-color: #4caf50;
+}
+.btn-success:hover, .btn-success:focus {
+    background-color: #388e3c;
+    border-color: #388e3c;
+}
 .btn-secondary {
     background-color: #607d8b;
     border-color: #607d8b;
@@ -176,8 +235,45 @@ body {
     border-color: #455a64;
     color: #fff;
 }
+.btn-light {
+    background-color: #f8f9fa;
+    border-color: #f8f9fa;
+    color: #495057;
+}
+.btn-light:hover, .btn-light:focus {
+    background-color: #e2e6ea;
+    border-color: #dae0e5;
+    color: #495057;
+}
 .rounded-pill {
     border-radius: 50rem !important;
+}
+.form-control {
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+.form-control:focus {
+    border-color: #0097a7;
+    box-shadow: 0 0 0 0.2rem rgba(0, 151, 167, 0.25);
+}
+.form-label {
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+.alert {
+    border: none;
+    border-radius: 0.75rem;
+}
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+textarea.form-control {
+    border-radius: 1rem !important;
 }
 @media (max-width: 768px) {
     .col-md-2 {
@@ -189,10 +285,17 @@ body {
         padding: 15px !important;
     }
     .h3 {
-        font-size: 2rem;
+        font-size: 1.75rem;
     }
     .container-fluid {
         padding: 0 !important;
+    }
+    .card-header .d-flex {
+        flex-direction: column;
+        text-align: center;
+    }
+    .card-header .btn {
+        margin-top: 1rem;
     }
 }
 html, body {

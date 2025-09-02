@@ -28,6 +28,15 @@
                 <a class="nav-link text-dark mb-2" href="{{ route('transaccionProducto.index') }}">
                     <i class="fas fa-exchange-alt me-2"></i> Transacción Producto
                 </a>
+                <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
+                    <i class="fas fa-home me-2"></i> Home
+                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="nav-link text-dark btn btn-link mb-2" style="text-align:left;">
+                        <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
+                    </button>
+                </form>
                 <!-- Agrega más enlaces según tu menú -->
             </nav>
         </div>

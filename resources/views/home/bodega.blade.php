@@ -28,7 +28,7 @@
                 <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
                     <i class="fas fa-th-large me-2"></i> Dashboard
                 </a>
-                <a class="nav-link text-dark mb-2" href="{{ route('productos.index') }}">
+                <!-- <a class="nav-link text-dark mb-2" href="{{ route('productos.index') }}">
                     <i class="fas fa-cube me-2"></i> Productos
                 </a>
                 @if($cargo !== 'Jefe de bodega')
@@ -59,7 +59,16 @@
                 <a class="nav-link text-dark mb-2" href="#">
                     <i class="fas fa-cog me-2"></i> Configuración
                     <i class="fas fa-plus-circle ms-auto"></i>
+                </a> -->
+                <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
+                    <i class="fas fa-home me-2"></i> Home
                 </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="nav-link text-dark btn btn-link mb-2" style="text-align:left;">
+                        <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
+                    </button>
+                </form>
             </nav>
         </div>
 
@@ -238,12 +247,15 @@
 
             <!-- Botones de acción -->
             <div class="mt-4 d-flex flex-wrap gap-2">
-                <a href="{{ route('home') }}" class="btn btn-secondary">
+                <!-- <a href="{{ route('home') }}" class="btn btn-secondary">
                     <i class="fas fa-home me-1"></i> Volver al inicio
-                </a>
+                </a> -->
                 @if(!in_array($cargo, ['Jefe de bodega']))
                     <a href="{{ route('tipoNota.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus me-1"></i> Crear Nueva Nota
+                    </a>
+                     <a href="{{ route('tipoNota.index') }}" class="btn btn-info">
+                        <i class="fas fa-eye me-1"></i> Ver Notas
                     </a>
                 @endif
                 @if(in_array($cargo, ['Administrador', 'Gerente', 'Vendedor camión']))

@@ -24,16 +24,16 @@
                 <a class="nav-link active text-info fw-bold mb-2" href="#">
                     <i class="fas fa-th-large me-2"></i> Dashboard
                 </a>
-                <a class="nav-link text-dark mb-2" href="{{ route('productos.index') }}">
+                <!-- <a class="nav-link text-dark mb-2" href="{{ route('productos.index') }}">
                     <i class="fas fa-cube me-2"></i> Productos
-                </a>
+                </a> -->
                 @php $cargo = auth()->user()->cargoNombre(); @endphp
-                @if($cargo !== 'Jefe de bodega')
+                <!-- @if($cargo !== 'Jefe de bodega')
                 <a class="nav-link text-dark mb-2" href="{{ route('empleados.index') }}">
                     <i class="fas fa-users me-2"></i> Empleados
                 </a>
-                @endif
-                <a class="nav-link text-dark mb-2" href="#">
+                @endif -->
+                <!-- <a class="nav-link text-dark mb-2" href="#">
                     <i class="fas fa-box me-2"></i> Gestión de Productos
                     <i class="fas fa-plus-circle ms-auto"></i>
                 </a>
@@ -44,19 +44,19 @@
                 <a class="nav-link text-dark mb-2" href="#">
                     <i class="fas fa-users-cog me-2"></i> Gestión de usuarios
                     <i class="fas fa-plus-circle ms-auto"></i>
-                </a>
-                @if($cargo !== 'Jefe de bodega')
+                </a> -->
+                <!-- @if($cargo !== 'Jefe de bodega')
                 <a class="nav-link text-dark mb-2" href="{{ route('bodegas.index') }}">
                     <i class="fas fa-warehouse me-2"></i> Bodegas
                 </a>
-                @endif
-                <a class="nav-link text-dark mb-2" href="#">
+                @endif -->
+                <!-- <a class="nav-link text-dark mb-2" href="#">
                     <i class="fas fa-chart-bar me-2"></i> Reportes
                 </a>
                 <a class="nav-link text-dark mb-2" href="#">
                     <i class="fas fa-cog me-2"></i> Configuración
                     <i class="fas fa-plus-circle ms-auto"></i>
-                </a>
+                </a> -->
                 <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
                     <i class="fas fa-home me-2"></i> Home
                 </a>

@@ -28,14 +28,15 @@
                 <a class="nav-link active text-info fw-bold mb-2" href="#">
                     <i class="fas fa-th-large me-2"></i> Dashboard
                 </a>
-                <a class="nav-link text-dark mb-2" href="{{ route('home.master') }}">
-                    <i class="fas fa-warehouse me-2"></i> Bodega Master
+                <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
+                    <i class="fas fa-home me-2"></i> Home
                 </a>
-                @foreach($bodegas as $bodega)
-                    <a class="nav-link text-dark mb-2" href="{{ route('home.bodega', $bodega->idbodega) }}">
-                        <i class="fas fa-store me-2"></i> {{ $bodega->nombrebodega }}
-                    </a>
-                @endforeach
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="nav-link text-dark btn btn-link mb-2" style="text-align:left;">
+                        <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
+                    </button>
+                </form>
             </nav>
         </div>
 

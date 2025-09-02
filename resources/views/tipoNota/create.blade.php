@@ -19,7 +19,7 @@
                 <small class="text-uppercase text-muted fw-bold">NAVEGACIÓN PRINCIPAL</small>
             </div>
             <nav class="nav flex-column">
-                <a class="nav-link text-dark mb-2" href="{{ route('tipoNota.index') }}">
+                <a class="nav-link active text-info fw-bold mb-2" href="{{ route('tipoNota.index') }}">
                     <i class="fas fa-file-alt me-2"></i> Notas de Pedido
                 </a>
                 <a class="nav-link text-dark mb-2" href="{{ route('productos.index') }}">
@@ -28,30 +28,59 @@
                 <a class="nav-link text-dark mb-2" href="{{ route('transaccionProducto.index') }}">
                     <i class="fas fa-exchange-alt me-2"></i> Transacción Producto
                 </a>
-                <!-- Agrega más enlaces según tu menú -->
+                <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
+                    <i class="fas fa-home me-2"></i> Home
+                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="nav-link text-dark btn btn-link mb-2" style="text-align:left;">
+                        <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
+                    </button>
+                </form>
             </nav>
         </div>
 
         <!-- Main Content -->
         <div class="col-md-10 py-3 px-4 bg-white">
-            <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 700px;">
-                <div class="card-header bg-info text-white rounded-top-4 text-center">
-                    <h3 class="mb-0">Crear Nueva Nota</h3>
+            <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 1000px;">
+                <div class="card-header bg-info text-white rounded-top-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h3 class="mb-0">
+                            <i class="fas fa-plus-circle me-2"></i> Crear Nueva Nota
+                        </h3>
+                        <a href="{{ route('tipoNota.index') }}" class="btn btn-light btn-sm rounded-pill">
+                            <i class="fas fa-arrow-left me-2"></i> Volver
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
+                    <!-- Alertas -->
                     @if(session('error'))
-                        <div class="alert alert-danger">
-                            {{ session('error') }}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Error:</strong> {{ session('error') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @endif
 
                     @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Errores de validación:</strong>
+                            <ul class="mb-0 mt-2">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
                                 @endforeach
                             </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
+                    @if(session('success'))
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Éxito:</strong> {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @endif
 
@@ -62,28 +91,33 @@
                         $bodegaAsignada = $empleado ? $empleado->bodega : null;
                     @endphp
 
-                    <form action="{{ route('tipoNota.store') }}" method="POST">
+                    <form action="{{ route('tipoNota.store') }}" method="POST" class="row g-3">
                         @csrf
 
-                        <div class="mb-3">
-                            <label for="tiponota" class="form-label fw-bold">Tipo de Nota</label>
-                            <select id="tiponota-select" name="tiponota" class="form-select" required>
+                        <div class="col-md-6">
+                            <label for="tiponota" class="form-label fw-bold">
+                                <i class="fas fa-tags me-2 text-info"></i> Tipo de Nota
+                            </label>
+                            <select id="tiponota-select" name="tiponota" class="form-select rounded-pill" required>
                                 <option value="">Seleccione tipo</option>
                                 <option value="ENVIO">Envío</option>
                                 <option value="DEVOLUCION">Devolución</option>
                             </select>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="nro_identificacion" class="form-label fw-bold">Solicitante</label>
+                        <div class="col-md-6">
+                            <label for="nro_identificacion" class="form-label fw-bold">
+                                <i class="fas fa-user-tie me-2 text-info"></i> Solicitante
+                            </label>
                             @if(in_array($cargo, ['Vendedor', 'Vendedor camión']))
-                                <input type="text" class="form-control" 
+                                <input type="text" class="form-control rounded-pill" 
                                     value="{{ $empleado ? $empleado->nombreemp . ' ' . $empleado->apellidoemp : $usuario->name }}" 
                                     readonly>
                                 <input type="hidden" name="nro_identificacion" 
                                     value="{{ $empleado ? $empleado->nro_identificacion : '' }}">
                             @else
-                                <select name="nro_identificacion" class="form-select" required>
+                                <select name="nro_identificacion" class="form-select rounded-pill" required>
+                                    <option value="">Seleccione solicitante</option>
                                     @foreach ($empleados as $empleado)
                                         <option value="{{ $empleado->nro_identificacion }}">
                                             {{ $empleado->nombreemp }} {{ $empleado->apellidoemp }}
@@ -93,10 +127,12 @@
                             @endif
                         </div>
 
-                        <div class="mb-3">
-                            <label for="idbodega" class="form-label fw-bold">Bodega</label>
+                        <div class="col-12">
+                            <label for="idbodega" class="form-label fw-bold">
+                                <i class="fas fa-warehouse me-2 text-info"></i> Bodega
+                            </label>
                             @if(in_array($cargo, ['Vendedor', 'Vendedor camión']))
-                                <input type="text" class="form-control mb-1"
+                                <input type="text" class="form-control rounded-pill mb-1"
                                     value="{{ $bodegaAsignada ? $bodegaAsignada->nombrebodega : '' }}"
                                     readonly>
                                 <select name="idbodega" class="form-select d-none" tabindex="-1" aria-hidden="true">
@@ -105,7 +141,8 @@
                                     </option>
                                 </select>
                             @else
-                                <select name="idbodega" class="form-select" required>
+                                <select name="idbodega" class="form-select rounded-pill" required>
+                                    <option value="">Seleccione bodega</option>
                                     @foreach ($bodegas as $bodega)
                                         <option value="{{ $bodega->idbodega }}">{{ $bodega->nombrebodega }}</option>
                                     @endforeach
@@ -113,39 +150,58 @@
                             @endif
                         </div>
 
-                        <div id="productos-container">
-                            <div class="row row-producto mb-3 align-items-end">
-                                <div class="col-md-4">
-                                    <label for="codigoproducto[]" class="form-label fw-bold">Producto</label>
-                                    <select name="codigoproducto[]" class="form-select producto-select" required>
-                                        <option value="">Seleccione un producto</option>
-                                    </select>
+                        <!-- Sección de Productos -->
+                        <div class="col-12 mt-4">
+                            <div class="card border-2 border-info bg-light bg-opacity-25">
+                                <div class="card-header bg-info bg-opacity-10 border-0">
+                                    <h5 class="mb-0 text-info fw-bold">
+                                        <i class="fas fa-boxes me-2"></i> Productos
+                                    </h5>
                                 </div>
-                                <div class="col-md-3">
-                                    <label for="empaque[]" class="form-label fw-bold">Cantidad</label>
-                                    <input type="number" name="cantidad[]" class="form-control" required>
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="empaque[]" class="form-label fw-bold">Tipo de Empaque</label>
-                                    <input type="text" name="empaque[]" class="form-control empaque-input" readonly>
-                                </div>
-                                <div class="col-md-2 d-flex gap-2">
-                                    <button type="button" class="btn btn-outline-success btn-add-producto rounded-circle" style="width: 38px; height: 38px;">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-danger btn-remove-producto rounded-circle" style="width: 38px; height: 38px;">
-                                        <i class="fas fa-times"></i>
-                                    </button>
+                                <div class="card-body">
+                                    <div id="productos-container">
+                                        <div class="row row-producto mb-3 align-items-end p-3 bg-white rounded-3 shadow-sm border">
+                                            <div class="col-md-4">
+                                                <label for="codigoproducto[]" class="form-label fw-bold">
+                                                    <i class="fas fa-cube me-1 text-secondary"></i> Producto
+                                                </label>
+                                                <select name="codigoproducto[]" class="form-select rounded-pill producto-select" required>
+                                                    <option value="">Seleccione un producto</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="cantidad[]" class="form-label fw-bold">
+                                                    <i class="fas fa-sort-numeric-up me-1 text-secondary"></i> Cantidad
+                                                </label>
+                                                <input type="number" name="cantidad[]" class="form-control rounded-pill" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="empaque[]" class="form-label fw-bold">
+                                                    <i class="fas fa-box me-1 text-secondary"></i> Tipo de Empaque
+                                                </label>
+                                                <input type="text" name="empaque[]" class="form-control rounded-pill empaque-input" readonly>
+                                            </div>
+                                            <div class="col-md-2 d-flex gap-2 justify-content-center">
+                                                <button type="button" class="btn btn-outline-success btn-add-producto rounded-circle shadow-sm" style="width: 38px; height: 38px;" title="Agregar producto">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger btn-remove-producto rounded-circle shadow-sm" style="width: 38px; height: 38px;" title="Eliminar producto">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="d-flex gap-2 mt-4 justify-content-end">
-                            <a href="{{ route('tipoNota.index') }}" class="btn btn-secondary rounded-pill py-2">
-                                <i class="fas fa-arrow-left me-2"></i> Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-info text-white fw-bold rounded-pill py-2">
+                        
+                        <div class="col-12 text-center mt-4">
+                            <button type="submit" class="btn btn-info text-white fw-bold rounded-pill px-5 py-3">
                                 <i class="fas fa-save me-2"></i> Guardar Nota
                             </button>
+                            <a href="{{ route('tipoNota.index') }}" class="btn btn-secondary rounded-pill px-5 py-3 ms-3">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -212,9 +268,6 @@ body {
 .row.g-0 {
     margin: 0;
 }
-.row.g-3 {
-    margin: 0;
-}
 .col-md-2, .col-md-10 {
     padding-left: 0;
     padding-right: 0;
@@ -231,21 +284,82 @@ body {
     background-color: #00796b;
     border-color: #00796b;
 }
-.btn-outline-success, .btn-outline-danger {
+.btn-secondary {
+    background-color: #607d8b;
+    border-color: #607d8b;
+    color: #fff;
+}
+.btn-secondary:hover, .btn-secondary:focus {
+    background-color: #455a64;
+    border-color: #455a64;
+    color: #fff;
+}
+.btn-light {
+    background-color: #f8f9fa;
+    border-color: #f8f9fa;
+    color: #495057;
+}
+.btn-light:hover, .btn-light:focus {
+    background-color: #e2e6ea;
+    border-color: #dae0e5;
+    color: #495057;
+}
+.btn-outline-success {
     border-width: 2px;
+    transition: all 0.3s ease;
 }
 .btn-outline-success:hover, .btn-outline-success:focus {
     background-color: #43a047;
     color: #fff;
     border-color: #43a047;
+    transform: scale(1.1);
+}
+.btn-outline-danger {
+    border-width: 2px;
+    transition: all 0.3s ease;
 }
 .btn-outline-danger:hover, .btn-outline-danger:focus {
     background-color: #e53935;
     color: #fff;
     border-color: #e53935;
+    transform: scale(1.1);
 }
 .rounded-pill {
     border-radius: 50rem !important;
+}
+.form-control, .form-select {
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #0097a7;
+    box-shadow: 0 0 0 0.2rem rgba(0, 151, 167, 0.25);
+}
+.form-label {
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+.alert {
+    border: none;
+    border-radius: 0.75rem;
+}
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+.row-producto {
+    transition: all 0.3s ease;
+}
+.row-producto:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+}
+#productos-container .card {
+    border-radius: 1rem;
 }
 @media (max-width: 768px) {
     .col-md-2 {
@@ -257,10 +371,25 @@ body {
         padding: 15px !important;
     }
     .h3 {
-        font-size: 2rem;
+        font-size: 1.75rem;
     }
     .container-fluid {
         padding: 0 !important;
+    }
+    .card-header .d-flex {
+        flex-direction: column;
+        text-align: center;
+    }
+    .card-header .btn {
+        margin-top: 1rem;
+    }
+    .row-producto {
+        flex-direction: column;
+    }
+    .row-producto .col-md-2 {
+        display: flex;
+        justify-content: center;
+        margin-top: 15px;
     }
 }
 html, body {

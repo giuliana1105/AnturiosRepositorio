@@ -105,17 +105,19 @@ class VentaBodegaController extends Controller
                 'precio_total' => $request->cantidad[$index] * $request->precio_unitario[$index],
             ]);
 
-            // Actualiza el stock en productos_bodega (registra salida)
+            // Actualiza el stock en productos_bodega (registra salida por venta)
             DB::table('productos_bodega')->insert([
                 'bodega_id' => $bodega_id,
                 'producto_id' => $codigo,
-                'cantidad' => $request->cantidad[$index],
+                'cantidad' => -abs($request->cantidad[$index]), // RESTA STOCK
                 'fecha' => now(),
-                'es_devolucion' => true,
+                'es_devolucion' => false,
+                'tipo_movimiento' => 'venta', // Identifica como venta
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
         }
+        
 
         // Guardar abonos si es crédito
         if ($request->tipo_pago === 'Crédito' && $request->has('abono')) {

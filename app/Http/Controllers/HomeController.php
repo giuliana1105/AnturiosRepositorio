@@ -20,11 +20,19 @@ class HomeController extends Controller
             $bodega = $user->empleado->bodega;
             $id = $bodega->idbodega;
 
-            // Productos enviados a esta bodega
+            // // Productos enviados a esta bodega
+            // $productosEnviados = DB::table('productos_bodega as pb')
+            //     ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
+            //     ->where('pb.bodega_id', $id)
+            //     ->where('pb.tipo_movimiento', 'envio') // Solo envíos, no ventas
+            //     ->select('p.codigo', 'p.nombre', 'pb.cantidad', 'pb.fecha')
+            //     ->orderBy('pb.fecha', 'desc')
+            //     ->get();
+                   // Productos devueltos desde esta bodega
             $productosEnviados = DB::table('productos_bodega as pb')
                 ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
                 ->where('pb.bodega_id', $id)
-                ->where('pb.es_devolucion', false)
+                ->where('pb.tipo_movimiento', 'envio') // Solo envíos
                 ->select('p.codigo', 'p.nombre', 'pb.cantidad', 'pb.fecha')
                 ->orderBy('pb.fecha', 'desc')
                 ->get();
@@ -89,11 +97,20 @@ class HomeController extends Controller
     {
         $bodega = Bodega::findOrFail($id);
 
-        // Productos enviados a esta bodega
+        // // Productos enviados a esta bodega
+        // $productosEnviados = DB::table('productos_bodega as pb')
+        //     ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
+        //     ->where('pb.bodega_id', $id)
+        //     ->where('pb.tipo_movimiento', 'envio') // Solo envíos, no ventas
+        //     ->select('p.codigo', 'p.nombre', 'pb.cantidad', 'pb.fecha')
+        //     ->orderBy('pb.fecha', 'desc')
+        //     ->get();
+
+        // Productos devueltos desde esta bodega
         $productosEnviados = DB::table('productos_bodega as pb')
             ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
             ->where('pb.bodega_id', $id)
-            ->where('pb.es_devolucion', false)
+            ->where('pb.tipo_movimiento', 'envio') // Solo envíos
             ->select('p.codigo', 'p.nombre', 'pb.cantidad', 'pb.fecha')
             ->orderBy('pb.fecha', 'desc')
             ->get();

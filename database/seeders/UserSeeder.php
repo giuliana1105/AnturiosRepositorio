@@ -34,7 +34,7 @@ class UserSeeder extends Seeder
         //creamos un usuario
         $adminUser = User ::query()->create([
             'name'=> 'admin',
-            'email'=>'admin@admin.com',
+            'email'=>'admin@gmail.com',
             'username' => 'admin_user', 
             'password '=> 'Administrator55@',
             'email_verified_at'=> now()

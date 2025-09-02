@@ -120,6 +120,20 @@
                 Inventario
                 <i class="fas fa-shopping-cart ms-2"></i>
             </span>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <nav class="nav flex-column">
+                    <!-- <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
+                        <i class="fas fa-home me-2"></i> Home
+                    </a> -->
+                    <!-- ...otros enlaces... -->
+                    <!-- <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="nav-link text-dark btn btn-link mb-2" style="text-align:left;">
+                            <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
+                        </button>
+                    </form> -->
+                </nav>
+            </div>
         </div>
     </nav>
 @endif

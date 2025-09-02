@@ -28,6 +28,7 @@
                 <a class="nav-link text-dark mb-2" href="{{ route('transaccionProducto.index') }}">
                     <i class="fas fa-exchange-alt me-2"></i> Transacción Producto
                 </a>
+                
                 <!-- Agrega más enlaces según tu menú -->
             </nav>
         </div>

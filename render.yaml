@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: anturios-app
+    env: docker
+    repo: https://github.com/giuliana1105/AnturiosRepositorio
+    branch: main
+    dockerContext: .
+    dockerfilePath: Dockerfile
+    buildFilter:
+      paths:
+        - .
+    plan: free
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_DEBUG
+        value: false
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        value: dpg-d2rnh13ipnbc73de1fsg-a.oregon-postgres.render.com
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        value: anturios_base
+      - key: DB_USERNAME
+        value: anturios_base_user
+      - key: DB_PASSWORD
+        value: Tz0RRQTE5tkxaebJG6AbHfPzvAnjTWtX

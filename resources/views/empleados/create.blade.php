@@ -77,16 +77,16 @@
 
                     <!-- Nav tabs con diseño moderno -->
                     <ul class="nav nav-pills nav-fill mb-4" id="empleadoTab" role="tablist">
-                        <li class="nav-item" role="presentation">
+                        <!-- <li class="nav-item" role="presentation">
                             <button class="nav-link active rounded-pill px-4 py-3" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual" type="button" role="tab">
                                 <i class="fas fa-user-edit me-2"></i> Ingreso Manual
                             </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
+                        </li> -->
+                        <!-- <li class="nav-item" role="presentation">
                             <button class="nav-link rounded-pill px-4 py-3" id="excel-tab" data-bs-toggle="tab" data-bs-target="#excel" type="button" role="tab">
                                 <i class="fas fa-file-excel me-2"></i> Importar desde Excel
                             </button>
-                        </li>
+                        </li> -->
                     </ul>
 
                     <div class="tab-content" id="empleadoTabContent">

@@ -133,7 +133,7 @@
     <nav class="navbar navbar-expand-lg" style="background-color: #0097a7;">
         <div class="container-fluid">
             <span class="navbar-brand text-white fw-bold" style="font-size: 1.7rem;">
-                Gestión de inventario - Los Anturios
+                Gestión de inventario - Importadora Anturios
                 <i class="fas fa-shopping-cart ms-2"></i>
             </span>
             <div class="collapse navbar-collapse" id="navbarNav">

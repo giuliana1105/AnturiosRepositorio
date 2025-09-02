@@ -1,7 +1,11 @@
+
 @extends('layouts.app')
 
 @section('content')
 <div class="container">
+    <a href="{{ route('home') }}" class="btn btn-secondary mb-3">
+        Volver
+    </a>
     <h3 class="mb-4">Seleccione una Bodega</h3>
     <div class="row">
         @foreach($bodegas as $bodega)

@@ -20,29 +20,7 @@
             <div class="mb-3">
                 <small class="text-uppercase text-muted fw-bold">NAVEGACIÓN PRINCIPAL</small>
             </div>
-            <nav class="nav flex-column">
-                <a class="nav-link text-dark mb-2" href="{{ route('tipoNota.index') }}">
-                    <i class="fas fa-file-alt me-2"></i> Notas de Pedido
-                </a>
-                <a class="nav-link text-dark mb-2" href="{{ route('productos.index') }}">
-                    <i class="fas fa-cube me-2"></i> Productos
-                </a>
-                <a class="nav-link text-dark mb-2" href="{{ route('empleados.index') }}">
-                    <i class="fas fa-users me-2"></i> Empleados
-                </a>
-                <a class="nav-link text-dark mb-2" href="{{ route('transaccionProducto.index') }}">
-                    <i class="fas fa-exchange-alt me-2"></i> Transacción Producto
-                </a>
-                <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
-                    <i class="fas fa-home me-2"></i> Home
-                </a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="nav-link text-dark btn btn-link mb-2" style="text-align:left;">
-                        <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
-                    </button>
-                </form>
-            </nav>
+            
         </div>
 
         <!-- Main Content -->
@@ -53,9 +31,7 @@
                         <h3 class="mb-0">
                             <i class="fas fa-key me-2"></i> Cambiar Contraseña
                         </h3>
-                        <a href="{{ route('home') }}" class="btn btn-light btn-sm rounded-pill">
-                            <i class="fas fa-arrow-left me-2"></i> Volver
-                        </a>
+                        
                     </div>
                 </div>
                 <div class="card-body">
@@ -117,9 +93,7 @@
                             <button type="submit" class="btn btn-info text-white fw-bold rounded-pill px-5 py-3">
                                 <i class="fas fa-key me-2"></i> Cambiar Contraseña
                             </button>
-                            <a href="{{ route('home') }}" class="btn btn-secondary rounded-pill px-5 py-3 ms-3">
-                                <i class="fas fa-times me-2"></i> Cancelar
-                            </a>
+                           
                         </div>
                     </form>
 

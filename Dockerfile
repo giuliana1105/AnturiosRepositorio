@@ -1,7 +1,7 @@
 # ============================
-# 1. Imagen base (PHP + Composer)
+# 1. Imagen base (PHP 8.3 + Composer)
 # ============================
-FROM php:8.2-fpm
+FROM php:8.3-fpm
 
 # Instalar dependencias del sistema y extensiones de PHP necesarias para Laravel
 RUN apt-get update && apt-get install -y \
@@ -32,7 +32,7 @@ COPY . .
 # Instalar dependencias de PHP con Composer
 RUN composer install --optimize-autoloader --no-dev
 
-# Generar la cache de configuración de Laravel
+# Generar la cache de Laravel
 RUN php artisan config:clear && \
     php artisan cache:clear && \
     php artisan config:cache && \
@@ -42,8 +42,6 @@ RUN php artisan config:clear && \
 # ============================
 # 3. Servidor
 # ============================
-# Render necesita que expongas un puerto, usaremos 8080
 EXPOSE 8080
 
-# Comando de inicio (PHP embebido en Laravel)
 CMD php artisan serve --host=0.0.0.0 --port=8080

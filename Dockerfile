@@ -11,7 +11,12 @@ RUN apt-get update && apt-get install -y \
     unzip \
     zip \
     libzip-dev \
-    && docker-php-ext-install pdo pdo_pgsql zip
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd pdo pdo_pgsql zip \
+    && rm -rf /var/lib/apt/lists/*
 
 # Instalar Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -24,7 +29,7 @@ WORKDIR /var/www
 # Copiar archivos de Laravel
 COPY . .
 
-# Instalar dependencias de PHP
+# Instalar dependencias de PHP con Composer
 RUN composer install --optimize-autoloader --no-dev
 
 # Generar la cache de configuración de Laravel
@@ -40,5 +45,5 @@ RUN php artisan config:clear && \
 # Render necesita que expongas un puerto, usaremos 8080
 EXPOSE 8080
 
-# Comando de inicio (usaremos PHP + servidor embebido)
+# Comando de inicio (PHP embebido en Laravel)
 CMD php artisan serve --host=0.0.0.0 --port=8080

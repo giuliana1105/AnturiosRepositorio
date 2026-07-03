@@ -5,75 +5,10 @@
     $cargo = auth()->user()->cargoNombre();
 @endphp
 
-<div class="container-fluid p-0 m-0">
-    <div class="row g-0 min-vh-100">
-        <!-- Sidebar Navigation -->
-        <div class="col-md-2 bg-light py-3 px-3">
-            <div class="text-center mb-4">
-                <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                    <i class="fas fa-user text-white fa-lg"></i>
-                </div>
-                <div class="mt-2">
-                    <div class="fw-bold">{{ auth()->user()->name }}</div>
-                    <div class="text-muted small">{{ auth()->user()->email }}</div>
-                    <div class="text-secondary small">{{ auth()->user()->cargoNombre() }}</div>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <small class="text-uppercase text-muted fw-bold">NAVEGACIÓN PRINCIPAL</small>
-            </div>
-
-            <nav class="nav flex-column">
-                <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
-                    <i class="fas fa-th-large me-2"></i> Dashboard
-                </a>
-                <!-- <a class="nav-link text-dark mb-2" href="{{ route('productos.index') }}">
-                    <i class="fas fa-cube me-2"></i> Productos
-                </a>
-                @if($cargo !== 'Jefe de bodega')
-                <a class="nav-link text-dark mb-2" href="{{ route('empleados.index') }}">
-                    <i class="fas fa-users me-2"></i> Empleados
-                </a>
-                @endif
-                <a class="nav-link text-dark mb-2" href="#">
-                    <i class="fas fa-box me-2"></i> Gestión de Productos
-                    <i class="fas fa-plus-circle ms-auto"></i>
-                </a>
-                <a class="nav-link text-dark mb-2" href="#">
-                    <i class="fas fa-clipboard-list me-2"></i> Gestión de Existencias
-                    <i class="fas fa-plus-circle ms-auto"></i>
-                </a>
-                <a class="nav-link text-dark mb-2" href="#">
-                    <i class="fas fa-users-cog me-2"></i> Gestión de usuarios
-                    <i class="fas fa-plus-circle ms-auto"></i>
-                </a>
-                @if($cargo !== 'Jefe de bodega')
-                <a class="nav-link active text-info fw-bold mb-2" href="{{ route('bodegas.index') }}">
-                    <i class="fas fa-warehouse me-2"></i> Bodegas
-                </a>
-                @endif
-                <a class="nav-link text-dark mb-2" href="#">
-                    <i class="fas fa-chart-bar me-2"></i> Reportes
-                </a>
-                <a class="nav-link text-dark mb-2" href="#">
-                    <i class="fas fa-cog me-2"></i> Configuración
-                    <i class="fas fa-plus-circle ms-auto"></i>
-                </a> -->
-                <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
-                    <i class="fas fa-home me-2"></i> Home
-                </a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="nav-link text-dark btn btn-link mb-2" style="text-align:left;">
-                        <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
-                    </button>
-                </form>
-            </nav>
-        </div>
-
+<div class="container py-4">
+    <div class="row">
         <!-- Main Content -->
-        <div class="col-md-10 py-3 px-4 bg-white">
+        <div class="col-12 py-3 px-4">
             <h3 class="mb-4 text-dark">Productos en {{ $bodega->nombrebodega }}</h3>
 
             <!-- Botones para mostrar cada sección -->

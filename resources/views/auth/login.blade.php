@@ -118,10 +118,10 @@
             <div class="login-title">Bienvenidos</div>
             <form action="{{ route('login.post') }}" method="POST" class="login-form">
                 @csrf
-                <label for="email"><i class="fas fa-envelope me-2 text-info"></i>Correo Electrónico</label>
+                <label for="email"><i class="fas fa-envelope me-2 text-brand"></i>Correo Electrónico</label>
                 <input type="email" name="email" id="email" class="form-control" required placeholder="Ingresa tu correo electrónico" value="{{ old('email') }}">
 
-                <label for="password"><i class="fas fa-lock me-2 text-info"></i>Contraseña</label>
+                <label for="password"><i class="fas fa-lock me-2 text-brand"></i>Contraseña</label>
                 <div class="position-relative">
                     <input type="password" name="password" id="password" class="form-control" required placeholder="Ingresa tu contraseña">
                     <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2" onclick="togglePassword()" id="toggleBtn">
@@ -132,7 +132,7 @@
                 <div class="form-check mb-3">
                     <input type="checkbox" class="form-check-input" id="remember_me" name="remember">
                     <label class="form-check-label ms-1" for="remember_me">
-                        <i class="fas fa-bookmark me-1 text-info"></i>Recordar sesión
+                        <i class="fas fa-bookmark me-1 text-brand"></i>Recordar sesión
                     </label>
                 </div>
 

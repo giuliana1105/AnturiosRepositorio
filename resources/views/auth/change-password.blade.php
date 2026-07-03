@@ -3,38 +3,18 @@
 @section('title', 'Cambiar Contraseña')
 
 @section('content')
-<div class="container-fluid p-0 m-0">
-    <div class="row g-0 min-vh-100">
-        <!-- Sidebar Navigation -->
-        <div class="col-md-2 bg-light py-3 px-3">
-            <div class="text-center mb-4">
-                <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                    <i class="fas fa-user text-white fa-lg"></i>
-                </div>
-                <div class="mt-2">
-                    <div class="fw-bold">{{ auth()->user()->name }}</div>
-                    <div class="text-muted small">{{ auth()->user()->email }}</div>
-                    <div class="text-secondary small">{{ auth()->user()->cargoNombre() }}</div>
-                </div>
-            </div>
-            <div class="mb-3">
-                <small class="text-uppercase text-muted fw-bold">NAVEGACIÓN PRINCIPAL</small>
-            </div>
-            
-        </div>
-
-        <!-- Main Content -->
-        <div class="col-md-10 py-3 px-4 bg-white">
-            <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 800px;">
-                <div class="card-header bg-info text-white rounded-top-4">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <h3 class="mb-0">
-                            <i class="fas fa-key me-2"></i> Cambiar Contraseña
-                        </h3>
-                        
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header rounded-top-4 bg-white border-0 pt-4">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <h4 class="mb-0" style="color: var(--brand-dark);">
+                            <i class="fas fa-key me-2" style="color: var(--brand-primary);"></i> Cambiar Contraseña
+                        </h4>
                     </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <!-- Alertas de errores -->
                     @if ($errors->any())
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -59,9 +39,9 @@
                     @endif
 
                     <!-- Información de seguridad -->
-                    <div class="text-center mb-4">
-                        <i class="fas fa-shield-alt fa-3x text-info mb-3"></i>
-                        <h4 class="text-muted">Actualiza tu contraseña</h4>
+                    <div class="text-center mb-4 mt-2">
+                        <i class="fas fa-shield-alt fa-3x mb-3" style="color: var(--brand-primary);"></i>
+                        <h4 class="fw-bold" style="color: var(--brand-dark);">Actualiza tu contraseña</h4>
                         <p class="text-muted">Por tu seguridad, asegúrate de usar una contraseña fuerte</p>
                     </div>
 
@@ -69,38 +49,37 @@
                         @csrf
                         <div class="col-12">
                             <label for="password" class="form-label fw-bold">
-                                <i class="fas fa-lock me-2 text-info"></i> Nueva Contraseña
+                                <i class="fas fa-lock me-2" style="color: var(--brand-primary);"></i> Nueva Contraseña
                             </label>
                             <input type="password" name="password" id="password" 
                                    class="form-control rounded-pill" required 
                                    placeholder="Ingresa tu nueva contraseña">
                             <div class="form-text mt-2">
-                                <i class="fas fa-info-circle me-1"></i> 
+                                <i class="fas fa-info-circle me-1" style="color: var(--brand-primary);"></i> 
                                 La contraseña debe tener al menos 8 caracteres
                             </div>
                         </div>
                         
                         <div class="col-12">
                             <label for="password_confirmation" class="form-label fw-bold">
-                                <i class="fas fa-lock me-2 text-info"></i> Confirmar Contraseña
+                                <i class="fas fa-lock me-2" style="color: var(--brand-primary);"></i> Confirmar Contraseña
                             </label>
                             <input type="password" name="password_confirmation" id="password_confirmation" 
                                    class="form-control rounded-pill" required 
                                    placeholder="Confirma tu nueva contraseña">
                         </div>
                         
-                        <div class="col-12 text-center mt-4">
-                            <button type="submit" class="btn btn-info text-white fw-bold rounded-pill px-5 py-3">
-                                <i class="fas fa-key me-2"></i> Cambiar Contraseña
+                        <div class="col-12 text-center mt-4 mb-2">
+                            <button type="submit" class="btn text-white fw-bold rounded-pill px-5 py-3 w-100" style="background-color: var(--brand-primary);">
+                                <i class="fas fa-key me-2"></i> Actualizar Contraseña
                             </button>
-                           
                         </div>
                     </form>
 
                     <!-- Consejos de seguridad -->
-                    <div class="mt-4 p-3 bg-light rounded-4">
-                        <h6 class="fw-bold text-info mb-2">
-                            <i class="fas fa-lightbulb me-2"></i> Consejos para una contraseña segura:
+                    <div class="mt-4 p-3 rounded-4" style="background-color: #f8f9fa; border: 1px solid #e2e8f0;">
+                        <h6 class="fw-bold mb-2" style="color: var(--brand-dark);">
+                            <i class="fas fa-lightbulb me-2" style="color: var(--brand-primary);"></i> Consejos para una contraseña segura:
                         </h6>
                         <ul class="small text-muted mb-0">
                             <li>Usa al menos 8 caracteres</li>
@@ -116,10 +95,6 @@
 </div>
 
 <style>
-body {
-    margin: 0;
-    padding: 0;
-}
 .container-fluid {
     padding: 0 !important;
     margin: 0 !important;

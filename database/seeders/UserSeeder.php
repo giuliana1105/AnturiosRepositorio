@@ -6,13 +6,9 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Contracts\Role as ContractsRole;
-//use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-//use Spatie\Permission\Models\User;
 
-
-//Aquí se crean los roles y permisos para los usuarios 
 class UserSeeder extends Seeder
 {
     /**
@@ -20,54 +16,99 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        Permission::create(['name'=>'ver producto']);
-        Permission::create(['name'=>'crear producto']);
-        Permission::create(['name'=>'editar producto ']);
-        Permission::create(['name'=>'eliminar producto']);
+        // 1. Crear Permisos (Agrupados por Módulos del Menú)
+        $permisos = [
+            // Inicio
+            'ver dashboard general',
+            'ver dashboard vendedor',
+            
+            // Catálogo e Inventario
+            'ver productos',
+            'gestionar productos',
+            'ver inventario global',
+            'ver inventario local',
+            
+            // Movimientos
+            'gestionar mis solicitudes',
+            'aprobar solicitudes',
+            'ver historial transferencias',
+            
+            // Ventas y Recaudación
+            'registrar ventas',
+            'gestionar cuentas cobrar',
+            'generar liquidacion',
+            
+            // Configuración
+            'gestionar usuarios',
+            'gestionar bodegas',
+        ];
 
-        Permission::create(['name'=>'ver empleado']);
-        Permission::create(['name'=>'crear empleado']);
-        Permission::create(['name'=>'editar empleado']);
-        Permission::create(['name'=>'eliminar empleado']);
+        foreach ($permisos as $permiso) {
+            Permission::create(['name' => $permiso]);
+        }
 
+        // 2. Crear Roles
+        $roleAdmin = Role::create(['name' => 'Administrador']);
+        $roleJefeBodega = Role::create(['name' => 'Jefe de Bodega']);
+        $roleVendedor = Role::create(['name' => 'Vendedor']);
 
-        //creamos un usuario
-        $adminUser = User ::query()->create([
-            'name'=> 'admin',
-            'email'=>'admin@gmail.com',
+        // 3. Asignar Permisos a Roles
+        
+        // Administrador: Tiene todos los permisos, o los específicos de gestión global
+        $roleAdmin->syncPermissions(Permission::all()); // Opcional: Dale todo. Si quieres limitarlo:
+        /* $roleAdmin->syncPermissions([
+            'ver dashboard general', 'gestionar productos', 'ver inventario global',
+            'aprobar solicitudes', 'ver historial transferencias', 'gestionar usuarios', 'gestionar bodegas'
+        ]); */
+
+        // Jefe de Bodega
+        $roleJefeBodega->syncPermissions([
+            'ver productos', 
+            'gestionar productos', 
+            'ver inventario global', 
+            'ver historial transferencias'
+        ]);
+
+        // Vendedor (Mostrador o Camión)
+        $roleVendedor->syncPermissions([
+            'ver dashboard vendedor', 
+            'ver productos', 
+            'ver inventario local', 
+            'gestionar mis solicitudes', 
+            'registrar ventas', 
+            'gestionar cuentas cobrar', 
+            'generar liquidacion'
+        ]);
+
+        // 4. Crear Usuarios de Prueba y Asignar Roles
+
+        $adminUser = User::query()->create([
+            'name' => 'Admin Test',
+            'email' => 'admin@gmail.com',
             'username' => 'admin_user', 
-            'password '=> 'Administrator55@',
-            'email_verified_at'=> now()
+            'password' => 'Administrator55@',
+            'email_verified_at' => now()
         ]);
-
-        
-      
-        $roleAdmin = Role::create(['name'=>'super-admin']);
-
-       //creamos un rol, asignamos el rol al usuario
         $adminUser->assignRole($roleAdmin);
-         
-        //Damos todos los permisos
-        $permissionsAdmin = Permission::query()->pluck('name');
-        //Asignamos todos los permisos al rol al super usuario
-        $roleAdmin -> syncPermissions($permissionsAdmin);
 
-        //creamos un nuevo usuario
-        $vendedorUser = User ::query()->create([
-            'name'=> 'vendedor',
-            'email'=>'vendedor@vendedor.com',
-            'username' => 'saler_user', 
-            'password '=> 'Saler11@',
-            'email_verified_at'=> now()
+        // Usuario Jefe de Bodega
+        $jefeBodegaUser = User::query()->create([
+            'name' => 'Jefe Bodega Test',
+            'email' => 'jefebodega@gmail.com',
+            'username' => 'jefe_bodega', 
+            'password' => 'Jefebodega55@',
+            'email_verified_at' => now()
         ]);
-        //Se crea el rol vendedor 
-        $roleVendedor= Role::create(['name'=>'vendedor']);
-        //El rol vendedor se asigna al usuario vendedorUser 
-        $vendedorUser->assignRole($roleVendedor);
-        //Asigna el permiso ver producto al rol vendedor 
-        $roleVendedor->syncPermissions(['ver producto']);
-        
-       
+        $jefeBodegaUser->assignRole($roleJefeBodega);
 
+        // Usuario Vendedor
+        $vendedorUser = User::query()->create([
+            'name' => 'Vendedor Test',
+            'email' => 'vendedor@vendedor.com',
+            'username' => 'saler_user', 
+            'password' => 'Saler11@',
+            'email_verified_at' => now()
+        ]);
+        $vendedorUser->assignRole($roleVendedor);
     }
 }

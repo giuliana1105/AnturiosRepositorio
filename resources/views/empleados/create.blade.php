@@ -1,53 +1,17 @@
 @extends('layouts.app')
 
-@section('content')
-<div class="container-fluid p-0 m-0">
-    <div class="row g-0 min-vh-100">
-        <!-- Sidebar Navigation -->
-        <div class="col-md-2 bg-light py-3 px-3">
-            <div class="text-center mb-4">
-                <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                    <i class="fas fa-user text-white fa-lg"></i>
-                </div>
-                <div class="mt-2">
-                    <div class="fw-bold">{{ auth()->user()->name }}</div>
-                    <div class="text-muted small">{{ auth()->user()->email }}</div>
-                    <div class="text-secondary small">{{ auth()->user()->cargoNombre() }}</div>
-                </div>
-            </div>
-            <div class="mb-3">
-                <small class="text-uppercase text-muted fw-bold">NAVEGACIÓN PRINCIPAL</small>
-            </div>
-            <nav class="nav flex-column">
-                <a class="nav-link text-dark mb-2" href="{{ route('tipoNota.index') }}">
-                    <i class="fas fa-file-alt me-2"></i> Notas de Pedido
-                </a>
-                <a class="nav-link text-dark mb-2" href="{{ route('productos.index') }}">
-                    <i class="fas fa-cube me-2"></i> Productos
-                </a>
-                <a class="nav-link active text-info fw-bold mb-2" href="{{ route('empleados.index') }}">
-                    <i class="fas fa-users me-2"></i> Empleados
-                </a>
-                <a class="nav-link text-dark mb-2" href="{{ route('transaccionProducto.index') }}">
-                    <i class="fas fa-exchange-alt me-2"></i> Transacción Producto
-                </a>
-                <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
-                    <i class="fas fa-home me-2"></i> Home
-                </a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="nav-link text-dark btn btn-link mb-2" style="text-align:left;">
-                        <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
-                    </button>
-                </form>
-                <!-- Agrega más enlaces según tu menú -->
-            </nav>
-        </div>
 
+@php
+    $cargo = auth()->user()->cargoNombre();
+@endphp
+
+@section('content')
+<div class="container py-4">
+    <div class="row">
         <!-- Main Content -->
-        <div class="col-md-10 py-3 px-4 bg-white">
+        <div class="col-12 py-3 px-4">
             <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 1000px;">
-                <div class="card-header bg-info text-white rounded-top-4">
+                <div class="card-header rounded-top-4">
                     <div class="d-flex align-items-center justify-content-between">
                         <h3 class="mb-0">
                             <i class="fas fa-user-plus me-2"></i> Crear Empleado
@@ -96,7 +60,7 @@
                                 @csrf
                                 <div class="col-md-6">
                                     <label for="nro_identificacion" class="form-label fw-bold">
-                                        <i class="fas fa-id-card me-2 text-info"></i> Cédula
+                                        <i class="fas fa-id-card me-2 text-brand"></i> Cédula
                                     </label>
                                     <input type="text" name="nro_identificacion" id="nro_identificacion" 
                                            class="form-control rounded-pill" required value="{{ old('nro_identificacion') }}" 
@@ -105,7 +69,7 @@
                                 
                                 <div class="col-md-6">
                                     <label for="nombreemp" class="form-label fw-bold">
-                                        <i class="fas fa-user me-2 text-info"></i> Nombre
+                                        <i class="fas fa-user me-2 text-brand"></i> Nombre
                                     </label>
                                     <input type="text" name="nombreemp" id="nombreemp" 
                                            class="form-control rounded-pill" required value="{{ old('nombreemp') }}" 
@@ -114,7 +78,7 @@
                                 
                                 <div class="col-md-6">
                                     <label for="apellidoemp" class="form-label fw-bold">
-                                        <i class="fas fa-user me-2 text-info"></i> Apellido
+                                        <i class="fas fa-user me-2 text-brand"></i> Apellido
                                     </label>
                                     <input type="text" name="apellidoemp" id="apellidoemp" 
                                            class="form-control rounded-pill" required value="{{ old('apellidoemp') }}" 
@@ -123,7 +87,7 @@
                                 
                                 <div class="col-md-6">
                                     <label for="email" class="form-label fw-bold">
-                                        <i class="fas fa-envelope me-2 text-info"></i> Email
+                                        <i class="fas fa-envelope me-2 text-brand"></i> Email
                                     </label>
                                     <input type="email" name="email" id="email" 
                                            class="form-control rounded-pill" required value="{{ old('email') }}" 
@@ -132,7 +96,7 @@
                                 
                                 <div class="col-md-6">
                                     <label for="nro_telefono" class="form-label fw-bold">
-                                        <i class="fas fa-phone me-2 text-info"></i> Celular
+                                        <i class="fas fa-phone me-2 text-brand"></i> Celular
                                     </label>
                                     <input type="text" name="nro_telefono" id="nro_telefono" 
                                            class="form-control rounded-pill" required value="{{ old('nro_telefono') }}" 
@@ -141,7 +105,7 @@
                                 
                                 <div class="col-md-6">
                                     <label for="direccionemp" class="form-label fw-bold">
-                                        <i class="fas fa-map-marker-alt me-2 text-info"></i> Dirección
+                                        <i class="fas fa-map-marker-alt me-2 text-brand"></i> Dirección
                                     </label>
                                     <input type="text" name="direccionemp" id="direccionemp" 
                                            class="form-control rounded-pill" required value="{{ old('direccionemp') }}" 
@@ -150,7 +114,7 @@
                                 
                                 <div class="col-md-6">
                                     <label for="idbodega" class="form-label fw-bold">
-                                        <i class="fas fa-warehouse me-2 text-info"></i> Bodega
+                                        <i class="fas fa-warehouse me-2 text-brand"></i> Bodega
                                     </label>
                                     <select name="idbodega" id="idbodega" class="form-control rounded-pill" required>
                                         <option value="">Seleccione una bodega</option>
@@ -164,7 +128,7 @@
                                 
                                 <div class="col-md-6">
                                     <label for="tipo_identificacion" class="form-label fw-bold">
-                                        <i class="fas fa-id-badge me-2 text-info"></i> Tipo Identificación
+                                        <i class="fas fa-id-badge me-2 text-brand"></i> Tipo Identificación
                                     </label>
                                     <select name="tipo_identificacion" id="tipo_identificacion" class="form-control rounded-pill" required>
                                         <option value="">Seleccione tipo</option>
@@ -176,7 +140,7 @@
                                 
                                 <div class="col-md-6">
                                     <label for="codigocargo" class="form-label fw-bold">
-                                        <i class="fas fa-briefcase me-2 text-info"></i> Cargo
+                                        <i class="fas fa-briefcase me-2 text-brand"></i> Cargo
                                     </label>
                                     <select name="codigocargo" class="form-control rounded-pill" required>
                                         <option value="">Seleccione un cargo</option>
@@ -213,7 +177,7 @@
                                     <div class="col-md-8">
                                         <div class="mb-4">
                                             <label for="excel_file" class="form-label fw-bold">
-                                                <i class="fas fa-upload me-2 text-info"></i> Seleccionar archivo Excel
+                                                <i class="fas fa-upload me-2 text-brand"></i> Seleccionar archivo Excel
                                             </label>
                                             <input type="file" name="excel_file" id="excel_file" 
                                                    class="form-control rounded-pill p-3" accept=".xlsx,.xls" required>
@@ -300,14 +264,7 @@ body {
 .row.g-0 {
     margin: 0;
 }
-.col-md-2, .col-md-10 {
-    padding-left: 0;
-    padding-right: 0;
-}
-.col-md-2.bg-light {
-    margin: 0;
-    border-radius: 0;
-}
+
 .btn-info {
     background-color: #0097a7;
     border-color: #0097a7;

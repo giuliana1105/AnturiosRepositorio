@@ -3,53 +3,12 @@
                         $cargo = auth()->user()->cargoNombre();
                     @endphp
 @section('content')
-<div class="container-fluid p-0 m-0">
-    <div class="row g-0 min-vh-100">
-        <!-- Sidebar Navigation -->
-        <div class="col-md-2 bg-light py-3 px-3">
-            <div class="text-center mb-4">
-                <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                    <i class="fas fa-user text-white fa-lg"></i>
-                </div>
-                <div class="mt-2">
-                    <div class="fw-bold">{{ auth()->user()->name }}</div>
-                    <div class="text-muted small">{{ auth()->user()->email }}</div>
-                    <div class="text-secondary small">{{ auth()->user()->cargoNombre() }}</div>
-                </div>
-            </div>
-            <div class="mb-3">
-                <small class="text-uppercase text-muted fw-bold">NAVEGACIÓN PRINCIPAL</small>
-            </div>
-            <nav class="nav flex-column">
-                <a class="nav-link text-dark mb-2" href="{{ route('tipoNota.index') }}">
-                    <i class="fas fa-file-alt me-2"></i> Notas de Pedido
-                </a>
-                 @if(!in_array($cargo, ['Vendedor camión', 'Vendedor']))
-                <a class="nav-link text-dark mb-2" href="{{ route('productos.index') }}">
-                    <i class="fas fa-cube me-2"></i> Productos
-                </a>
-                                
-
-                <a class="nav-link text-dark mb-2" href="{{ route('empleados.index') }}">
-                    <i class="fas fa-users me-2"></i> Empleados
-                </a>
-                <a class="nav-link text-dark mb-2" href="{{ route('bodegas.index') }}">
-                    <i class="fas fa-warehouse me-2"></i> Bodegas
-                </a>
-                <a class="nav-link text-dark mb-2" href="{{ route('transaccionProducto.index') }}">
-                    <i class="fas fa-exchange-alt me-2"></i> Transacción Producto
-                </a>
-                @endif
-                <a class="nav-link active text-info fw-bold mb-2" href="#">
-                    <i class="fas fa-shopping-cart me-2"></i> Ventas
-                </a>
-            </nav>
-        </div>
-
+<div class="container py-4">
+    <div class="row">
         <!-- Main Content -->
-        <div class="col-md-10 py-3 px-4 bg-white">
+        <div class="col-12 py-3 px-4">
             <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 1400px;">
-                <div class="card-header bg-info text-white rounded-top-4 text-center">
+                <div class="card-header rounded-top-4 text-center">
                     <h3 class="mb-0">
                         <i class="fas fa-plus-circle me-2"></i> Registrar Venta en {{ $bodega->nombrebodega }}
                     </h3>
@@ -301,8 +260,8 @@
 
                                 <!-- Sección de abonos (oculta por defecto) -->
                                 <div id="abonos-section" style="display:none;">
-                                    <div class="card border-0 bg-info bg-opacity-10">
-                                        <div class="card-header bg-info text-white rounded-top-4">
+                                    <div class="card border-0 bg-brand-light">
+                                        <div class="card-header rounded-top-4">
                                             <h6 class="mb-0">
                                                 <i class="fas fa-money-bill me-2"></i> Abonos
                                             </h6>
@@ -377,7 +336,7 @@
 <div class="modal fade" id="confirmVentaModal" tabindex="-1" aria-labelledby="confirmVentaLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content rounded-4">
-            <div class="modal-header bg-info text-white">
+            <div class="modal-header bg-brand text-white">
                 <h5 class="modal-title" id="confirmVentaLabel">
                     <i class="fas fa-check-circle me-2"></i> Confirmar Venta
                 </h5>
@@ -458,14 +417,7 @@ body {
 .row.g-0 {
     margin: 0;
 }
-.col-md-2, .col-md-10 {
-    padding-left: 0;
-    padding-right: 0;
-}
-.col-md-2.bg-light {
-    margin: 0;
-    border-radius: 0;
-}
+
 .btn-info {
     background-color: #0097a7;
     border-color: #0097a7;
@@ -859,8 +811,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const saldo = document.getElementById('saldo-venta').value;
 
             html += `
-            <div class="card border-0 bg-info bg-opacity-10 mt-4">
-                <div class="card-header bg-info text-white">
+            <div class="card border-0 bg-brand-light mt-4">
+                <div class="card-header">
                     <h6 class="mb-0"><i class="fas fa-money-bill me-2"></i>Abonos</h6>
                 </div>
                 <div class="card-body p-0">

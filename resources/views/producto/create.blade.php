@@ -1,49 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid p-0 m-0">
-    <div class="row g-0 min-vh-100">
-        <!-- Sidebar Navigation -->
-        <div class="col-md-2 bg-light py-3 px-3">
-            <div class="text-center mb-4">
-                <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                    <i class="fas fa-user text-white fa-lg"></i>
-                </div>
-                <div class="mt-2">
-                    <div class="fw-bold">{{ auth()->user()->name }}</div>
-                    <div class="text-muted small">{{ auth()->user()->email }}</div>
-                    <div class="text-secondary small">{{ auth()->user()->cargoNombre() }}</div>
-                </div>
-            </div>
-            <div class="mb-3">
-                <small class="text-uppercase text-muted fw-bold">NAVEGACIÓN PRINCIPAL</small>
-            </div>
-            <nav class="nav flex-column">
-                <a class="nav-link text-dark mb-2" href="{{ route('tipoNota.index') }}">
-                    <i class="fas fa-file-alt me-2"></i> Notas de Pedido
-                </a>
-                <a class="nav-link active text-info fw-bold mb-2" href="{{ route('productos.index') }}">
-                    <i class="fas fa-cube me-2"></i> Productos
-                </a>
-                <a class="nav-link text-dark mb-2" href="{{ route('transaccionProducto.index') }}">
-                    <i class="fas fa-exchange-alt me-2"></i> Transacción Producto
-                </a>
-                <a class="nav-link text-dark mb-2" href="{{ route('home') }}">
-                    <i class="fas fa-home me-2"></i> Home
-                </a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="nav-link text-dark btn btn-link mb-2" style="text-align:left;">
-                        <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
-                    </button>
-                </form>
-            </nav>
-        </div>
-
+<div class="container py-4">
+    <div class="row">
         <!-- Main Content -->
-        <div class="col-md-10 py-3 px-4 bg-white">
+        <div class="col-12 py-3 px-4">
             <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 1000px;">
-                <div class="card-header bg-info text-white rounded-top-4">
+                <div class="card-header rounded-top-4">
                     <div class="d-flex align-items-center justify-content-between">
                         <h3 class="mb-0">
                             <i class="fas fa-plus-circle me-2"></i> Crear Producto
@@ -92,7 +55,7 @@
                                 @csrf
                                 <div class="col-md-6">
                                     <label for="codigo" class="form-label fw-bold">
-                                        <i class="fas fa-barcode me-2 text-info"></i> Código
+                                        <i class="fas fa-barcode me-2 text-brand"></i> Código
                                     </label>
                                     <input type="text" name="codigo" id="codigo" 
                                            class="form-control rounded-pill @error('codigo') is-invalid @enderror" 
@@ -105,7 +68,7 @@
                                 
                                 <div class="col-md-6">
                                     <label for="nombre" class="form-label fw-bold">
-                                        <i class="fas fa-cube me-2 text-info"></i> Nombre
+                                        <i class="fas fa-cube me-2 text-brand"></i> Nombre
                                     </label>
                                     <input type="text" name="nombre" id="nombre" 
                                            class="form-control rounded-pill @error('nombre') is-invalid @enderror" 
@@ -118,7 +81,7 @@
                                 
                                 <div class="col-12">
                                     <label for="descripcion" class="form-label fw-bold">
-                                        <i class="fas fa-align-left me-2 text-info"></i> Descripción
+                                        <i class="fas fa-align-left me-2 text-brand"></i> Descripción
                                     </label>
                                     <textarea name="descripcion" id="descripcion" 
                                               class="form-control @error('descripcion') is-invalid @enderror" 
@@ -131,7 +94,7 @@
                                 
                                 <div class="col-md-6">
                                     <label for="cantidad" class="form-label fw-bold">
-                                        <i class="fas fa-sort-numeric-up me-2 text-info"></i> Cantidad
+                                        <i class="fas fa-sort-numeric-up me-2 text-brand"></i> Cantidad
                                     </label>
                                     <input type="number" name="cantidad" id="cantidad" 
                                            class="form-control rounded-pill @error('cantidad') is-invalid @enderror" 
@@ -167,7 +130,7 @@
                                     <div class="col-md-8">
                                         <div class="mb-4">
                                             <label for="excel_file" class="form-label fw-bold">
-                                                <i class="fas fa-upload me-2 text-info"></i> Seleccionar archivo Excel
+                                                <i class="fas fa-upload me-2 text-brand"></i> Seleccionar archivo Excel
                                             </label>
                                             <input type="file" name="excel_file" id="excel_file" 
                                                    class="form-control rounded-pill p-3" accept=".xlsx,.xls" required>
@@ -254,14 +217,7 @@ body {
 .row.g-0 {
     margin: 0;
 }
-.col-md-2, .col-md-10 {
-    padding-left: 0;
-    padding-right: 0;
-}
-.col-md-2.bg-light {
-    margin: 0;
-    border-radius: 0;
-}
+
 .btn-info {
     background-color: #0097a7;
     border-color: #0097a7;

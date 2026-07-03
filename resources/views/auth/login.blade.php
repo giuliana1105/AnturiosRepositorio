@@ -811,6 +811,159 @@
             opacity: 1;
         }
 
+        /* ===== PRODUCTS HIGHLIGHT SECTION ===== */
+        .products-home {
+            background: var(--off-white);
+        }
+
+        .products-grid-home {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 28px;
+            max-width: 1100px;
+            margin: 0 auto 40px;
+        }
+
+        .product-card-home {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card-home:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(233, 30, 140, 0.2);
+        }
+
+        .product-img-box-home {
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-img-box-home i {
+            font-size: 3.5rem;
+            transition: var(--transition);
+        }
+
+        .product-card-home:hover .product-img-box-home i {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .badge-cat-home {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .product-body-home {
+            padding: 22px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-code-home {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .product-title-home {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-desc-home {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 18px;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-footer-home {
+            border-top: 1px solid #F3F4F6;
+            padding-top: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .btn-wa-home {
+            padding: 10px 16px;
+            background: #25D366;
+            color: var(--white);
+            border-radius: var(--radius-sm);
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+
+        .btn-wa-home:hover {
+            background: #1EBE5D;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-catalog-more {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px 36px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            text-decoration: none;
+            box-shadow: 0 6px 20px rgba(233, 30, 140, 0.35);
+            transition: var(--transition);
+            margin: 0 auto;
+        }
+
+        .btn-catalog-more:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 28px rgba(233, 30, 140, 0.5);
+            color: var(--white);
+        }
+
         /* ===== CONTACT SECTION ===== */
         .contact {
             background: var(--off-white);
@@ -1547,6 +1700,8 @@
         <ul class="nav-links" id="navLinks">
             <li><a href="#hero">Inicio</a></li>
             <li><a href="#servicios">Nosotros</a></li>
+            <li><a href="#productos">Productos</a></li>
+            <li><a href="{{ route('catalogo.index') }}">Catálogo</a></li>
             <li><a href="#estadisticas">Impacto</a></li>
             <li><a href="#contacto">Contacto</a></li>
             <li><a href="#" class="nav-cta" onclick="openLoginModal(); return false;">Iniciar Sesión</a></li>
@@ -1636,6 +1791,51 @@
                 <h3>Análisis y Reportes</h3>
                 <p>Dashboards y reportes detallados para la toma de decisiones basadas en datos reales de tu operación.</p>
             </div>
+        </div>
+    </section>
+
+    <!-- ===== PRODUCTS HIGHLIGHT SECTION ===== -->
+    <section class="section products-home" id="productos">
+        <div class="section-header fade-in">
+            <span class="section-label">Catálogo en Línea</span>
+            <h2 class="section-title">Nuestros Productos Destacados</h2>
+            <p class="section-desc">
+                Conoce una muestra de nuestros artículos de floristería e insumos para venta al por mayor.
+            </p>
+        </div>
+
+        <div class="products-grid-home">
+            @if(isset($productosDestacados) && $productosDestacados->count() > 0)
+                @foreach($productosDestacados as $producto)
+                    <div class="product-card-home fade-in">
+                        <div class="product-img-box-home" style="background: {{ $producto->meta_bg }}; color: {{ $producto->meta_color }};">
+                            <i class="fas {{ $producto->meta_icono }}"></i>
+                            <span class="badge-cat-home">{{ $producto->meta_categoria }}</span>
+                        </div>
+                        <div class="product-body-home">
+                            <span class="product-code-home"># {{ $producto->codigo }}</span>
+                            <h3 class="product-title-home">{{ $producto->nombre }}</h3>
+                            <p class="product-desc-home">{{ $producto->descripcion }}</p>
+                            
+                            <div class="product-footer-home">
+                                <span style="font-size: 0.85rem; font-weight: 700; color: var(--dark);">Al por mayor</span>
+                                @php
+                                    $mensajeWA = urlencode("Hola Importadora Anturios! 👋 Deseo consultar el precio al por mayor de:\n\n📦 *Producto:* {$producto->nombre}\n🔢 *Código:* {$producto->codigo}\n\nGracias! 🌸");
+                                @endphp
+                                <a href="https://wa.me/593997874363?text={{ $mensajeWA }}" target="_blank" rel="noopener noreferrer" class="btn-wa-home">
+                                    <i class="fab fa-whatsapp"></i> Consultar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            @endif
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;" class="fade-in">
+            <a href="{{ route('catalogo.index') }}" class="btn-catalog-more">
+                Ver Catálogo Completo <i class="fas fa-arrow-right"></i>
+            </a>
         </div>
     </section>
 
@@ -1753,6 +1953,8 @@
                 <ul>
                     <li><a href="#hero"><i class="fas fa-chevron-right"></i> Inicio</a></li>
                     <li><a href="#servicios"><i class="fas fa-chevron-right"></i> Nosotros</a></li>
+                    <li><a href="#productos"><i class="fas fa-chevron-right"></i> Productos</a></li>
+                    <li><a href="{{ route('catalogo.index') }}"><i class="fas fa-chevron-right"></i> Catálogo</a></li>
                     <li><a href="#estadisticas"><i class="fas fa-chevron-right"></i> Impacto</a></li>
                     <li><a href="#contacto"><i class="fas fa-chevron-right"></i> Contacto</a></li>
                     <li><a href="#" onclick="openLoginModal(); return false;"><i class="fas fa-chevron-right"></i> Iniciar Sesión</a></li>

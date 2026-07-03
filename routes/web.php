@@ -15,6 +15,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\VentaBodegaController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\CatalogoController;
 
 
 Route::middleware(['role:super-admin'])->group(function() {
@@ -22,9 +23,23 @@ Route::middleware(['role:super-admin'])->group(function() {
 });
 
 
+// 🔹 Catálogo Público de Productos
+Route::get('/catalogo', [CatalogoController::class, 'index'])->name('catalogo.index');
+
 // 🔹 Ruta para la página de inicio de sesión
 Route::get('/login', function () {
-    return view('auth.login');
+    $productosDestacados = \App\Models\Producto::take(6)->get()->map(function($p) {
+        $meta = \App\Http\Controllers\CatalogoController::getProductMeta($p->nombre, $p->descripcion);
+        $p->meta_categoria = $meta['categoria'];
+        $p->meta_icono = $meta['icono'];
+        $p->meta_color = $meta['color'];
+        $p->meta_bg = $meta['bg'];
+        return $p;
+    });
+    if ($productosDestacados->isEmpty()) {
+        $productosDestacados = \App\Http\Controllers\CatalogoController::getDemoProducts()->take(6);
+    }
+    return view('auth.login', compact('productosDestacados'));
 })->name('login');
 
 // 🔹 Ruta para procesar el inicio de sesión
@@ -120,5 +135,16 @@ Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('home');
     }
-    return view('auth.login');
+    $productosDestacados = \App\Models\Producto::take(6)->get()->map(function($p) {
+        $meta = \App\Http\Controllers\CatalogoController::getProductMeta($p->nombre, $p->descripcion);
+        $p->meta_categoria = $meta['categoria'];
+        $p->meta_icono = $meta['icono'];
+        $p->meta_color = $meta['color'];
+        $p->meta_bg = $meta['bg'];
+        return $p;
+    });
+    if ($productosDestacados->isEmpty()) {
+        $productosDestacados = \App\Http\Controllers\CatalogoController::getDemoProducts()->take(6);
+    }
+    return view('auth.login', compact('productosDestacados'));
 });

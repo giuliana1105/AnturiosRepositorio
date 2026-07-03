@@ -117,5 +117,8 @@ Route::post('/empleados/{nro_identificacion}/reset-password', [\App\Http\Control
 
 // 🔹 Redirigir la raíz al login si no está autenticado
 Route::get('/', function () {
-    return redirect()->route('login');
+    if (auth()->check()) {
+        return redirect()->route('home');
+    }
+    return view('auth.login');
 });

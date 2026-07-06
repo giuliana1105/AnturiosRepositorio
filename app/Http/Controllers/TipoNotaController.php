@@ -113,7 +113,7 @@ public function index(Request $request)
     $tipoNotas = $query
         ->orderBy('created_at', 'desc')
         ->orderBy('codigo', 'desc')
-        ->paginate(10)
+        ->paginate(5)
         ->appends($request->all());
 
     // Carga productos en detalles

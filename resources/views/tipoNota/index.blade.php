@@ -69,7 +69,7 @@
                     @endif
 
                     <div class="table-responsive">
-                        <table class="table table-bordered align-middle">
+                        <table class="table table-bordered align-middle" style="min-width: 800px;">
                             <thead class="table-light">
                                 <tr>
                                     <th>CÓDIGO</th>
@@ -81,8 +81,7 @@
                                     <th>BODEGA</th>
                                     <th>FECHA</th>
                                     <th>ESTADO</th>
-                                    <th>ACCIONES</th>
-                                    <th>PDF</th>
+                                    <th class="text-center">ACCIONES</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -132,44 +131,56 @@
                                                 <span class="badge bg-secondary">Sin Confirmar</span>
                                             @endif
                                         </td>
-                                        <td>
+                                        <td class="text-center" style="white-space: nowrap;">
                                             @if(!$nota->transaccion)
+                                                {{-- Confirmar --}}
                                                 <form action="{{ route('tipoNota.confirmar', $nota->codigo) }}" method="POST" style="display:inline;">
                                                     @csrf
-                                                    <button type="submit" class="btn btn-success btn-sm mb-2 rounded-pill">
-                                                        <i class="fas fa-check me-1"></i> Confirmar
+                                                    <button type="submit"
+                                                        class="btn btn-success btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                                                        style="width:34px;height:34px;" title="Confirmar">
+                                                        <i class="fas fa-check"></i>
                                                     </button>
                                                 </form>
-                                                <a href="{{ route('tipoNota.edit', $nota->codigo) }}" class="btn btn-warning btn-sm mb-2 rounded-pill">
-                                                    <i class="fas fa-edit me-1"></i> Editar
+                                                {{-- Editar --}}
+                                                <a href="{{ route('tipoNota.edit', $nota->codigo) }}"
+                                                   class="btn btn-warning btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                                                   style="width:34px;height:34px;" title="Editar">
+                                                    <i class="fas fa-edit"></i>
                                                 </a>
+                                                {{-- Eliminar --}}
                                                 @can('eliminar TipoNota')
                                                     <form action="{{ route('tipoNota.destroy', $nota->codigo) }}" method="POST" style="display:inline;">
                                                         @csrf @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger btn-sm rounded-pill" onclick="return confirm('¿Estás seguro de eliminar esta nota?')">
-                                                            <i class="fas fa-trash me-1"></i> Eliminar
+                                                        <button type="submit"
+                                                            class="btn btn-danger btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                                                            style="width:34px;height:34px;" title="Eliminar"
+                                                            onclick="return confirm('¿Estás seguro de eliminar esta nota?')">
+                                                            <i class="fas fa-trash"></i>
                                                         </button>
                                                     </form>
                                                 @endcan
                                             @else
-                                                <span class="text-muted small">Nota confirmada</span>
+                                                <span class="text-muted small">Confirmada</span>
                                             @endif
-                                        </td>
-                                        <td>
-                                            <a href="{{ route('tipoNota.pdf', $nota->codigo) }}" class="btn btn-danger btn-sm rounded-pill">
-                                                <i class="fas fa-file-pdf me-1"></i> PDF
+                                            {{-- PDF: siempre visible --}}
+                                            <a href="{{ route('tipoNota.pdf', $nota->codigo) }}"
+                                               class="btn btn-danger btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                                               style="width:34px;height:34px;" title="Descargar PDF">
+                                                <i class="fas fa-file-pdf"></i>
                                             </a>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="11" class="text-center">No se encontraron notas</td>
+                                        <td colspan="10" class="text-center">No se encontraron notas</td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
 
+                    <!-- Paginación -->
                     <div class="mt-3 d-flex justify-content-center">
                         {{ $tipoNotas->onEachSide(1)->links('pagination::bootstrap-4') }}
                     </div>

@@ -37,6 +37,15 @@ class User extends Authenticatable
 
     public function cargoNombre()
     {
-        return $this->empleado ? $this->empleado->cargoNombre() : null;
+        if ($this->hasRole('Administrador') || $this->hasRole('super-admin') || $this->username === 'admin_user' || $this->email === 'admin@gmail.com') {
+            return 'Administrador';
+        }
+        if ($this->empleado) {
+            return $this->empleado->cargoNombre();
+        }
+        if ($this->roles->isNotEmpty()) {
+            return $this->roles->first()->name;
+        }
+        return 'Administrador';
     }
 }

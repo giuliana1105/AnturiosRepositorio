@@ -17,7 +17,14 @@ class CheckCargo
     public function handle(Request $request, Closure $next, ...$cargos): Response
     {
         $user = Auth::user();
-        if (!$user || !$user->empleado) {
+        if (!$user) {
+            abort(403, 'Acceso denegado.');
+        }
+        // El Administrador tiene acceso total sin restricciones
+        if ($user->hasRole('Administrador') || $user->hasRole('super-admin') || $user->cargoNombre() === 'Administrador' || $user->email === 'admin@gmail.com') {
+            return $next($request);
+        }
+        if (!$user->empleado) {
             abort(403, 'Acceso denegado.');
         }
         $cargo = $user->empleado->cargoNombre();

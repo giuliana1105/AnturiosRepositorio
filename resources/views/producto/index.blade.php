@@ -66,14 +66,19 @@
                                         <td>
                                             <!-- <a href="{{ route('productos.show', $producto->codigo) }}" class="btn btn-info btn-sm">Ver</a> -->
                                             @if(in_array($cargo, ['Administrador', 'Gerente', 'Jefe de bodega']))
-                                                <a href="{{ route('productos.edit', $producto->codigo) }}" class="btn btn-warning btn-sm rounded-pill">
-                                                    <i class="fas fa-edit me-1"></i> Editar
+                                                <a href="{{ route('productos.edit', $producto->codigo) }}" 
+                                                   class="btn btn-warning btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                                                   style="width:34px;height:34px;" title="Editar">
+                                                    <i class="fas fa-edit"></i>
                                                 </a>
                                                 <form action="{{ route('productos.destroy', $producto->codigo) }}" method="POST" style="display:inline;">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger btn-sm rounded-pill" onclick="return confirm('¿Seguro de eliminar?')">
-                                                        <i class="fas fa-trash me-1"></i> Eliminar
+                                                    <button type="submit" 
+                                                            class="btn btn-danger btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                                                            style="width:34px;height:34px;" title="Eliminar"
+                                                            onclick="return confirm('¿Seguro de eliminar?')">
+                                                        <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
                                             @endif

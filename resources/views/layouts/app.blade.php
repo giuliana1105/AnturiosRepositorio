@@ -515,7 +515,24 @@
                 </div>
                 @endif
 
-                @if(auth()->user()->can('gestionar usuarios') || auth()->user()->can('gestionar bodegas'))
+                @if(auth()->user()->can('registrar ventas') || auth()->user()->can('gestionar cuentas cobrar') || auth()->user()->hasRole('Administrador') || auth()->user()->cargoNombre() === 'Administrador')
+                <div class="nav-section-title">Ventas</div>
+                
+                <a href="#ventasSubmenu" data-bs-toggle="collapse" class="sidebar-link" aria-expanded="false">
+                    <i class="fas fa-cash-register icon-main"></i>
+                    <span>Ventas y Recaudación</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </a>
+                <div class="collapse" id="ventasSubmenu">
+                    <div class="collapse-inner">
+                        <a href="{{ route('venta.index') }}" class="collapse-item">
+                            <i class="fas fa-shopping-cart me-2"></i>Historial de Ventas
+                        </a>
+                    </div>
+                </div>
+                @endif
+
+                @if(auth()->user()->can('gestionar usuarios') || auth()->user()->can('gestionar bodegas') || auth()->user()->hasRole('Administrador') || auth()->user()->cargoNombre() === 'Administrador')
                 <div class="nav-section-title">Configuración</div>
                 
                 <a href="#adminSubmenu" data-bs-toggle="collapse" class="sidebar-link" aria-expanded="false">

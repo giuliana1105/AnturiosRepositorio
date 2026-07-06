@@ -39,7 +39,7 @@ class EmpleadoController extends Controller
                 return $query->where('nombreemp', 'like', "%{$search}%")
                     ->orWhere('nro_identificacion', 'like', "%{$search}%");
             })
-            ->paginate(10);
+            ->paginate(5);
 
         return view('empleados.index', compact('empleados'));
     }
@@ -56,6 +56,23 @@ class EmpleadoController extends Controller
         return view('empleados.create', compact('bodegas', 'cargos'));
     }
 
+    private function validarIdentificacion(Request $request)
+    {
+        $tipo = $request->input('tipo_identificacion');
+        $num = trim($request->input('nro_identificacion', ''));
+
+        if ($tipo === 'Cedula') {
+            if (!preg_match('/^\d{10}$/', $num)) {
+                return 'La cédula debe contener exactamente 10 dígitos numéricos, ni más ni menos.';
+            }
+        } elseif ($tipo === 'RUC') {
+            if (!preg_match('/^\d{13}$/', $num) || !str_ends_with($num, '001')) {
+                return 'El RUC debe contener exactamente 13 dígitos numéricos en total y terminar en 001.';
+            }
+        }
+        return null;
+    }
+
     public function store(Request $request)
     {
        $cargo = auth()->user()->cargoNombre();
@@ -63,10 +80,18 @@ class EmpleadoController extends Controller
          abort(403, 'No tienes permiso para acceder a esta sección.');
         }
         $validatedData = $request->validate([
+            'nro_identificacion' => 'required',
+            'nombreemp' => 'required',
+            'apellidoemp' => 'required',
             'email' => 'required',
             'idbodega' => 'required',
+            'tipo_identificacion' => 'required|in:Cedula,RUC,Pasaporte',
             'codigocargo' => 'required|in:1,2,3,4,5',
         ]);
+
+        if ($errorId = $this->validarIdentificacion($request)) {
+            return redirect()->back()->withInput()->with('error', $errorId)->withErrors(['nro_identificacion' => $errorId]);
+        }
 
         try {
             Empleado::create([
@@ -120,6 +145,10 @@ class EmpleadoController extends Controller
             'codigocargo' => 'required|in:1,2,3,4,5',
             'idbodega' => 'required|exists:bodegas,idbodega',
         ]);
+
+        if ($errorId = $this->validarIdentificacion($request)) {
+            return redirect()->back()->withInput()->with('error', $errorId)->withErrors(['nro_identificacion' => $errorId]);
+        }
 
         try {
             $empleado = Empleado::findOrFail($nro_identificacion);

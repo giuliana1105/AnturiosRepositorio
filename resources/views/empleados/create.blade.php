@@ -59,15 +59,6 @@
                             <form id="manualForm" action="{{ route('empleados.store') }}" method="POST" class="row g-3">
                                 @csrf
                                 <div class="col-md-6">
-                                    <label for="nro_identificacion" class="form-label fw-bold">
-                                        <i class="fas fa-id-card me-2 text-brand"></i> Cédula
-                                    </label>
-                                    <input type="text" name="nro_identificacion" id="nro_identificacion" 
-                                           class="form-control rounded-pill" required value="{{ old('nro_identificacion') }}" 
-                                           placeholder="Ingrese el número de cédula">
-                                </div>
-                                
-                                <div class="col-md-6">
                                     <label for="nombreemp" class="form-label fw-bold">
                                         <i class="fas fa-user me-2 text-brand"></i> Nombre
                                     </label>
@@ -83,6 +74,27 @@
                                     <input type="text" name="apellidoemp" id="apellidoemp" 
                                            class="form-control rounded-pill" required value="{{ old('apellidoemp') }}" 
                                            placeholder="Ingrese el apellido">
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="tipo_identificacion" class="form-label fw-bold">
+                                        <i class="fas fa-id-badge me-2 text-brand"></i> Tipo Identificación
+                                    </label>
+                                    <select name="tipo_identificacion" id="tipo_identificacion" class="form-control rounded-pill" required>
+                                        <option value="">Seleccione tipo</option>
+                                        <option value="Cedula" {{ old('tipo_identificacion') == 'Cedula' ? 'selected' : '' }}>Cédula</option>
+                                        <option value="RUC" {{ old('tipo_identificacion') == 'RUC' ? 'selected' : '' }}>RUC</option>
+                                        <option value="Pasaporte" {{ old('tipo_identificacion') == 'Pasaporte' ? 'selected' : '' }}>Pasaporte</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="nro_identificacion" class="form-label fw-bold">
+                                        <i class="fas fa-id-card me-2 text-brand"></i> Identificación
+                                    </label>
+                                    <input type="text" name="nro_identificacion" id="nro_identificacion" 
+                                           class="form-control rounded-pill" required value="{{ old('nro_identificacion') }}" 
+                                           placeholder="Ingrese número de identificación">
                                 </div>
                                 
                                 <div class="col-md-6">
@@ -113,32 +125,6 @@
                                 </div>
                                 
                                 <div class="col-md-6">
-                                    <label for="idbodega" class="form-label fw-bold">
-                                        <i class="fas fa-warehouse me-2 text-brand"></i> Bodega
-                                    </label>
-                                    <select name="idbodega" id="idbodega" class="form-control rounded-pill" required>
-                                        <option value="">Seleccione una bodega</option>
-                                        @foreach ($bodegas as $bodega)
-                                            <option value="{{ $bodega->idbodega }}" {{ old('idbodega') == $bodega->idbodega ? 'selected' : '' }}>
-                                                {{ $bodega->nombrebodega }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                
-                                <div class="col-md-6">
-                                    <label for="tipo_identificacion" class="form-label fw-bold">
-                                        <i class="fas fa-id-badge me-2 text-brand"></i> Tipo Identificación
-                                    </label>
-                                    <select name="tipo_identificacion" id="tipo_identificacion" class="form-control rounded-pill" required>
-                                        <option value="">Seleccione tipo</option>
-                                        <option value="Cedula" {{ old('tipo_identificacion') == 'Cedula' ? 'selected' : '' }}>Cédula</option>
-                                        <option value="RUC" {{ old('tipo_identificacion') == 'RUC' ? 'selected' : '' }}>RUC</option>
-                                        <option value="Pasaporte" {{ old('tipo_identificacion') == 'Pasaporte' ? 'selected' : '' }}>Pasaporte</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="col-md-6">
                                     <label for="codigocargo" class="form-label fw-bold">
                                         <i class="fas fa-briefcase me-2 text-brand"></i> Cargo
                                     </label>
@@ -147,6 +133,20 @@
                                         @foreach($cargos as $codigo => $nombre)
                                             <option value="{{ $codigo }}" {{ old('codigocargo', $empleado->codigocargo ?? '') == $codigo ? 'selected' : '' }}>
                                                 {{ $nombre }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="idbodega" class="form-label fw-bold">
+                                        <i class="fas fa-warehouse me-2 text-brand"></i> Bodega
+                                    </label>
+                                    <select name="idbodega" id="idbodega" class="form-control rounded-pill" required>
+                                        <option value="">Seleccione una bodega</option>
+                                        @foreach ($bodegas as $bodega)
+                                            <option value="{{ $bodega->idbodega }}" {{ old('idbodega') == $bodega->idbodega ? 'selected' : '' }}>
+                                                {{ $bodega->nombrebodega }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -388,6 +388,29 @@ html, body {
         const excelForm = document.getElementById('excelForm');
         const manualTab = document.getElementById('manual-tab');
         const excelTab = document.getElementById('excel-tab');
+
+        const tipoSelect = document.getElementById('tipo_identificacion');
+        const idInput = document.getElementById('nro_identificacion');
+        
+        function updateIdValidation() {
+            if (!tipoSelect || !idInput) return;
+            const val = tipoSelect.value;
+            if (val === 'Cedula') {
+                idInput.maxLength = 10;
+                idInput.placeholder = '10 dígitos numéricos exactos';
+            } else if (val === 'RUC') {
+                idInput.maxLength = 13;
+                idInput.placeholder = '13 dígitos numéricos (ej: ...001)';
+            } else {
+                idInput.removeAttribute('maxLength');
+                idInput.placeholder = 'Ingrese número de identificación';
+            }
+        }
+        
+        if (tipoSelect && idInput) {
+            tipoSelect.addEventListener('change', updateIdValidation);
+            updateIdValidation();
+        }
 
         manualForm.addEventListener('submit', function(e) {
             if (!manualTab.classList.contains('active')) {

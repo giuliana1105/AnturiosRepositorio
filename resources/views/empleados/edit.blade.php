@@ -337,8 +337,32 @@ html, body {
     margin: 0;
     padding: 0;
 }
-#app {
-    min-height: 100vh;
-}
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tipoSelect = document.getElementById('tipo_identificacion');
+        const idInput = document.getElementById('nro_identificacion');
+        
+        function updateIdValidation() {
+            if (!tipoSelect || !idInput) return;
+            const val = tipoSelect.value;
+            if (val === 'Cedula') {
+                idInput.maxLength = 10;
+                idInput.placeholder = '10 dígitos numéricos exactos';
+            } else if (val === 'RUC') {
+                idInput.maxLength = 13;
+                idInput.placeholder = '13 dígitos numéricos (ej: ...001)';
+            } else {
+                idInput.removeAttribute('maxLength');
+                idInput.placeholder = 'Ingrese número de identificación';
+            }
+        }
+        
+        if (tipoSelect && idInput) {
+            tipoSelect.addEventListener('change', updateIdValidation);
+            updateIdValidation();
+        }
+    });
+</script>
 @endsection

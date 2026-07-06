@@ -1,13 +1,18 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-4">
+<div class="container-fluid py-4 px-3">
     <div class="row">
         <!-- Main Content -->
-        <div class="col-12 py-3 px-4">
-            <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 1200px;">
-                <div class="card-header rounded-top-4 text-center">
-                    <h3 class="mb-0">Lista de Empleados</h3>
+        <div class="col-12 py-3">
+            <div class="card shadow-sm border-0 rounded-4 w-100">
+                <div class="card-header rounded-top-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h3 class="mb-0">Lista de Empleados</h3>
+                        <a href="{{ route('home.master') }}" class="btn btn-light btn-sm rounded-pill">
+                            <i class="fas fa-arrow-left me-2"></i> Volver
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     <!-- Alertas de éxito o error -->
@@ -55,61 +60,68 @@
                     @endif
 
                     <div class="table-responsive">
-                        <table class="table table-bordered align-middle">
+                        <table class="table table-bordered table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Nro. Identificación</th>
+                                    <th class="text-nowrap">Nro. ID</th>
                                     <th>Nombre</th>
                                     <th>Apellido</th>
-                                    <th>Tipo ID</th>
+                                    <th class="text-nowrap">Tipo ID</th>
                                     <th>Bodega</th>
                                     <th>Cargo</th>
                                     <th>Email</th>
                                     <th>Celular</th>
-                                    <th>Acciones</th>
+                                    <th class="text-center text-nowrap" style="min-width: 115px; width: 115px;">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($empleados as $empleado)
                                     <tr>
-                                        <td>{{ $empleado->nro_identificacion }}</td>
+                                        <td class="text-nowrap fw-500">{{ $empleado->nro_identificacion }}</td>
                                         <td>{{ $empleado->nombreemp }}</td>
                                         <td>{{ $empleado->apellidoemp }}</td>
-                                        <td>{{ $empleado->tipo_identificacion }}</td>
+                                        <td>{{ $empleado->tipo_identificacion === 'Cedula' ? 'Cédula' : $empleado->tipo_identificacion }}</td>
                                         <td>{{ $empleado->bodega->nombrebodega ?? 'N/A' }}</td>
-                                        <td>{{ $empleado->cargoNombre() }}</td>
                                         <td>
-                                            <div class="d-flex align-items-center">
-                                                <span id="email-{{ $empleado->nro_identificacion }}" class="me-2">{{ $empleado->email }}</span>
-                                                <button class="btn btn-sm btn-outline-info rounded-pill"
+                                            <span class="badge bg-light text-dark border px-2 py-1">{{ $empleado->cargoNombre() }}</span>
+                                        </td>
+                                        <td style="max-width: 200px;">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <span id="email-{{ $empleado->nro_identificacion }}" class="me-2 text-break" style="word-wrap: break-word;">{{ $empleado->email }}</span>
+                                                <button class="btn btn-sm btn-outline-info rounded-pill flex-shrink-0"
                                                         onclick="copyToClipboard('{{ $empleado->nro_identificacion }}')" 
                                                         title="Copiar email">
                                                     <i id="icon-{{ $empleado->nro_identificacion }}" class="fas fa-copy"></i>
                                                 </button>
                                             </div>
                                         </td>
-                                        <td>{{ $empleado->nro_telefono ?? 'N/A' }}</td>
-                                        <td>
+                                        <td class="text-nowrap">{{ $empleado->nro_telefono ?? 'N/A' }}</td>
+                                        <td class="text-center text-nowrap" style="min-width: 115px; width: 115px;">
                                             @if(!in_array($cargo, ['Jefe de bodega']))
-                                                <div class="btn-group" role="group">
+                                                <div class="d-flex gap-1 justify-content-center">
                                                     <a href="{{ route('empleados.edit', $empleado->nro_identificacion) }}" 
-                                                       class="btn btn-warning btn-sm rounded-pill me-1">
-                                                        <i class="fas fa-edit me-1"></i> Editar
+                                                       class="btn btn-warning btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                                                       title="Editar empleado"
+                                                       style="width: 32px; height: 32px;">
+                                                        <i class="fas fa-edit"></i>
                                                     </a>
                                                     <form action="{{ route('empleados.destroy', $empleado->nro_identificacion) }}" method="POST" class="d-inline">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger btn-sm rounded-pill me-1" 
-                                                                onclick="return confirm('¿Está seguro de eliminar este empleado?')">
-                                                            <i class="fas fa-trash me-1"></i> Eliminar
+                                                        <button type="submit" class="btn btn-danger btn-sm rounded-circle d-flex align-items-center justify-content-center" 
+                                                                onclick="return confirm('¿Está seguro de eliminar este empleado?')"
+                                                                title="Eliminar empleado"
+                                                                style="width: 32px; height: 32px;">
+                                                            <i class="fas fa-trash"></i>
                                                         </button>
                                                     </form>
                                                     <form action="{{ route('empleados.reset_password', $empleado->nro_identificacion) }}" method="POST" class="d-inline">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-secondary btn-sm rounded-pill" 
+                                                        <button type="submit" class="btn btn-secondary btn-sm rounded-circle d-flex align-items-center justify-content-center" 
                                                                 onclick="return confirm('¿Está seguro de restablecer la contraseña de este empleado?')" 
-                                                                title="Restablecer Contraseña">
-                                                            <i class="fas fa-key me-1"></i> Reset
+                                                                title="Restablecer contraseña"
+                                                                style="width: 32px; height: 32px;">
+                                                            <i class="fas fa-key"></i>
                                                         </button>
                                                     </form>
                                                 </div>

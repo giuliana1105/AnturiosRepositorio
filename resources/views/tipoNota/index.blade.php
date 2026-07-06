@@ -131,44 +131,46 @@
                                                 <span class="badge bg-secondary">Sin Confirmar</span>
                                             @endif
                                         </td>
-                                        <td class="text-center" style="white-space: nowrap;">
-                                            @if(!$nota->transaccion)
-                                                {{-- Confirmar --}}
-                                                <form action="{{ route('tipoNota.confirmar', $nota->codigo) }}" method="POST" style="display:inline;">
-                                                    @csrf
-                                                    <button type="submit"
-                                                        class="btn btn-success btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
-                                                        style="width:34px;height:34px;" title="Confirmar">
-                                                        <i class="fas fa-check"></i>
-                                                    </button>
-                                                </form>
-                                                {{-- Editar --}}
-                                                <a href="{{ route('tipoNota.edit', $nota->codigo) }}"
-                                                   class="btn btn-warning btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
-                                                   style="width:34px;height:34px;" title="Editar">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                {{-- Eliminar --}}
-                                                @can('eliminar TipoNota')
-                                                    <form action="{{ route('tipoNota.destroy', $nota->codigo) }}" method="POST" style="display:inline;">
-                                                        @csrf @method('DELETE')
+                                        <td class="text-center">
+                                            <div class="d-flex flex-wrap justify-content-center align-items-center gap-1">
+                                                @if(!$nota->transaccion)
+                                                    {{-- Confirmar --}}
+                                                    <form action="{{ route('tipoNota.confirmar', $nota->codigo) }}" method="POST" style="display:inline;">
+                                                        @csrf
                                                         <button type="submit"
-                                                            class="btn btn-danger btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
-                                                            style="width:34px;height:34px;" title="Eliminar"
-                                                            onclick="return confirm('¿Estás seguro de eliminar esta nota?')">
-                                                            <i class="fas fa-trash"></i>
+                                                            class="btn btn-success btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                                                            style="width:34px;height:34px;" title="Confirmar">
+                                                            <i class="fas fa-check"></i>
                                                         </button>
                                                     </form>
-                                                @endcan
-                                            @else
-                                                <span class="text-muted small">Confirmada</span>
-                                            @endif
-                                            {{-- PDF: siempre visible --}}
-                                            <a href="{{ route('tipoNota.pdf', $nota->codigo) }}"
-                                               class="btn btn-danger btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
-                                               style="width:34px;height:34px;" title="Descargar PDF">
-                                                <i class="fas fa-file-pdf"></i>
-                                            </a>
+                                                    {{-- Editar --}}
+                                                    <a href="{{ route('tipoNota.edit', $nota->codigo) }}"
+                                                       class="btn btn-warning btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                                                       style="width:34px;height:34px;" title="Editar">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    {{-- Eliminar --}}
+                                                    @can('eliminar TipoNota')
+                                                        <form action="{{ route('tipoNota.destroy', $nota->codigo) }}" method="POST" style="display:inline;">
+                                                            @csrf @method('DELETE')
+                                                            <button type="submit"
+                                                                class="btn btn-danger btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                                                                style="width:34px;height:34px;" title="Eliminar"
+                                                                onclick="return confirm('¿Estás seguro de eliminar esta nota?')">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endcan
+                                                @else
+                                                    <span class="badge bg-secondary">Confirmada</span>
+                                                @endif
+                                                {{-- PDF: siempre visible --}}
+                                                <a href="{{ route('tipoNota.pdf', $nota->codigo) }}"
+                                                   class="btn btn-danger btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                                                   style="width:34px;height:34px;" title="Descargar PDF">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty

@@ -14,6 +14,25 @@
                     </h3>
                 </div>
                 <div class="card-body">
+                    <!-- Alertas -->
+                    <div id="alert-container">
+                        @if (session('error'))
+                            <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <strong>Error:</strong> {!! session('error') !!}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
+
+                        @if (session('success'))
+                            <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>Éxito:</strong> {{ session('success') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
+                    </div>
+
                     <!-- Botón Volver -->
                     <div class="mb-4">
                         <a href="{{ route('bodegas.show', $bodega->idbodega) }}" class="btn btn-secondary fw-bold rounded-pill">
@@ -334,7 +353,7 @@
 
 <!-- Modal de confirmación -->
 <div class="modal fade" id="confirmVentaModal" tabindex="-1" aria-labelledby="confirmVentaLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content rounded-4">
             <div class="modal-header bg-brand text-white">
                 <h5 class="modal-title" id="confirmVentaLabel">
@@ -398,7 +417,27 @@ body {
 }
 .card-body {
     position: relative;
-    overflow: hidden;
+    overflow: visible;
+}
+/* Fix para modal dentro de layout con overflow:hidden en body */
+.modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 1055 !important;
+}
+.modal-backdrop {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 1050 !important;
+}
+.modal-dialog {
+    z-index: 1056 !important;
+}
+#confirmVentaModal .modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
 }
 .card-body::before {
     content: '';
@@ -532,6 +571,27 @@ html, body {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    function mostrarAlertaError(mensaje) {
+        const alertContainer = document.getElementById('alert-container');
+        if (alertContainer) {
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Error:</strong> ${mensaje}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            alertContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    function limpiarAlertaError() {
+        const alertContainer = document.getElementById('alert-container');
+        if (alertContainer && alertContainer.querySelector('.alert-danger')) {
+            alertContainer.innerHTML = '';
+        }
+    }
+
     function actualizarSelects() {
         // Evita productos repetidos
         const selects = document.querySelectorAll('.producto-select');
@@ -563,7 +623,17 @@ document.addEventListener('DOMContentLoaded', function() {
             actualizarSelects();
         });
 
-        cantidadInput.addEventListener('input', calcularTotal);
+        cantidadInput.addEventListener('input', function() {
+            const max = parseFloat(cantidadInput.max);
+            const val = parseFloat(cantidadInput.value);
+            if (!isNaN(max) && max > 0 && val > max) {
+                mostrarAlertaError(`No se puede ingresar una cantidad (${val}) mayor al stock disponible (${max}).`);
+                cantidadInput.value = max;
+            } else {
+                limpiarAlertaError();
+            }
+            calcularTotal();
+        });
         precioUnitarioInput.addEventListener('input', calcularTotal);
 
         function calcularTotal() {
@@ -716,13 +786,47 @@ document.addEventListener('DOMContentLoaded', function() {
     // Botón para mostrar el modal
     document.getElementById('btn-pre-confirmar').addEventListener('click', function(e) {
         e.preventDefault();
+        
+        // Validación HTML5 del formulario
+        if (!document.getElementById('form-venta').reportValidity()) {
+            return;
+        }
+
+        // Validación estricta del stock en cada fila
+        let stockSuperado = false;
+        document.querySelectorAll('.row-producto').forEach(row => {
+            const select = row.querySelector('.producto-select');
+            const cantidadInput = row.querySelector('.cantidad-input');
+            const cantidad = parseFloat(cantidadInput.value) || 0;
+            const max = parseFloat(cantidadInput.max);
+            
+            if (!isNaN(max) && max > 0 && cantidad > max) {
+                const nombreProd = select.options[select.selectedIndex]?.text || 'Producto';
+                mostrarAlertaError(`La cantidad de "${nombreProd}" (${cantidad}) no puede ser mayor al stock disponible (${max}).`);
+                stockSuperado = true;
+            }
+        });
+
+        if (stockSuperado) {
+            return;
+        }
+
+        limpiarAlertaError();
         mostrarDetalleVenta();
-        var modal = new bootstrap.Modal(document.getElementById('confirmVentaModal'));
+        // Mover el modal al body para evitar problemas con overflow del layout
+        const modalEl = document.getElementById('confirmVentaModal');
+        if (modalEl.parentElement !== document.body) {
+            document.body.appendChild(modalEl);
+        }
+        var modal = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
         modal.show();
     });
 
     // Botón para confirmar y guardar
     document.getElementById('btn-confirmar-venta').addEventListener('click', function() {
+        if (!document.getElementById('form-venta').reportValidity()) {
+            return;
+        }
         document.getElementById('form-venta').submit();
     });
 

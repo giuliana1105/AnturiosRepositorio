@@ -63,16 +63,32 @@ class VentaBodegaController extends Controller
             'tipo_pago' => 'required|in:Efectivo,Transferencia,Crédito,Cheque',
         ]);
 
+        // PRIMERO: Verificar stock de TODOS los productos antes de crear la venta
         $totalVenta = 0;
         foreach ($request->producto_id as $index => $codigo) {
-            $totalVenta += $request->cantidad[$index] * $request->precio_unitario[$index];
+            $cantidadSolicitada = $request->cantidad[$index];
+            $totalVenta += $cantidadSolicitada * $request->precio_unitario[$index];
+
+            // Verifica stock disponible
+            $stock = DB::table('productos_bodega')
+                ->where('bodega_id', $bodega_id)
+                ->where('producto_id', $codigo)
+                ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
+                ->value('stock') ?? 0;
+
+            $producto = Producto::where('codigo', $codigo)->first();
+            $nombreProducto = $producto ? $producto->nombre : $codigo;
+
+            if ($cantidadSolicitada > $stock) {
+                return back()->withInput()->with('error', "No hay suficiente stock para el producto \"{$nombreProducto}\" (Código: {$codigo}). Stock disponible: {$stock}, cantidad solicitada: {$cantidadSolicitada}.");
+            }
         }
 
         // Calcula el próximo número de venta SOLO para esta bodega
         $nroVenta = \App\Models\Venta::where('bodega_id', $bodega_id)->max('nro_venta');
         $nroVenta = $nroVenta ? $nroVenta + 1 : 1;
 
-        // Guarda la venta (cabecera)
+        // Guarda la venta (cabecera) - Solo si todo el stock fue validado correctamente
         $venta = Venta::create([
             'bodega_id' => $bodega_id,
             'nro_venta' => $nroVenta,
@@ -84,17 +100,6 @@ class VentaBodegaController extends Controller
         ]);
 
         foreach ($request->producto_id as $index => $codigo) {
-            // Verifica stock
-            $stock = DB::table('productos_bodega')
-                ->where('bodega_id', $bodega_id)
-                ->where('producto_id', $codigo)
-                ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
-                ->value('stock') ?? 0;
-
-            if ($request->cantidad[$index] > $stock) {
-                return back()->with('error', 'No hay suficiente stock para el producto ' . $codigo);
-            }
-
             // Guarda el detalle de la venta
             DetalleVentaBodega::create([
                 'venta_id' => $venta->id,

@@ -63,28 +63,24 @@
                         <table class="table table-bordered table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
+                                    <th class="text-nowrap">Tipo ID</th>
                                     <th class="text-nowrap">Nro. ID</th>
                                     <th>Nombre</th>
                                     <th>Apellido</th>
-                                    <th class="text-nowrap">Tipo ID</th>
-                                    <th>Bodega</th>
-                                    <th>Cargo</th>
                                     <th>Email</th>
                                     <th>Celular</th>
+                                    <th>Cargo</th>
+                                    <th>Bodega</th>
                                     <th class="text-center text-nowrap" style="min-width: 115px; width: 115px;">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($empleados as $empleado)
                                     <tr>
+                                        <td>{{ $empleado->tipo_identificacion === 'Cedula' ? 'Cédula' : $empleado->tipo_identificacion }}</td>
                                         <td class="text-nowrap fw-500">{{ $empleado->nro_identificacion }}</td>
                                         <td>{{ $empleado->nombreemp }}</td>
                                         <td>{{ $empleado->apellidoemp }}</td>
-                                        <td>{{ $empleado->tipo_identificacion === 'Cedula' ? 'Cédula' : $empleado->tipo_identificacion }}</td>
-                                        <td>{{ $empleado->bodega->nombrebodega ?? 'N/A' }}</td>
-                                        <td>
-                                            <span class="badge bg-light text-dark border px-2 py-1">{{ $empleado->cargoNombre() }}</span>
-                                        </td>
                                         <td style="max-width: 200px;">
                                             <div class="d-flex align-items-center justify-content-between">
                                                 <span id="email-{{ $empleado->nro_identificacion }}" class="me-2 text-break" style="word-wrap: break-word;">{{ $empleado->email }}</span>
@@ -96,6 +92,10 @@
                                             </div>
                                         </td>
                                         <td class="text-nowrap">{{ $empleado->nro_telefono ?? 'N/A' }}</td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border px-2 py-1">{{ $empleado->cargoNombre() }}</span>
+                                        </td>
+                                        <td>{{ $empleado->bodega->nombrebodega ?? 'N/A' }}</td>
                                         <td class="text-center text-nowrap" style="min-width: 115px; width: 115px;">
                                             @if(!in_array($cargo, ['Jefe de bodega']))
                                                 <div class="d-flex gap-1 justify-content-center">

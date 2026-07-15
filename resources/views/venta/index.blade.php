@@ -209,28 +209,36 @@
                                                 @endif
                                             </td>
                                             <td class="text-center">
-                                                <div class="btn-group-vertical" role="group">
-                                                    <a href="{{ route('venta.show', $venta->id) }}" 
-                                                       class="btn btn-info btn-sm rounded-pill mb-1">
-                                                        <i class="fas fa-eye me-1"></i> Detalle
+                                                <div class="d-flex flex-wrap justify-content-center align-items-center gap-1">
+                                                    {{-- Detalle --}}
+                                                    <a href="{{ route('venta.show', $venta->id) }}"
+                                                       class="btn btn-info btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                                                       style="width:34px;height:34px;" title="Ver Detalle">
+                                                        <i class="fas fa-eye"></i>
                                                     </a>
+                                                    {{-- Abono (solo si es Crédito con saldo) --}}
                                                     @if($venta->tipo_pago === 'Crédito' && isset($venta->saldo) && $venta->saldo > 0)
-                                                        <a href="{{ route('venta.abono', $venta->id) }}" 
-                                                           class="btn btn-warning btn-sm rounded-pill mb-1">
-                                                            <i class="fas fa-money-bill me-1"></i> Abono
+                                                        <a href="{{ route('venta.abono', $venta->id) }}"
+                                                           class="btn btn-warning btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                                                           style="width:34px;height:34px;" title="Registrar Abono">
+                                                            <i class="fas fa-money-bill"></i>
                                                         </a>
                                                     @endif
+                                                    {{-- Editar y Eliminar (solo Administrador / Gerente) --}}
                                                     @if(in_array($cargo, ['Administrador', 'Gerente']))
-                                                        <a href="{{ route('venta.edit', $venta->id) }}" 
-                                                           class="btn btn-primary btn-sm rounded-pill mb-1">
-                                                            <i class="fas fa-edit me-1"></i> Editar
+                                                        <a href="{{ route('venta.edit', $venta->id) }}"
+                                                           class="btn btn-primary btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                                                           style="width:34px;height:34px;" title="Editar">
+                                                            <i class="fas fa-edit"></i>
                                                         </a>
                                                         <form action="{{ route('venta.destroy', $venta->id) }}" method="POST" class="d-inline">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger btn-sm rounded-pill" 
+                                                            <button type="submit"
+                                                                    class="btn btn-danger btn-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                                                                    style="width:34px;height:34px;" title="Eliminar"
                                                                     onclick="return confirm('¿Está seguro de eliminar esta venta?')">
-                                                                <i class="fas fa-trash me-1"></i> Eliminar
+                                                                <i class="fas fa-trash"></i>
                                                             </button>
                                                         </form>
                                                     @endif

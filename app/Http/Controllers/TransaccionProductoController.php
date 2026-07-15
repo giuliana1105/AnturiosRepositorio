@@ -125,16 +125,41 @@ class TransaccionProductoController extends Controller
             // Buscar los detalles asociados a la nota
             $detalles = DetalleTipoNota::where('tipo_nota_id', $nota->codigo)->get();
 
+            // 🔹 VERIFICAR STOCK ANTES DE PROCESAR PARA TODOS LOS PRODUCTOS
+            $productosInsuficientes = [];
+            foreach ($detalles as $detalle) {
+                $producto = Producto::where('codigo', $detalle->codigoproducto)->first();
+                $nombreProd = $producto ? $producto->nombre : "Producto Cod. {$detalle->codigoproducto}";
+
+                if ($nota->tiponota === 'ENVIO') {
+                    $stockDisponible = $producto ? $producto->cantidad : 0;
+                    if (!$producto || $stockDisponible < $detalle->cantidad) {
+                        $productosInsuficientes[] = "• <strong>{$nombreProd}</strong> (Solicitado: {$detalle->cantidad}, Disponible: {$stockDisponible})";
+                    }
+                } elseif ($nota->tiponota === 'DEVOLUCION') {
+                    $stockBodega = DB::table('productos_bodega')
+                        ->where('bodega_id', $nota->idbodega)
+                        ->where('producto_id', $detalle->codigoproducto)
+                        ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
+                        ->value('stock') ?? 0;
+
+                    if ($stockBodega < $detalle->cantidad) {
+                        $productosInsuficientes[] = "• <strong>{$nombreProd}</strong> en bodega (Solicitado: {$detalle->cantidad}, Disponible: {$stockBodega})";
+                    }
+                }
+            }
+
+            if (!empty($productosInsuficientes)) {
+                DB::rollBack();
+                $mensajeError = "No se puede finalizar la transacción debido a que no hay suficiente stock para los siguientes productos:<br>" . implode("<br>", $productosInsuficientes);
+                return redirect()->back()->with('error', $mensajeError);
+            }
+
+            // 🔹 PROCESAR INVENTARIOS UNA VEZ VALIDADO EL STOCK DE TODOS LOS PRODUCTOS
             foreach ($detalles as $detalle) {
                 $producto = Producto::where('codigo', $detalle->codigoproducto)->firstOrFail();
 
                 if ($nota->tiponota === 'ENVIO') {
-                    // 🔹 VERIFICAR STOCK ANTES DE PROCESAR
-                    if ($producto->cantidad < $detalle->cantidad) {
-                        DB::rollBack();
-                        return redirect()->back()->with('error', "Stock insuficiente para el producto: {$producto->nombre}. Disponible: {$producto->cantidad}");
-                    }
-                    
                     // 🔹 RESTAR del stock general (tabla productos = bodega MASTER)
                     $producto->cantidad -= $detalle->cantidad;
                     $producto->save();
@@ -151,18 +176,6 @@ class TransaccionProductoController extends Controller
                     ]);
                     
                 } elseif ($nota->tiponota === 'DEVOLUCION') {
-                    // 🔹 VERIFICAR STOCK EN BODEGA ORIGEN
-                    $stockBodega = DB::table('productos_bodega')
-                        ->where('bodega_id', $nota->idbodega)
-                        ->where('producto_id', $detalle->codigoproducto)
-                        ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
-                        ->value('stock') ?? 0;
-
-                    if ($stockBodega < $detalle->cantidad) {
-                        DB::rollBack();
-                        return redirect()->back()->with('error', "Stock insuficiente en bodega para el producto: {$producto->nombre}. Disponible: {$stockBodega}");
-                    }
-                    
                     // 🔹 REGISTRAR salida de bodega origen (es_devolucion = true)
                     DB::table('productos_bodega')->insert([
                         'bodega_id'    => $nota->idbodega,

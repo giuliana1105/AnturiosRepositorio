@@ -1,5 +1,5 @@
 @extends('layouts.app')
- @php
+@php
     $cargo = auth()->user()->cargoNombre();
     $usuario = auth()->user();
     $empleado = $usuario->empleado ?? null;
@@ -7,383 +7,174 @@
 @endphp
 
 @section('content')
-<div class="container py-4">
-    <div class="row">
-        <!-- Main Content -->
-        <div class="col-12 py-3 px-4">
-            <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 1000px;">
-                <div class="card-header rounded-top-4">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <h3 class="mb-0">
-                            <i class="fas fa-edit me-2"></i> Editar Nota
-                        </h3>
-                        <a href="{{ route('tipoNota.index') }}" class="btn btn-light btn-sm rounded-pill">
-                            <i class="fas fa-arrow-left me-2"></i> Volver
-                        </a>
+<div class="container-fluid py-2">
+    <div class="page-header">
+        <div>
+            <h3>Editar Nota</h3>
+            <p class="page-subtitle">Modificación de envío o devolución de productos</p>
+        </div>
+        <a href="{{ route('tipoNota.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <!-- Alertas -->
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i><strong>Errores de validación:</strong>
+            <ul class="mb-0 mt-2">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i><strong>Éxito:</strong> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i><strong>Error:</strong> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <div class="card" style="border-top: 3px solid var(--primary);">
+        <div class="card-body p-4">
+            <h6 class="fw-semibold mb-4" style="color: var(--foreground);">
+                <i class="fas fa-file-signature me-2" style="color: var(--primary);"></i>Datos de la Nota
+            </h6>
+
+            <form action="{{ route('tipoNota.update', $tipoNota->codigo) }}" method="POST">
+                @csrf
+                @method('PUT')
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label for="codigo" class="form-label">Código de Nota</label>
+                        <input type="text" name="codigo" id="codigo" class="form-control font-mono bg-light" value="{{ $tipoNota->codigo }}" readonly>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="tiponota" class="form-label">Tipo de Nota</label>
+                        <select id="tiponota-select" name="tiponota" class="form-select" required>
+                            <option value="ENVIO" {{ $tipoNota->tiponota == 'ENVIO' ? 'selected' : '' }}>Envío</option>
+                            <option value="DEVOLUCION" {{ $tipoNota->tiponota == 'DEVOLUCION' ? 'selected' : '' }}>Devolución</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="idbodega" class="form-label">Bodega</label>
+                        @if(in_array($cargo, ['Vendedor', 'Vendedor camión']))
+                            <input type="text" class="form-control bg-light mb-1"
+                                value="{{ $bodegaAsignada ? $bodegaAsignada->nombrebodega : '' }}"
+                                readonly>
+                            <input type="hidden" id="bodega-select" name="idbodega" value="{{ $bodegaAsignada ? $bodegaAsignada->idbodega : '' }}">
+                        @else
+                            <select id="bodega-select" name="idbodega" class="form-select" required>
+                                @foreach ($bodegas as $bodega)
+                                    <option value="{{ $bodega->idbodega }}" {{ $tipoNota->idbodega == $bodega->idbodega ? 'selected' : '' }}>
+                                        {{ $bodega->nombrebodega }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        @endif
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="nro_identificacion" class="form-label">Solicitante</label>
+                        @if(in_array($cargo, ['Vendedor', 'Vendedor camión']))
+                            <input type="text" class="form-control bg-light"
+                                value="{{ $empleado ? $empleado->nombreemp . ' ' . $empleado->apellidoemp : $usuario->name }}"
+                                readonly>
+                            <input type="hidden" name="nro_identificacion" value="{{ $empleado ? $empleado->nro_identificacion : '' }}">
+                        @else
+                            <select name="nro_identificacion" class="form-select" required>
+                                @foreach ($empleados as $empleado_opt)
+                                    <option value="{{ $empleado_opt->nro_identificacion }}" {{ $tipoNota->nro_identificacion == $empleado_opt->nro_identificacion ? 'selected' : '' }}>
+                                        {{ $empleado_opt->nombreemp }} {{ $empleado_opt->apellidoemp }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        @endif
                     </div>
                 </div>
-                <div class="card-body">
-                    <!-- Alertas -->
-                    @if ($errors->any())
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            <strong>Errores de validación:</strong>
-                            <ul class="mb-0 mt-2">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    @endif
 
-                    @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <i class="fas fa-check-circle me-2"></i>
-                            <strong>Éxito:</strong> {{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            <strong>Error:</strong> {{ session('error') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    @endif
-
-                    <form action="{{ route('tipoNota.update', $tipoNota->codigo) }}" method="POST" class="row g-3">
-                        @csrf
-                        @method('PUT')
-
-                        <div class="col-md-6">
-                            <label for="codigo" class="form-label fw-bold">
-                                <i class="fas fa-barcode me-2 text-brand"></i> Código de Nota
-                            </label>
-                            <input type="text" name="codigo" id="codigo" class="form-control rounded-pill" 
-                                   value="{{ $tipoNota->codigo }}" readonly>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="tiponota" class="form-label fw-bold">
-                                <i class="fas fa-tags me-2 text-brand"></i> Tipo de Nota
-                            </label>
-                            <select id="tiponota-select" name="tiponota" class="form-select rounded-pill" required>
-                                <option value="ENVIO" {{ $tipoNota->tiponota == 'ENVIO' ? 'selected' : '' }}>Envío</option>
-                                <option value="DEVOLUCION" {{ $tipoNota->tiponota == 'DEVOLUCION' ? 'selected' : '' }}>Devolución</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="idbodega" class="form-label fw-bold">
-                                <i class="fas fa-warehouse me-2 text-brand"></i> Bodega
-                            </label>
-                            @if(in_array($cargo, ['Vendedor', 'Vendedor camión']))
-                                <input type="text" class="form-control rounded-pill mb-1"
-                                    value="{{ $bodegaAsignada ? $bodegaAsignada->nombrebodega : '' }}"
-                                    readonly>
-                                <input type="hidden" name="idbodega" value="{{ $bodegaAsignada ? $bodegaAsignada->idbodega : '' }}">
-                            @else
-                                <select id="bodega-select" name="idbodega" class="form-select rounded-pill" required>
-                                    @foreach ($bodegas as $bodega)
-                                        <option value="{{ $bodega->idbodega }}" {{ $tipoNota->idbodega == $bodega->idbodega ? 'selected' : '' }}>
-                                            {{ $bodega->nombrebodega }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            @endif
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="nro_identificacion" class="form-label fw-bold">
-                                <i class="fas fa-user-tie me-2 text-brand"></i> Solicitante
-                            </label>
-                            @if(in_array($cargo, ['Vendedor', 'Vendedor camión']))
-                                <input type="text" class="form-control rounded-pill"
-                                    value="{{ $empleado ? $empleado->nombreemp . ' ' . $empleado->apellidoemp : $usuario->name }}"
-                                    readonly>
-                                <input type="hidden" name="nro_identificacion" value="{{ $empleado ? $empleado->nro_identificacion : '' }}">
-                            @else
-                                <select name="nro_identificacion" class="form-select rounded-pill" required>
-                                    @foreach ($empleados as $empleado)
-                                        <option value="{{ $empleado->nro_identificacion }}" {{ $tipoNota->nro_identificacion == $empleado->nro_identificacion ? 'selected' : '' }}>
-                                            {{ $empleado->nombreemp }} {{ $empleado->apellidoemp }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            @endif
-                        </div>
-
-                        <!-- Sección de Productos -->
-                        <div class="col-12 mt-4">
-                            <div class="card border-2 border-info bg-light bg-opacity-25">
-                                <div class="card-header bg-brand-light border-0">
-                                    <h5 class="mb-0 text-brand fw-bold">
-                                        <i class="fas fa-boxes me-2"></i> Productos
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div id="productos-container">
-                                        @foreach ($tipoNota->detalles as $detalle)
-                                            <div class="row row-producto mb-3 align-items-end p-3 bg-white rounded-3 shadow-sm border">
-                                                <input type="hidden" name="detalle_ids[]" value="{{ $detalle->id }}">
-                                                <div class="col-md-4">
-                                                    <label for="codigoproducto[]" class="form-label fw-bold">
-                                                        <i class="fas fa-cube me-1 text-secondary"></i> Producto
-                                                    </label>
-                                                    <select name="codigoproducto[]" class="form-select rounded-pill producto-select" required>
-                                                        <option value="">Seleccione un producto</option>
-                                                        @foreach ($productos as $producto)
-                                                            <option value="{{ $producto->codigo }}"
-                                                                data-stock="{{ $producto->cantidad }}"
-                                                                data-empaque="{{ $producto->tipoempaque }}"
-                                                                {{ $detalle->codigoproducto == $producto->codigo ? 'selected' : '' }}>
-                                                                {{ $producto->codigo }} - {{ $producto->nombre }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <label for="cantidad[]" class="form-label fw-bold">
-                                                        <i class="fas fa-sort-numeric-up me-1 text-secondary"></i> Cantidad
-                                                    </label>
-                                                    <input type="number" name="cantidad[]" class="form-control rounded-pill cantidad-input"
-                                                        value="{{ $detalle->cantidad }}"
-                                                        min="1"
-                                                        max="{{ optional($productos->firstWhere('codigo', $detalle->codigoproducto))->cantidad }}"
-                                                        required>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <label for="empaque[]" class="form-label fw-bold">
-                                                        <i class="fas fa-box me-1 text-secondary"></i> Tipo de Empaque
-                                                    </label>
-                                                    <input type="text" name="empaque[]" class="form-control rounded-pill empaque-input"
-                                                        value="{{ optional($productos->firstWhere('codigo', $detalle->codigoproducto))->tipoempaque }}"
-                                                        readonly>
-                                                </div>
-                                                <div class="col-md-2 d-flex gap-2 justify-content-center">
-                                                    <button type="button" class="btn btn-outline-danger btn-remove-producto rounded-circle shadow-sm" style="width: 38px; height: 38px;" title="Eliminar producto">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
+                <div class="mt-5 mb-3">
+                    <h6 class="fw-semibold" style="color: var(--foreground);">
+                        <i class="fas fa-boxes me-2" style="color: var(--primary);"></i>Productos a procesar
+                    </h6>
+                </div>
+                
+                <div class="p-4 rounded" style="background: var(--surface-hover); border: 1px solid var(--border-light);">
+                    <div id="productos-container">
+                        @foreach ($tipoNota->detalles as $detalle)
+                            <div class="row row-producto g-3 align-items-end mb-3 pb-3 border-bottom">
+                                <input type="hidden" name="detalle_ids[]" value="{{ $detalle->id }}">
+                                <div class="col-md-4">
+                                    <label for="codigoproducto[]" class="form-label font-sm">Producto</label>
+                                    <select name="codigoproducto[]" class="form-select producto-select" required>
+                                        <option value="">Seleccione un producto</option>
+                                        @foreach ($productos as $producto)
+                                            <option value="{{ $producto->codigo }}"
+                                                data-stock="{{ $producto->cantidad }}"
+                                                data-empaque="{{ $producto->tipoempaque }}"
+                                                {{ $detalle->codigoproducto == $producto->codigo ? 'selected' : '' }}>
+                                                {{ $producto->codigo }} - {{ $producto->nombre }}
+                                            </option>
                                         @endforeach
-                                    </div>
-                                    
-                                    <!-- Botón para agregar productos -->
-                                    <div class="text-center mt-3">
-                                        <button type="button" class="btn btn-outline-success btn-add-producto rounded-pill px-4 py-2">
-                                            <i class="fas fa-plus me-2"></i> Agregar producto
-                                        </button>
-                                    </div>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="cantidad[]" class="form-label font-sm">Cantidad</label>
+                                    <input type="number" name="cantidad[]" class="form-control cantidad-input"
+                                        value="{{ $detalle->cantidad }}"
+                                        min="1"
+                                        max="{{ optional($productos->firstWhere('codigo', $detalle->codigoproducto))->cantidad }}"
+                                        required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="empaque[]" class="form-label font-sm">Tipo de Empaque</label>
+                                    <input type="text" name="empaque[]" class="form-control empaque-input bg-light"
+                                        value="{{ optional($productos->firstWhere('codigo', $detalle->codigoproducto))->tipoempaque }}"
+                                        readonly>
+                                </div>
+                                <div class="col-md-2 d-flex gap-2 pb-1">
+                                    <button type="button" class="btn btn-outline-danger btn-remove-producto px-3" title="Eliminar producto">
+                                        <i class="fas fa-times pointer-events-none"></i>
+                                    </button>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="col-12 text-center mt-4">
-                            <button type="submit" class="btn btn-info text-white fw-bold rounded-pill px-5 py-3">
-                                <i class="fas fa-save me-2"></i> Actualizar Nota
-                            </button>
-                            <a href="{{ route('tipoNota.index') }}" class="btn btn-secondary rounded-pill px-5 py-3 ms-3">
-                                <i class="fas fa-times me-2"></i> Cancelar
-                            </a>
-                        </div>
-                    </form>
+                        @endforeach
+                    </div>
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-outline-success btn-add-producto px-4 py-2">
+                            <i class="fas fa-plus me-2"></i> Agregar producto
+                        </button>
+                    </div>
                 </div>
-            </div>
+
+                <hr class="my-4" style="border-color: var(--border-light);">
+                
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ route('tipoNota.index') }}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-
-<style>
-body {
-    margin: 0;
-    padding: 0;
-}
-.container-fluid {
-    padding: 0 !important;
-    margin: 0 !important;
-    max-width: 100% !important;
-    width: 100% !important;
-}
-.card {
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-bottom: 0;
-}
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-.nav-link {
-    padding: 0.5rem 0;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-.nav-link:hover {
-    background-color: rgba(0, 123, 255, 0.1);
-    padding-left: 0.5rem;
-}
-.nav-link.active {
-    background-color: rgba(23, 162, 184, 0.1);
-    border-left: 3px solid #17a2b8;
-    padding-left: 0.5rem;
-}
-.min-vh-100 {
-    min-height: 100vh;
-}
-.card-body {
-    position: relative;
-    overflow: hidden;
-}
-.card-body::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    pointer-events: none;
-}
-.h3 {
-    font-size: 2.5rem;
-}
-.row.g-0 {
-    margin: 0;
-}
-
-.btn-info {
-    background-color: #0097a7;
-    border-color: #0097a7;
-}
-.btn-info:hover, .btn-info:focus {
-    background-color: #00796b;
-    border-color: #00796b;
-}
-.btn-secondary {
-    background-color: #607d8b;
-    border-color: #607d8b;
-    color: #fff;
-}
-.btn-secondary:hover, .btn-secondary:focus {
-    background-color: #455a64;
-    border-color: #455a64;
-    color: #fff;
-}
-.btn-light {
-    background-color: #f8f9fa;
-    border-color: #f8f9fa;
-    color: #495057;
-}
-.btn-light:hover, .btn-light:focus {
-    background-color: #e2e6ea;
-    border-color: #dae0e5;
-    color: #495057;
-}
-.btn-outline-success {
-    border-width: 2px;
-    transition: all 0.3s ease;
-}
-.btn-outline-success:hover, .btn-outline-success:focus {
-    background-color: #43a047;
-    color: #fff;
-    border-color: #43a047;
-    transform: scale(1.05);
-}
-.btn-outline-danger {
-    border-width: 2px;
-    transition: all 0.3s ease;
-}
-.btn-outline-danger:hover, .btn-outline-danger:focus {
-    background-color: #e53935;
-    color: #fff;
-    border-color: #e53935;
-    transform: scale(1.1);
-}
-.rounded-pill {
-    border-radius: 50rem !important;
-}
-.form-control, .form-select {
-    border: 2px solid #e9ecef;
-    transition: all 0.3s ease;
-}
-.form-control:focus, .form-select:focus {
-    border-color: #0097a7;
-    box-shadow: 0 0 0 0.2rem rgba(0, 151, 167, 0.25);
-}
-.form-label {
-    color: #495057;
-    margin-bottom: 0.5rem;
-}
-.alert {
-    border: none;
-    border-radius: 0.75rem;
-}
-.alert-success {
-    background-color: #d4edda;
-    color: #155724;
-}
-.alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-.row-producto {
-    transition: all 0.3s ease;
-}
-.row-producto:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
-}
-#productos-container .card {
-    border-radius: 1rem;
-}
-@media (max-width: 768px) {
-    .col-md-2 {
-        display: none;
-    }
-    .col-md-10 {
-        flex: 0 0 100%;
-        max-width: 100%;
-        padding: 15px !important;
-    }
-    .h3 {
-        font-size: 1.75rem;
-    }
-    .container-fluid {
-        padding: 0 !important;
-    }
-    .card-header .d-flex {
-        flex-direction: column;
-        text-align: center;
-    }
-    .card-header .btn {
-        margin-top: 1rem;
-    }
-    .row-producto {
-        flex-direction: column;
-    }
-    .row-producto .col-md-2 {
-        display: flex;
-        justify-content: center;
-        margin-top: 15px;
-    }
-}
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-}
-#app {
-    min-height: 100vh;
-}
-</style>
 @endsection
 
 @section('scripts')
-@parent
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const tipoNotaSelect = document.getElementById('tiponota-select');
@@ -391,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const productosContainer = document.getElementById('productos-container');
     let productosDisponibles = [];
     let tipoNotaInicial = tipoNotaSelect.value;
-    let bodegaInicial = bodegaSelect.value;
+    let bodegaInicial = bodegaSelect ? bodegaSelect.value : null;
 
     // Función para obtener productos ya seleccionados
     function getProductosSeleccionados() {
@@ -421,6 +212,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const select = primeraFila.querySelector('.producto-select');
             const empaqueInput = primeraFila.querySelector('.empaque-input');
             const cantidadInput = primeraFila.querySelector('.cantidad-input');
+            const hiddenId = primeraFila.querySelector('input[name="detalle_ids[]"]');
+            
+            if (hiddenId) hiddenId.remove(); // Remove old id if it was there to treat as new if needed
             
             if (select) {
                 select.innerHTML = '<option value="">Seleccione un producto</option>';
@@ -471,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function actualizarEmpaqueEnFilas() {
         const tipoNota = tipoNotaSelect.value;
-        const bodegaId = tipoNota === 'DEVOLUCION' ? bodegaSelect.value : null;
+        const bodegaId = tipoNota === 'DEVOLUCION' && bodegaSelect ? bodegaSelect.value : null;
         
         document.querySelectorAll('.row-producto').forEach(row => {
             const select = row.querySelector('.producto-select');
@@ -540,8 +334,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function actualizarOpcionesProductos(callback = null) {
-        if (tipoNotaSelect.value === 'DEVOLUCION' && bodegaSelect.value) {
-            cargarProductos(`/bodegas/${bodegaSelect.value}/productos`, null);
+        let bVal = bodegaSelect ? bodegaSelect.value : null;
+        if (tipoNotaSelect.value === 'DEVOLUCION' && bVal) {
+            cargarProductos(`/bodegas/${bVal}/productos`, null);
         } else if (tipoNotaSelect.value === 'ENVIO') {
             cargarProductos(`/bodegas/master/productos`, null);
         } else {
@@ -562,16 +357,18 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Detectar cambios en bodega
-    bodegaSelect.addEventListener('change', function() {
-        // Si cambió la bodega, limpiar campos
-        if (this.value !== bodegaInicial) {
-            limpiarCamposProductos();
-        }
-        bodegaInicial = this.value;
-        actualizarOpcionesProductos();
-    });
+    if(bodegaSelect) {
+        bodegaSelect.addEventListener('change', function() {
+            // Si cambió la bodega, limpiar campos
+            if (this.value !== bodegaInicial) {
+                limpiarCamposProductos();
+            }
+            bodegaInicial = this.value;
+            actualizarOpcionesProductos();
+        });
+    }
 
-    // Ejecutar al cargar la página si ya hay valores seleccionados
+    // Ejecutar al cargar la página
     actualizarOpcionesProductos();
 
     document.querySelector('.btn-add-producto').addEventListener('click', function() {
@@ -583,6 +380,9 @@ document.addEventListener('DOMContentLoaded', function () {
         newRow.querySelectorAll('input').forEach(input => {
             if (input.type !== 'hidden') {
                 input.value = '';
+                input.classList.remove('is-invalid');
+            } else if (input.name === 'detalle_ids[]') {
+                input.remove(); // No detail id for new rows
             }
         });
 
@@ -616,7 +416,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     productosContainer.addEventListener('click', function(e) {
-        if (e.target.classList.contains('btn-remove-producto')) {
+        if (e.target.closest('.btn-remove-producto')) {
             const rows = productosContainer.querySelectorAll('.row-producto');
             if (rows.length > 1) {
                 e.target.closest('.row-producto').remove();
@@ -631,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (e.target.classList.contains('producto-select')) {
             const selectedOption = e.target.options[e.target.selectedIndex];
             const tipoNota = tipoNotaSelect.value;
-            const bodegaId = tipoNota === 'DEVOLUCION' ? bodegaSelect.value : null;
+            const bodegaId = tipoNota === 'DEVOLUCION' && bodegaSelect ? bodegaSelect.value : null;
             
             let stock;
             if (bodegaId) {
@@ -691,9 +491,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!valid) {
             e.preventDefault();
             if (productosSeleccionados.length !== new Set(productosSeleccionados).size) {
-                alert('No se pueden seleccionar productos duplicados.');
+                // message handled by alert
             } else {
-                alert('La cantidad ingresada supera el stock disponible.');
+                alert('La cantidad ingresada supera el stock disponible en uno o más productos.');
             }
         }
     });

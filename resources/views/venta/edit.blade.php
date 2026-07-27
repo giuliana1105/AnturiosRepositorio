@@ -1,17 +1,19 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-4">
-    <div class="row">
-        <!-- Main Content -->
-        <div class="col-12 py-3 px-4">
-            <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 1400px;">
-                <div class="card-header rounded-top-4 text-center">
-                    <h3 class="mb-0">
-                        <i class="fas fa-edit me-2"></i> Editar Venta #{{ $venta->id }}
-                    </h3>
-                </div>
-                <div class="card-body">
+<div class="container-fluid py-2">
+    <div class="page-header">
+        <div>
+            <h3>Editar Venta</h3>
+            <p class="page-subtitle">Bodega: {{ $bodega->nombrebodega }}</p>
+        </div>
+        <a href="{{ route('bodegas.show', $bodega->idbodega) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card" style="border-top: 3px solid var(--primary);">
+        <div class="card-body p-4">
                     <form method="POST" action="{{ route('venta.update', $venta->id) }}">
                         @csrf
                         @method('PUT')
@@ -301,208 +303,10 @@
                             </a>
                         </div>
                     </form>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
-<style>
-body {
-    margin: 0;
-    padding: 0;
-}
-.container-fluid {
-    padding: 0 !important;
-    margin: 0 !important;
-    max-width: 100% !important;
-    width: 100% !important;
-}
-.card {
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-bottom: 0;
-}
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-.nav-link {
-    padding: 0.5rem 0;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-.nav-link:hover {
-    background-color: rgba(0, 123, 255, 0.1);
-    padding-left: 0.5rem;
-}
-.nav-link.active {
-    background-color: rgba(23, 162, 184, 0.1);
-    border-left: 3px solid #17a2b8;
-    padding-left: 0.5rem;
-}
-.min-vh-100 {
-    min-height: 100vh;
-}
-.card-body {
-    position: relative;
-    overflow: hidden;
-}
-.card-body::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    pointer-events: none;
-}
-.h3 {
-    font-size: 2.5rem;
-}
-.row.g-0 {
-    margin: 0;
-}
 
-.btn-info {
-    background-color: #0097a7;
-    border-color: #0097a7;
-}
-.btn-info:hover, .btn-info:focus {
-    background-color: #00796b;
-    border-color: #00796b;
-}
-.btn-warning {
-    background-color: #ff9800;
-    border-color: #ff9800;
-    color: #fff;
-}
-.btn-warning:hover, .btn-warning:focus {
-    background-color: #f57c00;
-    border-color: #f57c00;
-    color: #fff;
-}
-.btn-danger {
-    background-color: #e53935;
-    border-color: #e53935;
-    color: #fff;
-}
-.btn-danger:hover, .btn-danger:focus {
-    background-color: #b71c1c;
-    border-color: #b71c1c;
-    color: #fff;
-}
-.btn-success {
-    background-color: #4caf50;
-    border-color: #4caf50;
-}
-.btn-success:hover, .btn-success:focus {
-    background-color: #388e3c;
-    border-color: #388e3c;
-}
-.btn-secondary {
-    background-color: #607d8b;
-    border-color: #607d8b;
-    color: #fff;
-}
-.btn-secondary:hover, .btn-secondary:focus {
-    background-color: #455a64;
-    border-color: #455a64;
-    color: #fff;
-}
-.btn-primary {
-    background-color: #2196f3;
-    border-color: #2196f3;
-}
-.btn-primary:hover, .btn-primary:focus {
-    background-color: #1976d2;
-    border-color: #1976d2;
-}
-.rounded-pill {
-    border-radius: 50rem !important;
-}
-.rounded-4 {
-    border-radius: 1rem !important;
-}
-.rounded-top-4 {
-    border-top-left-radius: 1rem !important;
-    border-top-right-radius: 1rem !important;
-}
-.alert {
-    border: none;
-}
-.alert-success {
-    background-color: #d4edda;
-    color: #155724;
-    border-left: 4px solid #4caf50;
-}
-.bg-opacity-10 {
-    --bs-bg-opacity: 0.1;
-}
-.badge {
-    font-size: 0.75rem;
-    padding: 0.5rem 0.75rem;
-}
-.input-group-text {
-    border-top-left-radius: 0.375rem !important;
-    border-bottom-left-radius: 0.375rem !important;
-}
-.form-control {
-    transition: all 0.2s ease;
-}
-.form-control:focus {
-    border-color: #0097a7;
-    box-shadow: 0 0 0 0.2rem rgba(0, 151, 167, 0.25);
-}
-.row-producto, .row-abono {
-    transition: all 0.3s ease;
-}
-.row-producto:hover, .row-abono:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-@media (max-width: 768px) {
-    .col-md-2 {
-        display: none;
-    }
-    .col-md-10 {
-        flex: 0 0 100%;
-        max-width: 100%;
-        padding: 15px !important;
-    }
-    .h3 {
-        font-size: 2rem;
-    }
-    .container-fluid {
-        padding: 0 !important;
-    }
-    .col-md-3, .col-md-4, .col-md-6 {
-        flex: 0 0 100%;
-        max-width: 100%;
-    }
-    .btn-group {
-        flex-direction: column;
-        width: 100%;
-    }
-    .btn-group .btn {
-        border-radius: 50rem !important;
-        margin-bottom: 0.25rem;
-    }
-    .d-flex.gap-3 {
-        flex-direction: column;
-        gap: 1rem !important;
-    }
-}
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-}
-#app {
-    min-height: 100vh;
-}
-</style>
 @endsection
 
 @section('scripts')

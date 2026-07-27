@@ -1,19 +1,22 @@
 @extends('layouts.app')
- @php
-                        $cargo = auth()->user()->cargoNombre();
-                    @endphp
+@php
+    $cargo = auth()->user()->cargoNombre();
+@endphp
+
 @section('content')
-<div class="container py-4">
-    <div class="row">
-        <!-- Main Content -->
-        <div class="col-12 py-3 px-4">
-            <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 1400px;">
-                <div class="card-header rounded-top-4 text-center">
-                    <h3 class="mb-0">
-                        <i class="fas fa-plus-circle me-2"></i> Registrar Venta en {{ $bodega->nombrebodega }}
-                    </h3>
-                </div>
-                <div class="card-body">
+<div class="container-fluid py-2">
+    <div class="page-header">
+        <div>
+            <h3>Registrar Venta</h3>
+            <p class="page-subtitle">Bodega: {{ $bodega->nombrebodega }}</p>
+        </div>
+        <a href="{{ route('bodegas.show', $bodega->idbodega) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card" style="border-top: 3px solid var(--primary);">
+        <div class="card-body p-4">
                     <!-- Alertas -->
                     <div id="alert-container">
                         @if (session('error'))
@@ -194,7 +197,7 @@
                             </div>
                             <div class="card-body">
                                 <div id="productos-container">
-                                    <div class="row align-items-end mb-3 row-producto border rounded-4 p-3 bg-white shadow-sm">
+                                    <div class="row align-items-start mb-3 row-producto border rounded-4 p-3 bg-white shadow-sm">
                                         <div class="col-md-3">
                                             <label class="form-label fw-bold">
                                                 <i class="fas fa-cube me-2"></i>Producto
@@ -343,11 +346,6 @@
                             <a href="{{ route('bodegas.show', $bodega->idbodega) }}" class="btn btn-secondary fw-bold rounded-pill px-4">
                                 <i class="fas fa-times me-2"></i> Cancelar
                             </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -377,194 +375,6 @@
         </div>
     </div>
 </div>
-
-<style>
-body {
-    margin: 0;
-    padding: 0;
-}
-.container-fluid {
-    padding: 0 !important;
-    margin: 0 !important;
-    max-width: 100% !important;
-    width: 100% !important;
-}
-.card {
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-bottom: 0;
-}
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-.nav-link {
-    padding: 0.5rem 0;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-.nav-link:hover {
-    background-color: rgba(0, 123, 255, 0.1);
-    padding-left: 0.5rem;
-}
-.nav-link.active {
-    background-color: rgba(23, 162, 184, 0.1);
-    border-left: 3px solid #17a2b8;
-    padding-left: 0.5rem;
-}
-.min-vh-100 {
-    min-height: 100vh;
-}
-.card-body {
-    position: relative;
-    overflow: visible;
-}
-/* Fix para modal dentro de layout con overflow:hidden en body */
-.modal {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    z-index: 1055 !important;
-}
-.modal-backdrop {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    z-index: 1050 !important;
-}
-.modal-dialog {
-    z-index: 1056 !important;
-}
-#confirmVentaModal .modal-body {
-    max-height: 60vh;
-    overflow-y: auto;
-}
-.card-body::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    pointer-events: none;
-}
-.h3 {
-    font-size: 2.5rem;
-}
-.row.g-0 {
-    margin: 0;
-}
-
-.btn-info {
-    background-color: #0097a7;
-    border-color: #0097a7;
-}
-.btn-info:hover, .btn-info:focus {
-    background-color: #00796b;
-    border-color: #00796b;
-}
-.btn-warning {
-    background-color: #ff9800;
-    border-color: #ff9800;
-    color: #fff;
-}
-.btn-warning:hover, .btn-warning:focus {
-    background-color: #f57c00;
-    border-color: #f57c00;
-    color: #fff;
-}
-.btn-danger {
-    background-color: #e53935;
-    border-color: #e53935;
-    color: #fff;
-}
-.btn-danger:hover, .btn-danger:focus {
-    background-color: #b71c1c;
-    border-color: #b71c1c;
-    color: #fff;
-}
-.btn-success {
-    background-color: #4caf50;
-    border-color: #4caf50;
-}
-.btn-success:hover, .btn-success:focus {
-    background-color: #388e3c;
-    border-color: #388e3c;
-}
-.btn-secondary {
-    background-color: #607d8b;
-    border-color: #607d8b;
-    color: #fff;
-}
-.btn-secondary:hover, .btn-secondary:focus {
-    background-color: #455a64;
-    border-color: #455a64;
-    color: #fff;
-}
-.btn-primary {
-    background-color: #2196f3;
-    border-color: #2196f3;
-}
-.btn-primary:hover, .btn-primary:focus {
-    background-color: #1976d2;
-    border-color: #1976d2;
-}
-.rounded-pill {
-    border-radius: 50rem !important;
-}
-.rounded-4 {
-    border-radius: 1rem !important;
-}
-.rounded-top-4 {
-    border-top-left-radius: 1rem !important;
-    border-top-right-radius: 1rem !important;
-}
-.bg-opacity-10 {
-    --bs-bg-opacity: 0.1;
-}
-.text-transparent {
-    color: transparent !important;
-}
-.shadow-sm {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
-}
-@media (max-width: 768px) {
-    .col-md-2 {
-        display: none;
-    }
-    .col-md-10 {
-        flex: 0 0 100%;
-        max-width: 100%;
-        padding: 15px !important;
-    }
-    .h3 {
-        font-size: 2rem;
-    }
-    .container-fluid {
-        padding: 0 !important;
-    }
-    .col-md-3, .col-md-6 {
-        flex: 0 0 100%;
-        max-width: 100%;
-    }
-    .d-flex.gap-1 {
-        flex-direction: column;
-    }
-    .d-flex.flex-column.gap-1 {
-        flex-direction: column;
-    }
-}
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-}
-#app {
-    min-height: 100vh;
-}
-</style>
 @endsection
 
 @section('scripts')

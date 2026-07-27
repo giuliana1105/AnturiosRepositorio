@@ -11,20 +11,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ===== CSS VARIABLES ===== */
+        /* ===== CSS VARIABLES (Sophistication & Trust Theme) ===== */
         :root {
-            --primary: #E91E8C;
-            --primary-dark: #C4177A;
-            --primary-light: #F472B6;
-            --primary-glow: rgba(233, 30, 140, 0.3);
-            --primary-subtle: rgba(233, 30, 140, 0.08);
-            --dark: #1A1A2E;
-            --dark-soft: #2D2D44;
-            --text-primary: #2D2D2D;
+            --primary: #9d2449;
+            --primary-dark: #7a1c38;
+            --primary-light: #b94b6d;
+            --primary-glow: rgba(157, 36, 73, 0.3);
+            --primary-subtle: rgba(157, 36, 73, 0.08);
+            --dark: #2c2925;
+            --dark-soft: #3f3b35;
+            --text-primary: #2d2a26;
             --text-secondary: #6B7280;
             --text-light: #9CA3AF;
             --white: #FFFFFF;
-            --off-white: #FAFAFA;
+            --off-white: #f5f3f0;
             --glass-bg: rgba(255, 255, 255, 0.12);
             --glass-border: rgba(255, 255, 255, 0.18);
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);

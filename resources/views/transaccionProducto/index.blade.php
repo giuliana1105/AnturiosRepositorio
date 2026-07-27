@@ -1,379 +1,155 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-4">
-    <div class="row">
-        <!-- Main Content -->
-        <div class="col-12 py-3 px-4">
-            <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 1400px;">
-                <div class="card-header rounded-top-4 text-center">
-                    <h3 class="mb-0">
-                        <i class="fas fa-clipboard-list me-2"></i> Gestión de Transacciones
-                    </h3>
+<div class="container-fluid py-2">
+    <div class="page-header">
+        <div>
+            <h3>Transacciones</h3>
+            <p class="page-subtitle">Aprobación y seguimiento de movimientos de inventario</p>
+        </div>
+    </div>
+
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>{!! session('success') !!}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>{!! session('error') !!}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <!-- Status Filter Tabs -->
+    <div class="d-flex gap-2 mb-4 flex-wrap">
+        <a href="{{ route('transaccionProducto.index', ['estado' => '']) }}" 
+           class="btn {{ request('estado') == '' ? 'btn-info' : 'btn-secondary' }}">
+            <i class="fas fa-list"></i> Todas
+        </a>
+        <a href="{{ route('transaccionProducto.index', ['estado' => 'PENDIENTE']) }}" 
+           class="btn {{ request('estado') == 'PENDIENTE' ? 'btn-warning' : 'btn-secondary' }}">
+            <i class="fas fa-clock"></i> Pendientes
+        </a>
+        <a href="{{ route('transaccionProducto.index', ['estado' => 'FINALIZADA']) }}" 
+           class="btn {{ request('estado') == 'FINALIZADA' ? 'btn-success' : 'btn-secondary' }}">
+            <i class="fas fa-check-circle"></i> Finalizadas
+        </a>
+    </div>
+
+    <!-- Counters -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="stat-card" style="border-left: 3px solid var(--warning); cursor: default;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon" style="background: var(--warning-bg); color: var(--warning);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 24px; font-weight: 700; font-family: var(--font-mono); color: var(--warning);">{{ $pendientes ?? 0 }}</div>
+                        <div style="font-size: 12px; color: var(--muted); font-weight: 500;">PENDIENTES</div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <!-- Alertas de éxito o error -->
-                    @if (session('success'))
-                        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-                            <i class="fas fa-check-circle me-2"></i>
-                            {!! session('success') !!}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    @endif
-
-                    @if (session('error'))
-                        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            {!! session('error') !!}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    @endif
-
-                    <!-- Filtros y búsqueda -->
-                    <div class="row mb-4">
-                        <div class="col-md-8">
-                            <label class="form-label fw-bold mb-2">Filtrar por Estado</label>
-                            <div class="btn-group w-100" role="group">
-                                <a href="{{ route('transaccionProducto.index', ['estado' => '']) }}" 
-                                   class="btn {{ request('estado') == '' ? 'btn-info' : 'btn-outline-info' }} rounded-start-pill">
-                                    <i class="fas fa-list me-2"></i> Todas
-                                </a>
-                                <a href="{{ route('transaccionProducto.index', ['estado' => 'PENDIENTE']) }}" 
-                                   class="btn {{ request('estado') == 'PENDIENTE' ? 'btn-warning' : 'btn-outline-warning' }}">
-                                    <i class="fas fa-clock me-2"></i> Pendientes
-                                </a>
-                                <a href="{{ route('transaccionProducto.index', ['estado' => 'FINALIZADA']) }}" 
-                                   class="btn {{ request('estado') == 'FINALIZADA' ? 'btn-success' : 'btn-outline-success' }} rounded-end-pill">
-                                    <i class="fas fa-check-circle me-2"></i> Finalizadas
-                                </a>
-                            </div>
-                        </div>
-                        
-                            <!-- <form action="{{ route('transaccionProducto.index') }}" method="GET" class="h-100">
-                                <label for="search" class="form-label fw-bold">Buscar Transacción</label>
-                                <div class="input-group">
-                                    <input type="text" name="search" id="search" class="form-control rounded-start-pill" 
-                                           placeholder="Código de nota" value="{{ request('search') }}">
-                                    <button type="submit" class="btn btn-info rounded-end-pill">
-                                        <i class="fas fa-search"></i>
-                                    </button>
-                                </div>
-                            </form> -->
-                        </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="stat-card" style="border-left: 3px solid var(--success); cursor: default;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon" style="background: var(--success-bg); color: var(--success);">
+                        <i class="fas fa-check-circle"></i>
                     </div>
-
-                    <!-- Contadores de transacciones -->
-                    <div class="row mb-4">
-                        <div class="col-md-6 mb-3">
-                            <div class="card border-0 bg-warning bg-opacity-10 h-100">
-                                <div class="card-body text-center">
-                                    <div class="d-flex align-items-center justify-content-center mb-2">
-                                        <div class="bg-warning rounded-circle p-3 me-3">
-                                            <i class="fas fa-clock text-white fa-lg"></i>
-                                        </div>
-                                        <div>
-                                            <h5 class="text-warning mb-1 fw-bold">Transacciones Pendientes</h5>
-                                            <h2 class="text-warning mb-0">{{ $pendientes ?? 0 }}</h2>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <div class="card border-0 bg-success bg-opacity-10 h-100">
-                                <div class="card-body text-center">
-                                    <div class="d-flex align-items-center justify-content-center mb-2">
-                                        <div class="bg-success rounded-circle p-3 me-3">
-                                            <i class="fas fa-check-circle text-white fa-lg"></i>
-                                        </div>
-                                        <div>
-                                            <h5 class="text-success mb-1 fw-bold">Transacciones Finalizadas</h5>
-                                            <h2 class="text-success mb-0">{{ $finalizadas ?? 0 }}</h2>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tabla de transacciones -->
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle">
-                            <thead class="table-light text-center">
-                                <tr>
-                                    <th><i class="fas fa-barcode me-2"></i>CÓDIGO NOTA</th>
-                                    <th><i class="fas fa-tag me-2"></i>TIPO NOTA</th>
-                                    <th><i class="fas fa-info-circle me-2"></i>ESTADO</th>
-                                    <th><i class="fas fa-boxes me-2"></i>PRODUCTOS</th>
-                                    <th><i class="fas fa-cogs me-2"></i>ACCIONES</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($transacciones as $transaccion)
-                                    <tr>
-                                        <td class="text-center fw-bold">{{ $transaccion->tipoNota->codigo }}</td>
-                                        <td class="text-center">{{ $transaccion->tipoNota->tiponota }}</td>
-                                        <td class="text-center">
-                                            <span class="badge rounded-pill {{ $transaccion->estado == 'PENDIENTE' ? 'bg-warning' : 'bg-success' }} px-3 py-2">
-                                                <i class="fas {{ $transaccion->estado == 'PENDIENTE' ? 'fa-clock' : 'fa-check-circle' }} me-1"></i>
-                                                {{ $transaccion->estado }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="productos-list">
-                                                @foreach ($transaccion->tipoNota->detalles as $detalle)
-                                                    <div class="producto-item {{ !$loop->last ? 'border-bottom pb-3 mb-3' : '' }}">
-                                                        <div class="d-flex align-items-center">
-                                                            <div class="bg-brand-light rounded-circle p-2 me-3">
-                                                                <i class="fas fa-cube text-brand"></i>
-                                                            </div>
-                                                            <div class="flex-grow-1">
-                                                                <div class="fw-bold text-dark">{{ $detalle->producto->nombre ?? 'N/A' }}</div>
-                                                                <div class="small text-muted">
-                                                                    <span class="me-3">
-                                                                        <i class="fas fa-sort-amount-up me-1"></i>
-                                                                        Cantidad: <strong>{{ $detalle->cantidad }}</strong>
-                                                                    </span>
-                                                                    <span>
-                                                                        <i class="fas fa-box me-1"></i>
-                                                                        {{ $detalle->producto->tipoempaque ?? 'Sin Empaque' }}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </td>
-                                        <td class="text-center">
-                                            @if($transaccion->estado == 'PENDIENTE')
-                                                <form action="{{ route('transaccionProducto.finalizar', $transaccion->id) }}" method="POST" style="display:inline;">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-success rounded-pill px-4" 
-                                                          
-                                                        <i class="fas fa-check me-2"></i> Finalizar
-                                                    </button>
-                                                </form>
-                                            @else
-                                                <span class="badge bg-secondary rounded-pill px-3 py-2">
-                                                    <i class="fas fa-check-double me-1"></i> Completado
-                                                </span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="text-center py-4">
-                                            <div class="text-muted">
-                                                <i class="fas fa-clipboard-list fa-2x mb-2"></i>
-                                                <p class="mb-0">No hay transacciones registradas</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Paginación -->
-                    <div class="mt-3 d-flex justify-content-center">
-                        {{ $transacciones->appends(['estado' => request('estado'), 'search' => request('search')])->onEachSide(1)->links('pagination::bootstrap-4') }}
+                    <div>
+                        <div style="font-size: 24px; font-weight: 700; font-family: var(--font-mono); color: var(--success);">{{ $finalizadas ?? 0 }}</div>
+                        <div style="font-size: 12px; color: var(--muted); font-weight: 500;">FINALIZADAS</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Código Nota</th>
+                            <th>Tipo Nota</th>
+                            <th>Bodega Solicitante</th>
+                            <th>Estado</th>
+                            <th>Productos</th>
+                            <th style="width: 140px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($transacciones as $transaccion)
+                            <tr>
+                                <td><span class="font-mono fw-medium">{{ $transaccion->tipoNota->codigo }}</span></td>
+                                <td>
+                                    <span class="badge {{ $transaccion->tipoNota->tiponota == 'ENVIO' ? 'bg-info' : 'bg-warning' }}">
+                                        {{ $transaccion->tipoNota->tiponota }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-medium text-dark">{{ $transaccion->tipoNota->bodega->nombrebodega ?? 'N/A' }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge {{ $transaccion->estado == 'PENDIENTE' ? 'bg-warning' : 'bg-success' }}">
+                                        <i class="fas {{ $transaccion->estado == 'PENDIENTE' ? 'fa-clock' : 'fa-check-circle' }} me-1"></i>
+                                        {{ $transaccion->estado }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="max-height: 160px; overflow-y: auto;">
+                                        @foreach ($transaccion->tipoNota->detalles as $detalle)
+                                            <div class="d-flex align-items-center gap-2 {{ !$loop->last ? 'pb-2 mb-2' : '' }}" style="{{ !$loop->last ? 'border-bottom: 1px solid var(--border-light);' : '' }}">
+                                                <div style="width: 28px; height: 28px; border-radius: var(--radius-xs); background: var(--accent-subtle); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                    <i class="fas fa-cube" style="font-size: 11px; color: var(--accent);"></i>
+                                                </div>
+                                                <div style="min-width: 0;">
+                                                    <div style="font-size: 13px; font-weight: 500;">{{ $detalle->producto->nombre ?? 'N/A' }}</div>
+                                                    <div style="font-size: 11px; color: var(--muted);">
+                                                        Cant: <span class="font-mono">{{ $detalle->cantidad }}</span>
+                                                        · {{ $detalle->producto->tipoempaque ?? 'Sin Empaque' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    @if($transaccion->estado == 'PENDIENTE')
+                                        <form action="{{ route('transaccionProducto.finalizar', $transaccion->id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="fas fa-check"></i> Finalizar
+                                            </button>
+                                        </form>
+                                    @else
+                                        <span class="badge bg-secondary" style="font-size: 10px;">
+                                            <i class="fas fa-check-double me-1"></i> Completado
+                                        </span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-4" style="color: var(--muted);">
+                                    <i class="fas fa-clipboard-list d-block mb-2" style="font-size: 24px; opacity: 0.4;"></i>
+                                    No hay transacciones registradas
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-3 d-flex justify-content-center">
+                {{ $transacciones->appends(['estado' => request('estado'), 'search' => request('search')])->onEachSide(1)->links('pagination::bootstrap-4') }}
+            </div>
+        </div>
+    </div>
 </div>
-
-<style>
-body {
-    margin: 0;
-    padding: 0;
-}
-.container-fluid {
-    padding: 0 !important;
-    margin: 0 !important;
-    max-width: 100% !important;
-    width: 100% !important;
-}
-.card {
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-bottom: 0;
-}
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-.nav-link {
-    padding: 0.5rem 0;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-.nav-link:hover {
-    background-color: rgba(0, 123, 255, 0.1);
-    padding-left: 0.5rem;
-}
-.nav-link.active {
-    background-color: rgba(23, 162, 184, 0.1);
-    border-left: 3px solid #17a2b8;
-    padding-left: 0.5rem;
-}
-.min-vh-100 {
-    min-height: 100vh;
-}
-.card-body {
-    position: relative;
-    overflow: hidden;
-}
-.card-body::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    pointer-events: none;
-}
-.h3 {
-    font-size: 2.5rem;
-}
-.row.g-0 {
-    margin: 0;
-}
-
-.btn-info {
-    background-color: #0097a7;
-    border-color: #0097a7;
-}
-.btn-info:hover, .btn-info:focus {
-    background-color: #00796b;
-    border-color: #00796b;
-}
-.btn-outline-info {
-    color: #0097a7;
-    border-color: #0097a7;
-}
-.btn-outline-info:hover, .btn-outline-info:focus {
-    background-color: #0097a7;
-    border-color: #0097a7;
-    color: #fff;
-}
-.btn-warning {
-    background-color: #ff9800;
-    border-color: #ff9800;
-    color: #fff;
-}
-.btn-warning:hover, .btn-warning:focus {
-    background-color: #f57c00;
-    border-color: #f57c00;
-    color: #fff;
-}
-.btn-outline-warning {
-    color: #ff9800;
-    border-color: #ff9800;
-}
-.btn-outline-warning:hover, .btn-outline-warning:focus {
-    background-color: #ff9800;
-    border-color: #ff9800;
-    color: #fff;
-}
-.btn-success {
-    background-color: #4caf50;
-    border-color: #4caf50;
-}
-.btn-success:hover, .btn-success:focus {
-    background-color: #388e3c;
-    border-color: #388e3c;
-}
-.btn-outline-success {
-    color: #4caf50;
-    border-color: #4caf50;
-}
-.btn-outline-success:hover, .btn-outline-success:focus {
-    background-color: #4caf50;
-    border-color: #4caf50;
-    color: #fff;
-}
-.btn-secondary {
-    background-color: #607d8b;
-    border-color: #607d8b;
-    color: #fff;
-}
-.btn-secondary:hover, .btn-secondary:focus {
-    background-color: #455a64;
-    border-color: #455a64;
-    color: #fff;
-}
-.rounded-pill {
-    border-radius: 50rem !important;
-}
-.rounded-start-pill {
-    border-top-left-radius: 50rem !important;
-    border-bottom-left-radius: 50rem !important;
-}
-.rounded-end-pill {
-    border-top-right-radius: 50rem !important;
-    border-bottom-right-radius: 50rem !important;
-}
-.productos-list {
-    max-height: 200px;
-    overflow-y: auto;
-}
-.producto-item {
-    padding: 0.5rem;
-    margin: 0.25rem 0;
-    border-radius: 0.5rem;
-    transition: background-color 0.2s ease;
-}
-.producto-item:hover {
-    background-color: rgba(0, 151, 167, 0.05);
-}
-.badge {
-    font-size: 0.75rem;
-}
-.bg-opacity-10 {
-    --bs-bg-opacity: 0.1;
-}
-@media (max-width: 768px) {
-    .col-md-2 {
-        display: none;
-    }
-    .col-md-10 {
-        flex: 0 0 100%;
-        max-width: 100%;
-        padding: 15px !important;
-    }
-    .h3 {
-        font-size: 2rem;
-    }
-    .container-fluid {
-        padding: 0 !important;
-    }
-    .btn-group {
-        flex-direction: column;
-    }
-    .btn-group .btn {
-        border-radius: 0.5rem !important;
-        margin-bottom: 0.25rem;
-    }
-    .table-responsive {
-        font-size: 0.875rem;
-    }
-    .productos-list {
-        max-height: 150px;
-    }
-}
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-}
-#app {
-    min-height: 100vh;
-}
-</style>
 @endsection

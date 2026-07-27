@@ -15,17 +15,17 @@
 
     <style>
         :root {
-            --primary: #E91E8C;
-            --primary-dark: #C2185B;
-            --primary-light: #F48FB1;
-            --primary-subtle: rgba(233, 30, 140, 0.08);
-            --dark: #0A0A1E;
-            --dark-surface: #12122A;
-            --text-primary: #1F2937;
-            --text-secondary: #4B5563;
+            --primary: #9d2449;
+            --primary-dark: #7a1c38;
+            --primary-light: #b94b6d;
+            --primary-subtle: rgba(157, 36, 73, 0.08);
+            --dark: #2c2925;
+            --dark-surface: #3f3b35;
+            --text-primary: #2d2a26;
+            --text-secondary: #6B7280;
             --text-light: #9CA3AF;
             --white: #FFFFFF;
-            --off-white: #F8F9FA;
+            --off-white: #f5f3f0;
             --border-color: #E5E7EB;
             --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
             --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);

@@ -126,49 +126,70 @@ class TransaccionProductoController extends Controller
             $detalles = DetalleTipoNota::where('tipo_nota_id', $nota->codigo)->get();
 
             // 🔹 VERIFICAR STOCK ANTES DE PROCESAR PARA TODOS LOS PRODUCTOS
-            $productosInsuficientes = [];
+            $hayStockDeAlgo = false;
+            $hayFaltantes = false;
+            
+            $detallesAProcesar = [];
+
             foreach ($detalles as $detalle) {
                 $producto = Producto::where('codigo', $detalle->codigoproducto)->first();
-                $nombreProd = $producto ? $producto->nombre : "Producto Cod. {$detalle->codigoproducto}";
-
+                
+                $stockDisponible = 0;
                 if ($nota->tiponota === 'ENVIO') {
                     $stockDisponible = $producto ? $producto->cantidad : 0;
-                    if (!$producto || $stockDisponible < $detalle->cantidad) {
-                        $productosInsuficientes[] = "• <strong>{$nombreProd}</strong> (Solicitado: {$detalle->cantidad}, Disponible: {$stockDisponible})";
-                    }
                 } elseif ($nota->tiponota === 'DEVOLUCION') {
-                    $stockBodega = DB::table('productos_bodega')
+                    $stockDisponible = DB::table('productos_bodega')
                         ->where('bodega_id', $nota->idbodega)
                         ->where('producto_id', $detalle->codigoproducto)
                         ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
                         ->value('stock') ?? 0;
+                }
 
-                    if ($stockBodega < $detalle->cantidad) {
-                        $productosInsuficientes[] = "• <strong>{$nombreProd}</strong> en bodega (Solicitado: {$detalle->cantidad}, Disponible: {$stockBodega})";
-                    }
+                $stockEnviar = min($detalle->cantidad, max(0, $stockDisponible));
+
+                if ($stockEnviar < $detalle->cantidad) {
+                    $hayFaltantes = true;
+                }
+
+                if ($stockEnviar > 0) {
+                    $hayStockDeAlgo = true;
+                    $detallesAProcesar[] = [
+                        'producto' => $producto,
+                        'cantidad' => $stockEnviar,
+                        'original' => $detalle
+                    ];
                 }
             }
-
-            if (!empty($productosInsuficientes)) {
-                DB::rollBack();
-                $mensajeError = "No se puede finalizar la transacción debido a que no hay suficiente stock para los siguientes productos:<br>" . implode("<br>", $productosInsuficientes);
-                return redirect()->back()->with('error', $mensajeError);
+            
+            // Recibir parametro forceReject por si el admin decidió rechazar todo desde el modal
+            $forceReject = request()->boolean('force_reject');
+            
+            if (!$hayStockDeAlgo || $forceReject) {
+                // No hay stock de nada o el admin decidió rechazar la nota por completo
+                $transaccion->estado = 'RECHAZADA';
+                $transaccion->save();
+                DB::commit();
+                return redirect()->route('transaccionProducto.index')->with('error', 'La transacción fue RECHAZADA por falta de stock total o decisión del administrador.');
             }
 
-            // 🔹 PROCESAR INVENTARIOS UNA VEZ VALIDADO EL STOCK DE TODOS LOS PRODUCTOS
-            foreach ($detalles as $detalle) {
-                $producto = Producto::where('codigo', $detalle->codigoproducto)->firstOrFail();
+            // 🔹 PROCESAR INVENTARIOS SOLO PARA LAS CANTIDADES DISPONIBLES
+            foreach ($detallesAProcesar as $item) {
+                $producto = $item['producto'];
+                $cantidad = $item['cantidad'];
+                
+                $item['original']->cantidad = $cantidad;
+                $item['original']->save();
 
                 if ($nota->tiponota === 'ENVIO') {
                     // 🔹 RESTAR del stock general (tabla productos = bodega MASTER)
-                    $producto->cantidad -= $detalle->cantidad;
+                    $producto->cantidad -= $cantidad;
                     $producto->save();
 
                     // 🔹 REGISTRAR entrada en bodega destino
                     DB::table('productos_bodega')->insert([
                         'bodega_id'    => $nota->idbodega,
                         'producto_id'  => $producto->codigo,
-                        'cantidad'     => $detalle->cantidad,
+                        'cantidad'     => $cantidad,
                         'fecha'        => now(),
                         'es_devolucion'=> false,
                         'created_at'   => now(),
@@ -180,7 +201,7 @@ class TransaccionProductoController extends Controller
                     DB::table('productos_bodega')->insert([
                         'bodega_id'    => $nota->idbodega,
                         'producto_id'  => $producto->codigo,
-                        'cantidad'     => $detalle->cantidad,
+                        'cantidad'     => $cantidad,
                         'fecha'        => now(),
                         'es_devolucion'=> true,
                         'created_at'   => now(),
@@ -188,21 +209,78 @@ class TransaccionProductoController extends Controller
                     ]);
 
                     // 🔹 SUMAR al stock general (tabla productos = bodega MASTER)
-                    $producto->cantidad += $detalle->cantidad;
+                    $producto->cantidad += $cantidad;
                     $producto->save();
                 }
             }
+            
+            // Eliminar los detalles que quedaron con cantidad 0 para que no salgan en reportes o vistas
+            DetalleTipoNota::where('tipo_nota_id', $nota->codigo)->where('cantidad', 0)->delete();
 
-            // 🔹 MARCAR transacción como finalizada
-            $transaccion->estado = 'FINALIZADA';
+            // 🔹 MARCAR transacción como finalizada o parcial
+            $transaccion->estado = $hayFaltantes ? 'FINALIZADA_PARCIAL' : 'FINALIZADA';
             $transaccion->save();
 
             DB::commit();
-            return redirect()->route('transaccionProducto.index')->with('success', 'Transacción finalizada correctamente. Inventario actualizado.');
+            $msg = $hayFaltantes ? 'Transacción finalizada PARCIALMENTE. Solo se despachó lo disponible.' : 'Transacción finalizada correctamente. Inventario actualizado.';
+            return redirect()->route('transaccionProducto.index')->with('success', $msg);
             
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Error al finalizar la transacción: ' . $e->getMessage());
+        }
+    }
+
+    public function verificarStock($id)
+    {
+        try {
+            $transaccion = TransaccionProducto::findOrFail($id);
+            $nota = $transaccion->tipoNota;
+
+            $detalles = DetalleTipoNota::where('tipo_nota_id', $nota->codigo)->get();
+            $productosFaltantes = [];
+            $hayStockDeAlgo = false;
+
+            foreach ($detalles as $detalle) {
+                $producto = Producto::where('codigo', $detalle->codigoproducto)->first();
+                $nombreProd = $producto ? $producto->nombre : "Producto Cod. {$detalle->codigoproducto}";
+                
+                $stockDisponible = 0;
+                if ($nota->tiponota === 'ENVIO') {
+                    $stockDisponible = $producto ? $producto->cantidad : 0;
+                } elseif ($nota->tiponota === 'DEVOLUCION') {
+                    $stockDisponible = DB::table('productos_bodega')
+                        ->where('bodega_id', $nota->idbodega)
+                        ->where('producto_id', $detalle->codigoproducto)
+                        ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
+                        ->value('stock') ?? 0;
+                }
+
+                if ($stockDisponible < $detalle->cantidad) {
+                    $productosFaltantes[] = [
+                        'nombre' => $nombreProd,
+                        'solicitado' => $detalle->cantidad,
+                        'disponible' => max(0, $stockDisponible)
+                    ];
+                }
+                
+                if ($stockDisponible > 0) {
+                    $hayStockDeAlgo = true;
+                }
+            }
+
+            if (empty($productosFaltantes)) {
+                return response()->json(['status' => 'ok']);
+            }
+
+            return response()->json([
+                'status' => 'insufficient',
+                'faltantes' => $productosFaltantes,
+                'hay_stock_parcial' => $hayStockDeAlgo
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
 }

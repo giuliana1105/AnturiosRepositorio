@@ -829,9 +829,8 @@ public function store(Request $request)
 
         DB::commit();
         
-        // ✅ MENSAJE CLARO INDICANDO QUE LA NOTA DEBE SER CONFIRMADA
         return redirect()->route('tipoNota.index')->with('success', 
-            'Nota creada exitosamente. Debe CONFIRMAR la nota para procesar el inventario.');
+            'Nota creada exitosamente. Recuerde confirmarla cuando esté lista para ser procesada.');
 
     } catch (\Exception $e) {
         DB::rollBack();

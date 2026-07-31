@@ -96,9 +96,26 @@
                                     <span class="fw-medium text-dark">{{ $transaccion->tipoNota->bodega->nombrebodega ?? 'N/A' }}</span>
                                 </td>
                                 <td>
-                                    <span class="badge {{ $transaccion->estado == 'PENDIENTE' ? 'bg-warning' : 'bg-success' }}">
-                                        <i class="fas {{ $transaccion->estado == 'PENDIENTE' ? 'fa-clock' : 'fa-check-circle' }} me-1"></i>
-                                        {{ $transaccion->estado }}
+                                    @php
+                                        $badgeClass = 'bg-secondary';
+                                        $iconClass = 'fa-check';
+                                        if ($transaccion->estado == 'PENDIENTE') {
+                                            $badgeClass = 'bg-warning';
+                                            $iconClass = 'fa-clock';
+                                        } elseif ($transaccion->estado == 'FINALIZADA') {
+                                            $badgeClass = 'bg-success';
+                                            $iconClass = 'fa-check-circle';
+                                        } elseif ($transaccion->estado == 'FINALIZADA_PARCIAL') {
+                                            $badgeClass = 'bg-info';
+                                            $iconClass = 'fa-exclamation-circle';
+                                        } elseif ($transaccion->estado == 'RECHAZADA') {
+                                            $badgeClass = 'bg-danger';
+                                            $iconClass = 'fa-times-circle';
+                                        }
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }}">
+                                        <i class="fas {{ $iconClass }} me-1"></i>
+                                        {{ str_replace('_', ' ', $transaccion->estado) }}
                                     </span>
                                 </td>
                                 <td>
@@ -121,9 +138,10 @@
                                 </td>
                                 <td class="text-center">
                                     @if($transaccion->estado == 'PENDIENTE')
-                                        <form action="{{ route('transaccionProducto.finalizar', $transaccion->id) }}" method="POST" style="display:inline;">
+                                        <form id="form-finalizar-{{ $transaccion->id }}" action="{{ route('transaccionProducto.finalizar', $transaccion->id) }}" method="POST" style="display:inline;">
                                             @csrf
-                                            <button type="submit" class="btn btn-success btn-sm">
+                                            <input type="hidden" name="force_reject" id="force-reject-{{ $transaccion->id }}" value="0">
+                                            <button type="button" class="btn btn-success btn-sm" onclick="verificarYFinalizar({{ $transaccion->id }})">
                                                 <i class="fas fa-check"></i> Finalizar
                                             </button>
                                         </form>
@@ -152,4 +170,92 @@
         </div>
     </div>
 </div>
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function verificarYFinalizar(id) {
+    Swal.fire({
+        title: 'Verificando stock...',
+        text: 'Por favor espera',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    fetch(`/transaccionProducto/verificarStock/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                Swal.fire({
+                    title: '¿Confirmar transacción?',
+                    text: 'Todos los productos tienen stock completo en bodega.',
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonColor: '#198754',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, Finalizar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('form-finalizar-' + id).submit();
+                    }
+                });
+            } else if (data.status === 'insufficient') {
+                let htmlMsg = '<div style="text-align: left; font-size: 14px;">' +
+                              '<p class="text-danger fw-bold mb-2"><i class="fas fa-exclamation-triangle"></i> Faltan los siguientes productos:</p>' +
+                              '<ul style="padding-left: 20px;">';
+                
+                data.faltantes.forEach(item => {
+                    htmlMsg += `<li><b>${item.nombre}</b><br><span class="text-muted">Solicitado: ${item.solicitado} | Disponible: <strong class="text-danger">${item.disponible}</strong></span></li>`;
+                });
+                htmlMsg += '</ul><hr>';
+                
+                if (data.hay_stock_parcial) {
+                    htmlMsg += '<p class="mb-0 fw-bold">¿Deseas realizar un DESPACHO PARCIAL enviando solo lo disponible?</p></div>';
+                    
+                    Swal.fire({
+                        title: 'Stock Insuficiente',
+                        html: htmlMsg,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0dcaf0',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Sí, Despachar Parcial',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById('form-finalizar-' + id).submit();
+                        }
+                    });
+                } else {
+                    htmlMsg += '<p class="mb-0 fw-bold">No hay stock para NINGÚN producto.</p></div>';
+                    
+                    Swal.fire({
+                        title: 'Sin Stock Total',
+                        html: htmlMsg,
+                        icon: 'error',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Sí, Rechazar Pedido',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById('force-reject-' + id).value = '1';
+                            document.getElementById('form-finalizar-' + id).submit();
+                        }
+                    });
+                }
+            } else {
+                Swal.fire('Error', 'Ocurrió un error al verificar el stock.', 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            Swal.fire('Error de Conexión', 'No se pudo contactar con el servidor.', 'error');
+        });
+}
+</script>
 @endsection

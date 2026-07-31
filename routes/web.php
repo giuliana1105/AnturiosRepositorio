@@ -90,6 +90,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/transaccionProducto/finalizar/{id}', [TransaccionProductoController::class, 'finalizar'])
         ->name('transaccionProducto.finalizar');
 
+    Route::get('/transaccionProducto/verificarStock/{id}', [TransaccionProductoController::class, 'verificarStock'])
+        ->name('transaccionProducto.verificarStock');
+
     // ✅ Generar PDF de Tipo Nota
     Route::get('tipoNota/pdf/{codigo}', [TipoNotaController::class, 'generarPDF'])->name('tipoNota.pdf');
 

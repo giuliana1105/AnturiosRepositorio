@@ -1071,9 +1071,8 @@
 
             <div class="sidebar-nav">
                 
-                <div class="nav-section-title">Principal</div>
-                
                 @if(auth()->user()->can('ver dashboard general') || auth()->user()->can('ver dashboard vendedor'))
+                <div class="nav-section-title">Principal</div>
                 <a href="{{ route('home') }}" class="sidebar-link {{ request()->routeIs('home') ? 'active' : '' }}">
                     <i class="fas fa-home icon-main"></i>
                     <span>Dashboard</span>
@@ -1133,9 +1132,11 @@
                 </a>
                 <div class="collapse" id="ventasSubmenu">
                     <div class="collapse-inner">
+                        @can('ver ventas')
                         <a href="{{ route('venta.index') }}" class="collapse-item">
                             <i class="fas fa-shopping-cart me-2"></i>Historial de Ventas
                         </a>
+                        @endcan
                     </div>
                 </div>
                 @endif

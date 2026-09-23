@@ -45,6 +45,8 @@ class RoleController extends Controller
         $permissionsIds = array_map('intval', $request->permissions);
         $role->syncPermissions($permissionsIds);
 
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
         return redirect()->route('roles.index')->with('success', 'El rol ha sido creado exitosamente.');
     }
 
@@ -83,6 +85,8 @@ class RoleController extends Controller
         $permissionsIds = array_map('intval', $request->permissions);
         $role->syncPermissions($permissionsIds);
 
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
         return redirect()->route('roles.index')->with('success', 'Rol actualizado exitosamente.');
     }
 
@@ -101,6 +105,9 @@ class RoleController extends Controller
         }
 
         $role->delete();
+
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
         return redirect()->route('roles.index')->with('success', 'Rol eliminado exitosamente.');
     }
 

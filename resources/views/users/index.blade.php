@@ -7,9 +7,16 @@
             <h3>Gestión de Usuarios</h3>
             <p class="page-subtitle">Administración de accesos y cuentas del sistema</p>
         </div>
-        <a href="{{ route('users.create') }}" class="btn btn-primary">
-            <i class="fas fa-user-plus"></i> Nuevo Usuario
-        </a>
+    </div>
+
+    {{-- Nota informativa --}}
+    <div class="alert d-flex align-items-start gap-3" role="alert" style="background: var(--info-bg); border: 1px solid var(--info-border); color: var(--info); border-radius: var(--radius-md);">
+        <i class="fas fa-info-circle mt-1" style="font-size: 16px;"></i>
+        <div style="font-size: 13px;">
+            <strong>Los usuarios se crean automáticamente</strong> al registrar un empleado.
+            La contraseña inicial es el número de identificación (cédula). Desde aquí solo puedes gestionar <strong>roles y permisos</strong>.
+            Para restablecer contraseñas, ve al módulo de <a href="{{ route('empleados.index') }}" style="color: var(--info); font-weight: 600;">Empleados</a>.
+        </div>
     </div>
 
     {{-- Alertas --}}
@@ -95,18 +102,11 @@
                                     @endif
                                 </td>
                                 <td class="text-end pe-4">
-                                    <a href="{{ route('users.edit', $user->id) }}" class="btn btn-icon btn-info" title="Editar" style="color: white;">
-                                        <i class="fas fa-edit"></i>
+                                    @can('editar usuario')
+                                    <a href="{{ route('users.edit', $user->id) }}" class="btn btn-icon btn-info" title="Editar rol y permisos" style="color: white;">
+                                        <i class="fas fa-user-shield"></i>
                                     </a>
-                                    @if($user->id !== auth()->id())
-                                    <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="d-inline-block m-0 p-0">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="btn btn-icon btn-danger delete-btn" title="Eliminar">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </form>
-                                    @endif
+                                    @endcan
                                 </td>
                             </tr>
                         @empty
@@ -115,7 +115,7 @@
                                     <div class="mb-3">
                                         <i class="fas fa-users" style="font-size: 48px; color: var(--border-color);"></i>
                                     </div>
-                                    No hay usuarios registrados.
+                                    No hay usuarios registrados. Crea un empleado para generar su usuario automáticamente.
                                 </td>
                             </tr>
                         @endforelse
@@ -147,16 +147,3 @@
 </style>
 @endsection
 
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            if(confirm('¿Está seguro de que desea eliminar este usuario?')) {
-                this.closest('form').submit();
-            }
-        });
-    });
-});
-</script>
-@endsection

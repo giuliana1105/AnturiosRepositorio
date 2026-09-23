@@ -4,8 +4,8 @@
 <div class="container-fluid py-2">
     <div class="page-header">
         <div>
-            <h3>Editar Usuario</h3>
-            <p class="page-subtitle">Modificación de accesos y cuenta del sistema</p>
+            <h3>Editar Rol y Permisos</h3>
+            <p class="page-subtitle">Gestión de accesos del usuario en el sistema</p>
         </div>
         <a href="{{ route('users.index') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Volver
@@ -44,23 +44,24 @@
                 </div>
             </div>
 
+            {{-- Nota informativa --}}
+            <div class="alert d-flex align-items-start gap-2 mb-4" role="alert" style="background: var(--info-bg); border: 1px solid var(--info-border); color: var(--info); border-radius: var(--radius-md); font-size: 13px;">
+                <i class="fas fa-info-circle mt-1"></i>
+                <span>El nombre, correo y contraseña de este usuario se gestionan desde el módulo de <strong>Empleados</strong>. Aquí solo puedes modificar su rol y permisos.</span>
+            </div>
+
             <form action="{{ route('users.update', $user->id) }}" method="POST">
                 @csrf
                 @method('PUT')
                 <div class="row g-4">
                     <div class="col-md-6">
-                        <label for="name" class="form-label">Nombre Completo</label>
-                        <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $user->name) }}" required>
+                        <label for="name" class="form-label">Nombre Completo <i class="fas fa-lock ms-1 text-muted" style="font-size: 11px;" title="Gestionado desde Empleados"></i></label>
+                        <input type="text" id="name" class="form-control" value="{{ $user->name }}" readonly disabled style="background: var(--bg-base); color: var(--muted);">
                     </div>
                     
                     <div class="col-md-6">
-                        <label for="email" class="form-label">Correo Electrónico</label>
-                        <input type="email" name="email" id="email" class="form-control" value="{{ old('email', $user->email) }}" required>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <label for="password" class="form-label">Nueva Contraseña <span class="text-muted fw-normal">(Opcional)</span></label>
-                        <input type="password" name="password" id="password" class="form-control" placeholder="Dejar en blanco para mantener la actual">
+                        <label for="email" class="form-label">Correo Electrónico <i class="fas fa-lock ms-1 text-muted" style="font-size: 11px;" title="Gestionado desde Empleados"></i></label>
+                        <input type="email" id="email" class="form-control" value="{{ $user->email }}" readonly disabled style="background: var(--bg-base); color: var(--muted);">
                     </div>
 
                     <div class="col-md-6">
@@ -185,3 +186,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endsection
+

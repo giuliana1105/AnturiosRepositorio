@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Empleado;
 use App\Models\Bodega;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class EmpleadoController extends Controller
@@ -221,17 +220,7 @@ class EmpleadoController extends Controller
             ];
 
             try {
-                DB::insert("INSERT INTO empleados (nro_identificacion, nombreemp, apellidoemp, email, nro_telefono, direccionemp, idbodega, tipo_identificacion, codigocargo, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())", [
-                    $data['nro_identificacion'],
-                    $data['nombreemp'],
-                    $data['apellidoemp'],
-                    $data['email'],
-                    $data['nro_telefono'],
-                    $data['direccionemp'],
-                    $data['idbodega'],
-                    $data['tipo_identificacion'],
-                    $data['codigocargo']
-                ]);
+                Empleado::create($data);
             } catch (\Exception $e) {
                 $errores[] = "Fila " . ($index + 1) . ": " . $e->getMessage();
             }

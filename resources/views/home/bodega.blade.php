@@ -1,9 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-@php
-    $cargo = auth()->user()->cargoNombre();
-@endphp
 
 <div class="container py-4">
     <div class="row">
@@ -189,25 +186,24 @@
 
             <!-- Botones de acción -->
             <div class="mt-4 d-flex flex-wrap gap-2">
-                <!-- <a href="{{ route('home') }}" class="btn btn-secondary">
-                    <i class="fas fa-home me-1"></i> Volver al inicio
-                </a> -->
-                @if(!in_array($cargo, ['Jefe de bodega']))
+                @can('gestionar mis solicitudes')
                     <a href="{{ route('tipoNota.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus me-1"></i> Crear Nueva Nota
                     </a>
                      <a href="{{ route('tipoNota.index') }}" class="btn btn-info">
                         <i class="fas fa-eye me-1"></i> Ver Notas
                     </a>
-                @endif
-                @if(in_array($cargo, ['Administrador', 'Gerente', 'Vendedor camión']))
+                @endcan
+                @can('registrar ventas')
                     <a href="{{ route('venta.create', $bodega->idbodega) }}" class="btn btn-warning">
                         <i class="fas fa-cash-register me-1"></i> Registrar venta
                     </a>
+                @endcan
+                @can('ver ventas')
                     <a href="{{ route('venta.index.bodega', $bodega->idbodega) }}" class="btn btn-info">
                         <i class="fas fa-eye me-1"></i> Ver ventas
                     </a>
-                @endif
+                @endcan
             </div>
         </div>
     </div>

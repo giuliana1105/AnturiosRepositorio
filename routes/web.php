@@ -68,7 +68,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('bodegas', BodegaController::class);
     Route::resource('tipoNota', TipoNotaController::class);
-    Route::resource('users', UserController::class);
+    Route::resource('users', UserController::class)->only(['index', 'edit', 'update']);
 
 
     // ✅ Ruta para confirmar una Nota y crear una transacción

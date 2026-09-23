@@ -7,9 +7,11 @@
             <h3>Roles y Permisos</h3>
             <p class="page-subtitle">Gestión de roles y permisos del sistema</p>
         </div>
+        @can('crear rol')
         <a href="{{ route('roles.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Crear Rol
         </a>
+        @endcan
     </div>
 
     @if (session('success'))
@@ -60,9 +62,12 @@
                                 </div>
                             </div>
                             <div class="d-flex gap-1">
+                                @can('editar rol')
                                 <a href="{{ route('roles.edit', $role->id) }}" class="btn btn-sm btn-outline-primary" title="Editar">
                                     <i class="fas fa-edit me-1"></i>Editar
                                 </a>
+                                @endcan
+                                @can('eliminar rol')
                                 @if(!in_array($role->name, $rolesProtegidos))
                                     <form action="{{ route('roles.destroy', $role->id) }}" method="POST" class="d-inline-block">
                                         @csrf
@@ -72,6 +77,7 @@
                                         </button>
                                     </form>
                                 @endif
+                                @endcan
                             </div>
                         </div>
 

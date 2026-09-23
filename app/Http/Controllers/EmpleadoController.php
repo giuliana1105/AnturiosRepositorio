@@ -14,24 +14,13 @@ class EmpleadoController extends Controller
     use AuthorizesRequests; 
     public function __construct()
     {
-        //$this->authorizeResource(Empleado::class, 'empleado');
+        $this->authorizeResource(Empleado::class, 'empleado');
     }
 
-    // Cargos fijos
-    private $cargos = [
-        1 => 'Administrador',
-        2 => 'Vendedor camión',
-        3 => 'Vendedor',
-        4 => 'Jefe de bodega',
-        5 => 'Gerente',
-    ];
+
 
     public function index(Request $request)
     {
-        $cargo = auth()->user()->cargoNombre();
-        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
-         abort(403, 'No tienes permiso para acceder a esta sección.');
-        }
 
         $search = $request->input('search');
         $empleados = Empleado::with('bodega')
@@ -46,13 +35,9 @@ class EmpleadoController extends Controller
 
     public function create()
     {
-       $cargo = auth()->user()->cargoNombre();
-        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
-         abort(403, 'No tienes permiso para acceder a esta sección.');
-        }
 
         $bodegas = Bodega::all();
-        $cargos = $this->cargos;
+        $cargos = \Spatie\Permission\Models\Role::pluck('name', 'id')->toArray();
         return view('empleados.create', compact('bodegas', 'cargos'));
     }
 
@@ -75,10 +60,6 @@ class EmpleadoController extends Controller
 
     public function store(Request $request)
     {
-       $cargo = auth()->user()->cargoNombre();
-        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
-         abort(403, 'No tienes permiso para acceder a esta sección.');
-        }
         $validatedData = $request->validate([
             'nro_identificacion' => 'required',
             'nombreemp' => 'required',
@@ -86,7 +67,7 @@ class EmpleadoController extends Controller
             'email' => 'required',
             'idbodega' => 'required',
             'tipo_identificacion' => 'required|in:Cedula,RUC,Pasaporte',
-            'codigocargo' => 'required|in:1,2,3,4,5',
+            'codigocargo' => 'required|exists:roles,id',
         ]);
 
         if ($errorId = $this->validarIdentificacion($request)) {
@@ -119,30 +100,22 @@ class EmpleadoController extends Controller
 
     public function edit($nro_identificacion)
     {
-       $cargo = auth()->user()->cargoNombre();
-        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
-         abort(403, 'No tienes permiso para acceder a esta sección.');
-        }
 
         $empleado = Empleado::findOrFail($nro_identificacion);
         $bodegas = Bodega::all();
-        $cargos = $this->cargos;
+        $cargos = \Spatie\Permission\Models\Role::pluck('name', 'id')->toArray();
         return view('empleados.edit', compact('empleado', 'bodegas', 'cargos'));
     }
 
     public function update(Request $request, $nro_identificacion)
     {
-        $cargo = auth()->user()->cargoNombre();
-        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
-         abort(403, 'No tienes permiso para acceder a esta sección.');
-        }
         $validatedData = $request->validate([
             'email' => 'required',
             'nro_telefono' => 'required',
             'direccionemp' => 'required',
             'tipo_identificacion' => 'required|in:Cedula,RUC,Pasaporte',
             'nro_identificacion' => 'required',
-            'codigocargo' => 'required|in:1,2,3,4,5',
+            'codigocargo' => 'required|exists:roles,id',
             'idbodega' => 'required|exists:bodegas,idbodega',
         ]);
 
@@ -177,20 +150,13 @@ class EmpleadoController extends Controller
 
     public function destroy($nro_identificacion)
     {
-       $cargo = auth()->user()->cargoNombre();
-        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
-         abort(403, 'No tienes permiso para acceder a esta sección.');
-        }
         Empleado::findOrFail($nro_identificacion)->delete();
         return redirect()->route('empleados.index')->with('success', 'Empleado eliminado exitosamente.');
     }
 
     public function import(Request $request)
     {
-         $cargo = auth()->user()->cargoNombre();
-        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
-         abort(403, 'No tienes permiso para acceder a esta sección.');
-        }
+        $this->authorize('create', Empleado::class);
 
         $request->validate([
             'excel_file' => 'required|file|mimes:xlsx,xls'
@@ -203,10 +169,11 @@ class EmpleadoController extends Controller
             return mb_strtolower(trim($item->nombrebodega));
         });
 
-        // Cargos fijos por nombre (insensible a mayúsculas/minúsculas)
+        // Cargos dinámicos desde Spatie (insensible a mayúsculas/minúsculas)
         $cargosPorNombre = [];
-        foreach ($this->cargos as $codigo => $nombre) {
-            $cargosPorNombre[mb_strtolower($nombre)] = $codigo;
+        $roles = \Spatie\Permission\Models\Role::all();
+        foreach ($roles as $role) {
+            $cargosPorNombre[mb_strtolower($role->name)] = $role->id;
         }
 
         $errores = [];
@@ -279,10 +246,7 @@ class EmpleadoController extends Controller
 
     public function resetPassword($nro_identificacion)
     {
-         $cargo = auth()->user()->cargoNombre();
-        if (in_array($cargo, ['Vendedor', 'Vendedor camión', 'Jefe de bodega'])) {
-         abort(403, 'No tienes permiso para acceder a esta sección.');
-        }
+        $this->authorize('update', Empleado::class);
         $empleado = \App\Models\Empleado::findOrFail($nro_identificacion);
         $user = \App\Models\User::where('email', $empleado->email)->first();
 

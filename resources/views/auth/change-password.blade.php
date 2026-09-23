@@ -3,244 +3,322 @@
 @section('title', 'Cambiar Contraseña')
 
 @section('content')
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header rounded-top-4 bg-white border-0 pt-4">
-                    <div class="d-flex align-items-center justify-content-center">
-                        <h4 class="mb-0" style="color: var(--brand-dark);">
-                            <i class="fas fa-key me-2" style="color: var(--brand-primary);"></i> Cambiar Contraseña
-                        </h4>
-                    </div>
-                </div>
-                <div class="card-body p-4">
-                    <!-- Alertas de errores -->
-                    @if ($errors->any())
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            <strong>Error:</strong> Por favor corrige los siguientes errores:
-                            <ul class="mb-0 mt-2">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    @endif
-
-                    <!-- Mensaje de éxito -->
-                    @if (session('success'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <i class="fas fa-check-circle me-2"></i>
-                            <strong>Éxito:</strong> {{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    @endif
-
-                    <!-- Información de seguridad -->
-                    <div class="text-center mb-4 mt-2">
-                        <i class="fas fa-shield-alt fa-3x mb-3" style="color: var(--brand-primary);"></i>
-                        <h4 class="fw-bold" style="color: var(--brand-dark);">Actualiza tu contraseña</h4>
-                        <p class="text-muted">Por tu seguridad, asegúrate de usar una contraseña fuerte</p>
-                    </div>
-
-                    <form action="{{ route('password.change') }}" method="POST" class="row g-3">
-                        @csrf
-                        <div class="col-12">
-                            <label for="password" class="form-label fw-bold">
-                                <i class="fas fa-lock me-2" style="color: var(--brand-primary);"></i> Nueva Contraseña
-                            </label>
-                            <input type="password" name="password" id="password" 
-                                   class="form-control rounded-pill" required 
-                                   placeholder="Ingresa tu nueva contraseña">
-                            <div class="form-text mt-2">
-                                <i class="fas fa-info-circle me-1" style="color: var(--brand-primary);"></i> 
-                                La contraseña debe tener al menos 8 caracteres
-                            </div>
-                        </div>
-                        
-                        <div class="col-12">
-                            <label for="password_confirmation" class="form-label fw-bold">
-                                <i class="fas fa-lock me-2" style="color: var(--brand-primary);"></i> Confirmar Contraseña
-                            </label>
-                            <input type="password" name="password_confirmation" id="password_confirmation" 
-                                   class="form-control rounded-pill" required 
-                                   placeholder="Confirma tu nueva contraseña">
-                        </div>
-                        
-                        <div class="col-12 text-center mt-4 mb-2">
-                            <button type="submit" class="btn text-white fw-bold rounded-pill px-5 py-3 w-100" style="background-color: var(--brand-primary);">
-                                <i class="fas fa-key me-2"></i> Actualizar Contraseña
-                            </button>
-                        </div>
-                    </form>
-
-                    <!-- Consejos de seguridad -->
-                    <div class="mt-4 p-3 rounded-4" style="background-color: #f8f9fa; border: 1px solid #e2e8f0;">
-                        <h6 class="fw-bold mb-2" style="color: var(--brand-dark);">
-                            <i class="fas fa-lightbulb me-2" style="color: var(--brand-primary);"></i> Consejos para una contraseña segura:
-                        </h6>
-                        <ul class="small text-muted mb-0">
-                            <li>Usa al menos 8 caracteres</li>
-                            <li>Incluye mayúsculas, minúsculas y números</li>
-                            <li>Agrega símbolos especiales (!@#$%)</li>
-                            <li>No uses información personal</li>
-                        </ul>
-                    </div>
-                </div>
+<div class="cp-wrapper">
+    <div class="cp-card">
+        {{-- Header con info del usuario --}}
+        <div class="cp-header">
+            <div class="cp-user-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="cp-user-info">
+                <h5 class="cp-title"><i class="fas fa-key me-2"></i>Cambiar Contraseña</h5>
+                <span class="cp-user-name">{{ auth()->user()->name }}</span>
+                <span class="cp-user-email">{{ auth()->user()->email }}</span>
+                <span class="cp-user-badge">{{ auth()->user()->cargoNombre() }}</span>
             </div>
         </div>
+
+        {{-- Alerta obligatoria --}}
+        @if(auth()->user()->must_change_password)
+        <div class="cp-alert cp-alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Debes cambiar tu contraseña antes de acceder al sistema.</span>
+        </div>
+        @endif
+
+        {{-- Errores --}}
+        @if ($errors->any())
+        <div class="cp-alert cp-alert-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            <div>
+                @foreach ($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- Éxito --}}
+        @if (session('success'))
+        <div class="cp-alert cp-alert-success">
+            <i class="fas fa-check-circle"></i>
+            <span>{{ session('success') }}</span>
+        </div>
+        @endif
+
+        {{-- Formulario --}}
+        <form action="{{ route('password.change') }}" method="POST" class="cp-form">
+            @csrf
+            <div class="cp-field">
+                <label for="current_password"><i class="fas fa-lock"></i> Contraseña Actual</label>
+                <input type="password" name="current_password" id="current_password" 
+                       class="@error('current_password') cp-input-error @enderror" 
+                       required placeholder="Ingresa tu contraseña actual">
+                @if(auth()->user()->must_change_password)
+                <small class="cp-hint"><i class="fas fa-info-circle"></i> Si fue restablecida, usa tu número de cédula</small>
+                @endif
+            </div>
+
+            <div class="cp-field-row">
+                <div class="cp-field">
+                    <label for="password"><i class="fas fa-key"></i> Nueva Contraseña</label>
+                    <input type="password" name="password" id="password" required 
+                           placeholder="Mínimo 8 caracteres">
+                </div>
+                <div class="cp-field">
+                    <label for="password_confirmation"><i class="fas fa-lock"></i> Confirmar</label>
+                    <input type="password" name="password_confirmation" id="password_confirmation" 
+                           required placeholder="Repite la nueva contraseña">
+                </div>
+            </div>
+
+            <button type="submit" class="cp-btn-submit">
+                <i class="fas fa-key me-2"></i> Actualizar Contraseña
+            </button>
+        </form>
+
+        {{-- Cerrar sesión --}}
+        @if(auth()->user()->must_change_password)
+        <form action="{{ route('logout') }}" method="POST" class="cp-logout">
+            @csrf
+            <button type="submit" class="cp-btn-logout">
+                <i class="fas fa-sign-out-alt me-1"></i> Cerrar Sesión
+            </button>
+        </form>
+        @endif
     </div>
 </div>
 
 <style>
+/* ===== Reset scroll ===== */
+html, body, #app {
+    height: auto !important;
+    min-height: 100vh;
+    overflow-y: auto !important;
+    margin: 0;
+    padding: 0;
+}
 .container-fluid {
     padding: 0 !important;
     margin: 0 !important;
     max-width: 100% !important;
     width: 100% !important;
 }
-.card {
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-bottom: 0;
-}
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-.nav-link {
-    padding: 0.5rem 0;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-.nav-link:hover {
-    background-color: rgba(0, 123, 255, 0.1);
-    padding-left: 0.5rem;
-}
-.nav-link.active {
-    background-color: rgba(23, 162, 184, 0.1);
-    border-left: 3px solid #17a2b8;
-    padding-left: 0.5rem;
-}
-.min-vh-100 {
+
+/* ===== Wrapper ===== */
+.cp-wrapper {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
     min-height: 100vh;
+    padding: 30px 16px;
+    background: var(--bg-base, #faf9f7);
 }
-.card-body {
-    position: relative;
+
+/* ===== Card ===== */
+.cp-card {
+    width: 100%;
+    max-width: 480px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    padding: 24px;
+}
+
+/* ===== Header ===== */
+.cp-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0eeeb;
+    margin-bottom: 16px;
+}
+.cp-user-avatar {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 50%;
+    background: var(--brand-primary, #0097a7);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+.cp-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
     overflow: hidden;
 }
-.card-body::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    pointer-events: none;
-}
-.h3 {
-    font-size: 2.5rem;
-}
-.row.g-0 {
+.cp-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--brand-dark, #2c2925);
     margin: 0;
 }
-.col-md-2, .col-md-10 {
-    padding-left: 0;
-    padding-right: 0;
+.cp-user-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #555;
 }
-.col-md-2.bg-light {
-    margin: 0;
-    border-radius: 0;
+.cp-user-email {
+    font-size: 0.75rem;
+    color: #999;
 }
-.btn-info {
-    background-color: #0097a7;
-    border-color: #0097a7;
-}
-.btn-info:hover, .btn-info:focus {
-    background-color: #00796b;
-    border-color: #00796b;
-}
-.btn-secondary {
-    background-color: #607d8b;
-    border-color: #607d8b;
+.cp-user-badge {
+    display: inline-block;
+    margin-top: 2px;
+    padding: 1px 8px;
+    border-radius: 20px;
+    background: var(--brand-primary, #0097a7);
     color: #fff;
+    font-size: 0.65rem;
+    font-weight: 600;
+    width: fit-content;
 }
-.btn-secondary:hover, .btn-secondary:focus {
-    background-color: #455a64;
-    border-color: #455a64;
-    color: #fff;
+
+/* ===== Alerts ===== */
+.cp-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    margin-bottom: 14px;
 }
-.btn-light {
-    background-color: #f8f9fa;
-    border-color: #f8f9fa;
-    color: #495057;
+.cp-alert i {
+    margin-top: 2px;
+    flex-shrink: 0;
 }
-.btn-light:hover, .btn-light:focus {
-    background-color: #e2e6ea;
-    border-color: #dae0e5;
-    color: #495057;
+.cp-alert-warning {
+    background: #fff8e1;
+    color: #8b6914;
+    border: 1px solid #ffe082;
 }
-.rounded-pill {
-    border-radius: 50rem !important;
+.cp-alert-danger {
+    background: #fdecea;
+    color: #b71c1c;
+    border: 1px solid #ef9a9a;
 }
-.form-control {
+.cp-alert-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+
+/* ===== Form ===== */
+.cp-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.cp-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+.cp-field label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #555;
+}
+.cp-field label i {
+    color: var(--brand-primary, #0097a7);
+    font-size: 0.75rem;
+    margin-right: 4px;
+}
+.cp-field input {
+    padding: 10px 16px;
     border: 2px solid #e9ecef;
-    transition: all 0.3s ease;
+    border-radius: 50rem;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+    width: 100%;
 }
-.form-control:focus {
-    border-color: #0097a7;
-    box-shadow: 0 0 0 0.2rem rgba(0, 151, 167, 0.25);
+.cp-field input:focus {
+    border-color: var(--brand-primary, #0097a7);
+    box-shadow: 0 0 0 3px rgba(0, 151, 167, 0.15);
 }
-.form-label {
-    color: #495057;
-    margin-bottom: 0.5rem;
+.cp-input-error {
+    border-color: #e53935 !important;
 }
-.alert {
+.cp-hint {
+    font-size: 0.72rem;
+    color: #888;
+    margin-top: 2px;
+}
+.cp-hint i {
+    color: var(--brand-primary, #0097a7);
+}
+
+/* ===== Row de campos lado a lado ===== */
+.cp-field-row {
+    display: flex;
+    gap: 12px;
+}
+
+/* ===== Botón principal ===== */
+.cp-btn-submit {
+    margin-top: 6px;
+    padding: 12px 24px;
+    background: var(--brand-primary, #0097a7);
+    color: #fff;
     border: none;
-    border-radius: 0.75rem;
+    border-radius: 50rem;
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    font-family: inherit;
+    width: 100%;
 }
-.alert-success {
-    background-color: #d4edda;
-    color: #155724;
+.cp-btn-submit:hover {
+    background: var(--brand-primary-dark, #00796b);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 151, 167, 0.35);
 }
-.alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
+
+/* ===== Logout ===== */
+.cp-logout {
+    text-align: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f0eeeb;
 }
-@media (max-width: 768px) {
-    .col-md-2 {
-        display: none;
+.cp-btn-logout {
+    background: transparent;
+    border: 1.5px solid #ccc;
+    border-radius: 50rem;
+    padding: 8px 20px;
+    font-size: 0.8rem;
+    color: #888;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+.cp-btn-logout:hover {
+    border-color: #999;
+    color: #555;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 540px) {
+    .cp-wrapper {
+        padding: 16px 10px;
     }
-    .col-md-10 {
-        flex: 0 0 100%;
-        max-width: 100%;
-        padding: 15px !important;
+    .cp-card {
+        padding: 18px;
     }
-    .h3 {
-        font-size: 1.75rem;
-    }
-    .container-fluid {
-        padding: 0 !important;
-    }
-    .card-header .d-flex {
+    .cp-field-row {
         flex-direction: column;
-        text-align: center;
+        gap: 14px;
     }
-    .card-header .btn {
-        margin-top: 1rem;
-    }
-}
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-}
-#app {
-    min-height: 100vh;
 }
 </style>
 @endsection

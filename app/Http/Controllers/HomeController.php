@@ -14,9 +14,8 @@ class HomeController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $cargo = $user->cargoNombre();
 
-        if (in_array($cargo, ['Vendedor', 'Vendedor camión'])) {
+        if (!$user->can('ver dashboard general') && $user->empleado && $user->empleado->bodega) {
             $bodega = $user->empleado->bodega;
             $id = $bodega->idbodega;
 
@@ -77,6 +76,10 @@ class HomeController extends Controller
 
     public function master()
     {
+        if (!auth()->user()->can('ver dashboard general')) {
+            abort(403, 'No tienes permiso para ver el dashboard general.');
+        }
+
         $productos = Producto::all();
         $empleados = Empleado::all();
         $bodegas = Bodega::all();
@@ -87,6 +90,10 @@ class HomeController extends Controller
 
     public function bodega($id)
     {
+        if (!auth()->user()->can('ver dashboard general')) {
+            abort(403, 'No tienes permiso para ver bodegas de otros usuarios.');
+        }
+
         $bodega = Bodega::findOrFail($id);
 
         // Productos enviados a esta bodega (envíos normales, no devoluciones)

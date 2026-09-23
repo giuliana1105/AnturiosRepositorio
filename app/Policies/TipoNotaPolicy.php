@@ -10,28 +10,34 @@ class TipoNotaPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user-> can('ver TipoNota');
+        return $user->can('ver notas');
     }
+
     public function view(User $user, TipoNota $tipoNota): bool
     {
-        return $user-> can('ver TipoNota');
+        return $user->can('ver notas');
     }
+
     public function create(User $user): bool
     {
-        return $user-> can('crear TipoNota');
+        return $user->can('crear nota');
     }
+
     public function update(User $user, TipoNota $tipoNota): bool
     {
-        return $user-> can('editar TipoNota');
+        return $user->can('editar nota');
     }
+
     public function delete(User $user, TipoNota $tipoNota): bool
     {
-        return $user-> can('eliminar TipoNota');
+        return $user->can('eliminar nota');
     }
+
     public function restore(User $user, TipoNota $tipoNota): bool
     {
         return false;
     }
+
     public function forceDelete(User $user, TipoNota $tipoNota): bool
     {
         return false;

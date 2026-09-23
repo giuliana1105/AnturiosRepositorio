@@ -24,16 +24,23 @@
         </div>
     @endif
 
-    <div class="card mb-4" style="max-width: 700px; margin: 0 auto; border-top: 3px solid var(--primary);">
+    <div class="card mb-4" style="max-width: 900px; margin: 0 auto; border-top: 3px solid var(--primary);">
         <div class="card-body p-4">
-            <!-- Header con info resumida -->
+            {{-- Header con info resumida --}}
             <div class="d-flex align-items-center mb-4 p-3 rounded" style="background: var(--accent-subtle);">
                 <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; margin-right: 16px;">
                     <span class="fw-bold text-white fs-5">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
                 </div>
                 <div>
                     <h5 class="mb-0 fw-bold" style="color: var(--foreground);">{{ $user->name }}</h5>
-                    <div class="font-mono mt-1" style="font-size: 13px; color: var(--muted);">ID: {{ $user->id }}</div>
+                    <div class="font-mono mt-1" style="font-size: 13px; color: var(--muted);">
+                        {{ $user->email }}
+                        @if($user->roles->isNotEmpty())
+                            <span class="badge rounded-pill ms-2" style="background: var(--primary); color: white; font-size: 11px;">
+                                {{ $user->roles->first()->name }}
+                            </span>
+                        @endif
+                    </div>
                 </div>
             </div>
 
@@ -41,22 +48,22 @@
                 @csrf
                 @method('PUT')
                 <div class="row g-4">
-                    <div class="col-12">
+                    <div class="col-md-6">
                         <label for="name" class="form-label">Nombre Completo</label>
                         <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $user->name) }}" required>
                     </div>
                     
-                    <div class="col-12">
+                    <div class="col-md-6">
                         <label for="email" class="form-label">Correo Electrónico</label>
                         <input type="email" name="email" id="email" class="form-control" value="{{ old('email', $user->email) }}" required>
                     </div>
                     
-                    <div class="col-12">
+                    <div class="col-md-6">
                         <label for="password" class="form-label">Nueva Contraseña <span class="text-muted fw-normal">(Opcional)</span></label>
                         <input type="password" name="password" id="password" class="form-control" placeholder="Dejar en blanco para mantener la actual">
                     </div>
 
-                    <div class="col-12">
+                    <div class="col-md-6">
                         <label for="role" class="form-label">Rol del Usuario</label>
                         <select name="role" id="role" class="form-select" required>
                             <option value="">Seleccione un rol</option>
@@ -66,6 +73,44 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div>
+                </div>
+
+                {{-- Permisos directos --}}
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <label class="form-label fw-semibold mb-0">
+                            <i class="fas fa-key me-1" style="color: var(--primary);"></i>Permisos Directos Adicionales
+                        </label>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="togglePerms" data-expanded="{{ count($directPermissions) > 0 ? 'true' : 'false' }}">
+                            <i class="fas fa-chevron-{{ count($directPermissions) > 0 ? 'up' : 'down' }} me-1"></i>{{ count($directPermissions) > 0 ? 'Ocultar' : 'Mostrar' }} permisos
+                        </button>
+                    </div>
+                    <p class="text-muted mb-3" style="font-size: 13px;">
+                        <i class="fas fa-info-circle me-1"></i>Los permisos marcados aquí se asignan <strong>directamente al usuario</strong>, adicional a los que hereda de su rol.
+                    </p>
+
+                    <div id="directPermissionsSection" style="display: {{ count($directPermissions) > 0 ? 'block' : 'none' }};">
+                        @foreach($permissionsGrouped as $grupo => $permisos)
+                            @if($permisos->count() > 0)
+                            <div class="permission-group mb-3">
+                                <div class="permission-group-header">
+                                    <i class="fas fa-folder-open me-2"></i>{{ $grupo }}
+                                    <span class="badge bg-light text-dark ms-1">{{ $permisos->count() }}</span>
+                                </div>
+                                <div class="permission-group-body">
+                                    @foreach($permisos as $permission)
+                                        <label class="permission-checkbox">
+                                            <input type="checkbox" name="direct_permissions[]" value="{{ $permission->id }}" 
+                                                   class="form-check-input"
+                                                   {{ in_array($permission->id, $directPermissions) ? 'checked' : '' }}>
+                                            <span>{{ $permission->name }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
+                        @endforeach
                     </div>
                 </div>
 
@@ -81,4 +126,62 @@
         </div>
     </div>
 </div>
+
+<style>
+.permission-group {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+.permission-group-header {
+    background: var(--accent-subtle);
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--foreground);
+    border-bottom: 1px solid var(--border-color);
+}
+.permission-group-body {
+    padding: 12px 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 8px;
+}
+.permission-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.15s;
+    font-size: 13px;
+    color: var(--foreground);
+}
+.permission-checkbox:hover {
+    background: var(--accent-subtle);
+}
+.permission-checkbox .form-check-input {
+    margin: 0;
+    cursor: pointer;
+}
+</style>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('togglePerms');
+    const permsSection = document.getElementById('directPermissionsSection');
+    
+    toggleBtn.addEventListener('click', function() {
+        const isExpanded = this.dataset.expanded === 'true';
+        permsSection.style.display = isExpanded ? 'none' : 'block';
+        this.dataset.expanded = (!isExpanded).toString();
+        this.innerHTML = isExpanded 
+            ? '<i class="fas fa-chevron-down me-1"></i>Mostrar permisos'
+            : '<i class="fas fa-chevron-up me-1"></i>Ocultar permisos';
+    });
+});
+</script>
 @endsection

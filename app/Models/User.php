@@ -14,7 +14,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
-        'email',      // <-- Agrega esto
+        'email',
         'username',
         'password',
     ];
@@ -24,10 +24,19 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // Mutator para validar y encriptar la contraseña al asignarla
+    // Mutator para encriptar la contraseña al asignarla
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = bcrypt($value);
+    }
+
+    /**
+     * Verificar si el usuario es Administrador.
+     * Método centralizado para eliminar verificaciones hardcodeadas.
+     */
+    public function esAdministrador(): bool
+    {
+        return $this->hasRole('Administrador');
     }
 
     public function empleado()
@@ -37,7 +46,7 @@ class User extends Authenticatable
 
     public function cargoNombre()
     {
-        if ($this->hasRole('Administrador') || $this->hasRole('super-admin') || $this->username === 'admin_user' || $this->email === 'admin@gmail.com') {
+        if ($this->esAdministrador()) {
             return 'Administrador';
         }
         if ($this->empleado) {
@@ -46,6 +55,6 @@ class User extends Authenticatable
         if ($this->roles->isNotEmpty()) {
             return $this->roles->first()->name;
         }
-        return 'Administrador';
+        return 'Sin Rol';
     }
 }

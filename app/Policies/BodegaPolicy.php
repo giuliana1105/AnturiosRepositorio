@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Policies;
 
 use App\Models\User;
@@ -6,28 +7,28 @@ use App\Models\Bodega;
 
 class BodegaPolicy
 {
-    public function view(User $user, Bodega $bodega)
+    public function viewAny(User $user): bool
     {
-        // Verificar si el usuario tiene permiso para ver una bodega
-        return $user-> can('ver bodega');
-        return $user->role === 'admin'; // Ejemplo
+        return $user->can('ver bodegas');
     }
 
-    public function create(User $user)
+    public function view(User $user, Bodega $bodega): bool
     {
-        // Permitir solo a los administradores crear una bodega
-        return $user->role === 'admin';
+        return $user->can('ver bodegas');
     }
 
-    public function update(User $user, Bodega $bodega)
+    public function create(User $user): bool
     {
-        // Permitir solo al propietario o admin editar
-        return $user->id === $bodega->user_id || $user->role === 'admin';
+        return $user->can('crear bodega');
     }
 
-    public function delete(User $user, Bodega $bodega)
+    public function update(User $user, Bodega $bodega): bool
     {
-        // Solo el propietario o admin puede eliminar
-        return $user->id === $bodega->user_id || $user->role === 'admin';
+        return $user->can('editar bodega');
+    }
+
+    public function delete(User $user, Bodega $bodega): bool
+    {
+        return $user->can('eliminar bodega');
     }
 }

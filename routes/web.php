@@ -18,10 +18,6 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CatalogoController;
 
 
-Route::middleware(['role:super-admin'])->group(function() {
-    // Rutas protegidas
-});
-
 
 // 🔹 Catálogo Público de Productos
 Route::get('/catalogo', [CatalogoController::class, 'index'])->name('catalogo.index');

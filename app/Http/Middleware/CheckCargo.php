@@ -21,7 +21,7 @@ class CheckCargo
             abort(403, 'Acceso denegado.');
         }
         // El Administrador tiene acceso total sin restricciones
-        if ($user->hasRole('Administrador') || $user->hasRole('super-admin') || $user->cargoNombre() === 'Administrador' || $user->email === 'admin@gmail.com') {
+        if ($user->esAdministrador()) {
             return $next($request);
         }
         if (!$user->empleado) {

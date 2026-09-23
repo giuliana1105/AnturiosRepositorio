@@ -141,7 +141,7 @@
                                                class="btn btn-warning btn-sm btn-icon" title="Editar">
                                                 <i class="fas fa-edit" style="font-size: 12px;"></i>
                                             </a>
-                                            @can('eliminar TipoNota')
+                                            @can('eliminar nota')
                                                 <form action="{{ route('tipoNota.destroy', $nota->codigo) }}" method="POST" style="display:inline;">
                                                     @csrf @method('DELETE')
                                                     <button type="submit" class="btn btn-danger btn-sm btn-icon" title="Eliminar"

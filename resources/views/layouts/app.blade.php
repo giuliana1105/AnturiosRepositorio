@@ -1046,7 +1046,7 @@
 </head>
 <body>
 
-@if (Auth::check())
+@if (Auth::check() && !auth()->user()->must_change_password)
     <div id="wrapper">
         
         <!-- Sidebar -->
@@ -1123,7 +1123,7 @@
                 </div>
                 @endif
 
-                @if(auth()->user()->can('registrar ventas') || auth()->user()->can('gestionar cuentas cobrar') || auth()->user()->hasRole('Administrador') || auth()->user()->cargoNombre() === 'Administrador')
+                @if(auth()->user()->can('ver ventas') || auth()->user()->can('registrar ventas') || auth()->user()->can('gestionar cuentas cobrar'))
                 <div class="nav-section-title">Ventas</div>
                 
                 <a href="#ventasSubmenu" data-bs-toggle="collapse" class="sidebar-link" aria-expanded="false">
@@ -1140,7 +1140,7 @@
                 </div>
                 @endif
 
-                @if(auth()->user()->can('gestionar usuarios') || auth()->user()->can('gestionar bodegas') || auth()->user()->hasRole('Administrador') || auth()->user()->cargoNombre() === 'Administrador')
+                @if(auth()->user()->can('ver empleados') || auth()->user()->can('ver bodegas') || auth()->user()->can('ver usuarios') || auth()->user()->can('ver roles'))
                 <div class="nav-section-title">Configuración</div>
                 
                 <a href="#adminSubmenu" data-bs-toggle="collapse" class="sidebar-link" aria-expanded="false">
@@ -1150,14 +1150,24 @@
                 </a>
                 <div class="collapse" id="adminSubmenu">
                     <div class="collapse-inner">
-                        @can('gestionar usuarios')
+                        @can('ver empleados')
                         <a href="{{ route('empleados.index') }}" class="collapse-item">
-                            <i class="fas fa-users me-2"></i>Empleados
+                            <i class="fas fa-id-card me-2"></i>Empleados
                         </a>
                         @endcan
-                        @can('gestionar bodegas')
+                        @can('ver bodegas')
                         <a href="{{ route('bodegas.index') }}" class="collapse-item">
                             <i class="fas fa-store me-2"></i>Bodegas
+                        </a>
+                        @endcan
+                        @can('ver usuarios')
+                        <a href="{{ route('users.index') }}" class="collapse-item">
+                            <i class="fas fa-users-cog me-2"></i>Usuarios
+                        </a>
+                        @endcan
+                        @can('ver roles')
+                        <a href="{{ route('roles.index') }}" class="collapse-item">
+                            <i class="fas fa-user-shield me-2"></i>Roles y Permisos
                         </a>
                         @endcan
                     </div>

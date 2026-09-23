@@ -10,11 +10,9 @@ class UserPolicy
     /**
      * Determine whether the user can view any models.
      */
-
-     //Aqu[i se est[a limitando al usuario y dando los permisos 
     public function viewAny(User $user): bool
     {
-        return $user->can('ver producto');
+        return $user->can('ver usuarios');
     }
 
     /**
@@ -22,7 +20,7 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return false;
+        return $user->can('ver usuarios');
     }
 
     /**
@@ -30,7 +28,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('crear producto');
+        return $user->can('crear usuario');
     }
 
     /**
@@ -38,7 +36,7 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return $user->can('editar producto');
+        return $user->can('editar usuario');
     }
 
     /**
@@ -46,7 +44,7 @@ class UserPolicy
      */
     public function delete(User $user, User $model): bool
     {
-        return $user->can('eliminar producto');
+        return $user->can('eliminar usuario');
     }
 
     /**

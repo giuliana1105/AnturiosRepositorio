@@ -5,9 +5,21 @@ namespace App\Providers;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use App\Models\TipoNota;
+use App\Models\Bodega;
+use App\Models\Producto;
+use App\Models\Empleado;
+use App\Models\User;
+use App\Models\TransaccionProducto;
+use App\Models\Venta;
 use App\Policies\BodegaPolicy;
 use App\Policies\TipoNotaPolicy;
-use App\Models\Bodega;
+use App\Policies\ProductoPolicy;
+use App\Policies\EmpleadoPolicy;
+use App\Policies\UserPolicy;
+use App\Policies\TransaccionProductoPolicy;
+use App\Policies\RolePolicy;
+use App\Policies\VentaPolicy;
+use App\Models\Role;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -17,8 +29,14 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        TipoNota::class => TipoNotaPolicy::class, // ✅ Registra la política aquí
-        Bodega::class=> BodegaPolicy::class,
+        TipoNota::class => TipoNotaPolicy::class,
+        Bodega::class => BodegaPolicy::class,
+        Producto::class => ProductoPolicy::class,
+        Empleado::class => EmpleadoPolicy::class,
+        User::class => UserPolicy::class,
+        TransaccionProducto::class => TransaccionProductoPolicy::class,
+        Role::class => RolePolicy::class,
+        Venta::class => VentaPolicy::class,
     ];
 
     
@@ -28,5 +46,12 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
+
+        // El Administrador tiene acceso total sin restricciones
+        Gate::before(function ($user, $ability) {
+            if ($user->esAdministrador()) {
+                return true;
+            }
+        });
     }
 }

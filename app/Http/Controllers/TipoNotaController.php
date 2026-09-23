@@ -17,12 +17,12 @@ use Iluminate\Support\Facades\Log; // Asegúrate de importar esto si lo necesita
 
 class TipoNotaController extends Controller
 {
-    //     use AuthorizesRequests;
-    //     public function __construct()
-    // {
+    use \Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
-    //     $this->authorizeResource(TipoNota::class, 'tipoNota'); // ✅ Debe coincidir con la ruta
-    // }
+    public function __construct()
+    {
+        $this->authorizeResource(TipoNota::class, 'tipoNota'); // ✅ Debe coincidir con la ruta
+    }
 
 
     /**

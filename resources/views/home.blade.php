@@ -13,6 +13,7 @@
         </div>
     </div>
 
+    @can('ver dashboard general')
     <div class="row g-3">
         @foreach($bodegas as $bodega)
             <div class="col-lg-3 col-md-4 col-sm-6">
@@ -45,5 +46,12 @@
             </a>
         </div>
     </div>
+    @else
+    <div class="empty-state">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h4>Sin Bodega Asignada</h4>
+        <p>Tu cuenta no tiene una bodega asignada en este momento. Por favor contacta al administrador.</p>
+    </div>
+    @endcan
 </div>
 @endsection

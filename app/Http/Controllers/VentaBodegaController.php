@@ -15,10 +15,7 @@ class VentaBodegaController extends Controller
 {
     public function create($bodega_id)
     {
-        $cargo = auth()->user()->cargoNombre();
-        if ($cargo === 'Vendedor') {
-            abort(403, 'No tienes permiso para registrar ventas.');
-        }
+        $this->authorize('create', \App\Models\Venta::class);
 
         $bodega = Bodega::findOrFail($bodega_id);
 
@@ -48,6 +45,7 @@ class VentaBodegaController extends Controller
 
     public function store(Request $request, $bodega_id)
     {
+        $this->authorize('create', \App\Models\Venta::class);
         // Depuración
          //dd($request->all());
 
@@ -152,10 +150,7 @@ class VentaBodegaController extends Controller
 
     public function indexPorBodega($bodega_id)
     {
-        $cargo = auth()->user()->cargoNombre();
-        if ($cargo === 'Vendedor') {
-            abort(403, 'No tienes permiso para ver ventas.');
-        }
+        $this->authorize('viewAny', \App\Models\Venta::class);
 
         $bodega = Bodega::findOrFail($bodega_id);
         $ventas = Venta::where('bodega_id', $bodega_id)->with('bodega')->get();
@@ -173,6 +168,7 @@ class VentaBodegaController extends Controller
 
     public function index()
     {
+        $this->authorize('viewAny', \App\Models\Venta::class);
         $ventas = Venta::with('bodega')->get();
 
         foreach ($ventas as $venta) {
@@ -188,6 +184,7 @@ class VentaBodegaController extends Controller
     public function show($id)
     {
         $venta = Venta::with(['bodega', 'detalles.producto'])->findOrFail($id);
+        $this->authorize('view', $venta);
         $abonos = [];
         if ($venta->tipo_pago === 'Crédito') {
             $abonos = \App\Models\Abono::where('venta_id', $venta->id)->get();
@@ -198,6 +195,7 @@ class VentaBodegaController extends Controller
     public function abonoForm($id)
     {
         $venta = Venta::with(['bodega', 'detalles.producto'])->findOrFail($id);
+        $this->authorize('manageCuentasPorCobrar', $venta);
         $abonos = \App\Models\Abono::where('venta_id', $venta->id)->get();
         $saldo = $venta->total_venta - $abonos->sum('abono');
         return view('venta.abono', compact('venta', 'abonos', 'saldo'));
@@ -206,6 +204,7 @@ class VentaBodegaController extends Controller
     public function agregarAbono(Request $request, $id)
     {
         $venta = Venta::findOrFail($id);
+        $this->authorize('manageCuentasPorCobrar', $venta);
 
         $request->validate([
             'abono' => 'required|numeric|min:0.01',
@@ -227,6 +226,7 @@ class VentaBodegaController extends Controller
     public function edit($id)
     {
         $venta = Venta::with(['bodega', 'detalles.producto'])->findOrFail($id);
+        $this->authorize('update', $venta);
         $bodega = $venta->bodega;
         $productos = Producto::all();
         return view('venta.edit', compact('venta', 'bodega', 'productos'));
@@ -235,6 +235,7 @@ class VentaBodegaController extends Controller
     public function update(Request $request, $id)
     {
         $venta = Venta::findOrFail($id);
+        $this->authorize('update', $venta);
 
         $request->validate([
             'cliente' => 'required|string|max:255',
@@ -270,12 +271,14 @@ class VentaBodegaController extends Controller
     public function destroy($id)
     {
         $venta = Venta::findOrFail($id);
+        $this->authorize('delete', $venta);
         $venta->delete();
         return redirect()->route('venta.index.bodega', $venta->bodega_id)->with('success', 'Venta eliminada correctamente.');
     }
 
     public function exportarVentas(Request $request)
     {
+        $this->authorize('viewAny', \App\Models\Venta::class);
         $ventas = Venta::with(['detalles.producto', 'abonos'])
             ->when($request->bodega_id, fn($q) => $q->where('bodega_id', $request->bodega_id))
             ->when($request->cliente, fn($q) => $q->where('cliente', 'like', '%'.$request->cliente.'%'))

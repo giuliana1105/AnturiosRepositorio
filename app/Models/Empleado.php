@@ -39,14 +39,8 @@ class Empleado extends Model
 
     public function cargoNombre()
     {
-        $cargos = [
-            1 => 'Administrador',
-            2 => 'Vendedor camión',
-            3 => 'Vendedor',
-            4 => 'Jefe de bodega',
-            5 => 'Gerente',
-        ];
-        return $cargos[$this->codigocargo] ?? 'Desconocido';
+        $role = \Spatie\Permission\Models\Role::find($this->codigocargo);
+        return $role ? $role->name : 'Desconocido';
     }
 
     protected static function booted()
@@ -54,13 +48,18 @@ class Empleado extends Model
         static::created(function ($empleado) {
             // Solo crear si no existe usuario con ese email
             if (!User::where('email', $empleado->email)->exists()) {
-                User::create([
+                $user = User::create([
                     'name' => $empleado->nombreemp . ' ' . $empleado->apellidoemp,
                     'email' => $empleado->email,
                     'username' => $empleado->email,
                     'password' => $empleado->nro_identificacion,
                     'must_change_password' => true, // <--- importante
                 ]);
+
+                $role = \Spatie\Permission\Models\Role::find($empleado->codigocargo);
+                if ($role) {
+                    $user->assignRole($role);
+                }
             }
         });
 
@@ -70,6 +69,11 @@ class Empleado extends Model
                 $user->name = $empleado->nombreemp . ' ' . $empleado->apellidoemp;
                 $user->email = $empleado->email;
                 $user->save();
+                
+                $role = \Spatie\Permission\Models\Role::find($empleado->codigocargo);
+                if ($role) {
+                    $user->syncRoles([$role]);
+                }
             }
         });
 

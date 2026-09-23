@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Policies;
 
 use App\Models\User;
@@ -6,28 +7,28 @@ use App\Models\Role;
 
 class RolePolicy
 {
-    public function view(User $user, Role $role)
+    public function viewAny(User $user): bool
     {
-        // Verificar si el usuario tiene permiso para ver una bodega
-        return $user-> can('ver rol');
-        return $user->role === 'admin'; // Ejemplo
+        return $user->can('ver roles');
     }
 
-    public function create(User $user)
+    public function view(User $user, Role $role): bool
     {
-        // Permitir solo a los administradores crear una bodega
-        return $user->role === 'admin';
+        return $user->can('ver roles');
     }
 
-    public function update(User $user, Role $role)
+    public function create(User $user): bool
     {
-        // Permitir solo al propietario o admin editar
-        return $user->id === $role->user_id || $user->role === 'admin';
+        return $user->can('crear rol');
     }
 
-    public function delete(User $user, Role $role)
+    public function update(User $user, Role $role): bool
     {
-        // Solo el propietario o admin puede eliminar
-        return $user->id === $role->user_id || $user->role === 'admin';
+        return $user->can('editar rol');
+    }
+
+    public function delete(User $user, Role $role): bool
+    {
+        return $user->can('eliminar rol');
     }
 }

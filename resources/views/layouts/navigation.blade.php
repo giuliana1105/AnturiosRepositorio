@@ -12,7 +12,7 @@
 
 
  <!-- Verifica si el usuario autenticado tiene permisos -->
-@can('ver producto')
+@can('ver productos')
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
@@ -22,7 +22,7 @@
             </div>
 @endcan
 
-@can('ver empleado')
+@can('ver empleados')
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">

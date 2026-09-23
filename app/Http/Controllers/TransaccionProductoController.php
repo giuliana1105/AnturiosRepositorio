@@ -16,7 +16,7 @@ class TransaccionProductoController extends Controller
 
     public function __construct()
     {
-        //$this->authorizeResource(TransaccionProducto::class, 'transaccionProducto');
+        $this->authorizeResource(TransaccionProducto::class, 'transaccionProducto');
     }
 
     /**
@@ -24,10 +24,6 @@ class TransaccionProductoController extends Controller
      */
     public function index(Request $request)
     {
-        $cargo = auth()->user()->cargoNombre();
-        if (in_array($cargo, ['Vendedor', 'Vendedor camión'])) {
-            abort(403, 'No tienes permiso para acceder a esta sección.');
-        }
 
         $search = $request->input('search');
         $estado = $request->input('estado');
@@ -60,10 +56,7 @@ class TransaccionProductoController extends Controller
      */
     public function confirmar($codigo)
     {
-        $cargo = auth()->user()->cargoNombre();
-        if (in_array($cargo, ['Jefe de bodega'])) {
-            abort(403, 'No tienes permiso para acceder a esta sección.');
-        }
+        $this->authorize('create', TransaccionProducto::class);
 
         try {
             DB::beginTransaction();
@@ -105,16 +98,13 @@ class TransaccionProductoController extends Controller
      */
     public function finalizar($id)
     {
-        $cargo = auth()->user()->cargoNombre();
-        if (in_array($cargo, ['Vendedor', 'Vendedor camión'])) {
-            abort(403, 'No tienes permiso para acceder a esta sección.');
-        }
 
         try {
             DB::beginTransaction();
 
             // Buscar la transacción
             $transaccion = TransaccionProducto::findOrFail($id);
+            $this->authorize('update', $transaccion);
             $nota = $transaccion->tipoNota;
 
             // Verificar que esté en estado PENDIENTE

@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
 
@@ -48,10 +49,19 @@ class AuthController extends Controller
     public function changePassword(Request $request)
     {
         $request->validate([
+            'current_password' => 'required|string',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
         $user = auth()->user();
+
+        // Verificar que la contraseña actual sea correcta
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors([
+                'current_password' => 'La contraseña actual no es correcta.',
+            ]);
+        }
+
         $user->password = $request->password;
         $user->must_change_password = false;
         $user->save();

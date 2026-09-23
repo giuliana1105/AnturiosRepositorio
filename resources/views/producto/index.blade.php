@@ -10,11 +10,11 @@
             <h3>Productos</h3>
             <p class="page-subtitle">Catálogo de productos en inventario</p>
         </div>
-        @if(in_array($cargo, ['Administrador', 'Gerente', 'Jefe de bodega']))
+        @can('crear producto')
         <a href="{{ route('productos.create') }}" class="btn btn-info">
             <i class="fas fa-plus"></i> Añadir Producto
         </a>
-        @endif
+        @endcan
     </div>
 
     @if(session('success'))
@@ -57,7 +57,7 @@
                             <th>Descripción</th>
                             <th>Cantidad</th>
                             <th>Tipo de Empaque</th>
-                            @if(in_array($cargo, ['Administrador', 'Gerente', 'Jefe de bodega']))
+                            @if(auth()->user()->can('editar producto') || auth()->user()->can('eliminar producto'))
                             <th style="width: 100px;">Acciones</th>
                             @endif
                         </tr>
@@ -72,13 +72,16 @@
                                 <td>
                                     <span class="badge bg-secondary">{{ $producto->tipoempaque }}</span>
                                 </td>
-                                @if(in_array($cargo, ['Administrador', 'Gerente', 'Jefe de bodega']))
+                                @if(auth()->user()->can('editar producto') || auth()->user()->can('eliminar producto'))
                                 <td>
                                     <div class="d-flex gap-1">
+                                        @can('editar producto')
                                         <a href="{{ route('productos.edit', $producto->codigo) }}" 
                                            class="btn btn-warning btn-sm btn-icon" title="Editar">
                                             <i class="fas fa-edit" style="font-size: 12px;"></i>
                                         </a>
+                                        @endcan
+                                        @can('eliminar producto')
                                         <form action="{{ route('productos.destroy', $producto->codigo) }}" method="POST" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
@@ -88,6 +91,7 @@
                                                 <i class="fas fa-trash" style="font-size: 12px;"></i>
                                             </button>
                                         </form>
+                                        @endcan
                                     </div>
                                 </td>
                                 @endif

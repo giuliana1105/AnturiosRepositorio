@@ -8,31 +8,37 @@ use Illuminate\Auth\Access\Response;
 
 class ProductoPolicy
 {
-      public function viewAny(User $user): bool
+    public function viewAny(User $user): bool
     {
-        return $user-> can('ver Producto');
+        return $user->can('ver productos');
     }
-    public function view(User $user, Producto $Producto): bool
+
+    public function view(User $user, Producto $producto): bool
     {
-        return $user-> can('ver Producto');
+        return $user->can('ver productos');
     }
+
     public function create(User $user): bool
     {
-        return $user-> can('crear Producto');
+        return $user->can('crear producto');
     }
-    public function update(User $user, Producto $Producto): bool
+
+    public function update(User $user, Producto $producto): bool
     {
-        return $user-> can('editar Producto');
+        return $user->can('editar producto');
     }
-    public function delete(User $user, Producto $Producto): bool
+
+    public function delete(User $user, Producto $producto): bool
     {
-        return $user-> can('eliminar Producto');
+        return $user->can('eliminar producto');
     }
-    public function restore(User $user, Producto $Producto): bool
+
+    public function restore(User $user, Producto $producto): bool
     {
         return false;
     }
-    public function forceDelete(User $user, Producto $Producto): bool
+
+    public function forceDelete(User $user, Producto $producto): bool
     {
         return false;
     }

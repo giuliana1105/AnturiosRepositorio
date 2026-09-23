@@ -7,12 +7,11 @@
             <h3>Empleados</h3>
             <p class="page-subtitle">Gestión del personal de la empresa</p>
         </div>
-        @php $cargo = auth()->user()->cargoNombre(); @endphp
-        @if(!in_array($cargo, ['Jefe de bodega']))
+        @can('crear empleado')
         <a href="{{ route('empleados.create') }}" class="btn btn-info">
             <i class="fas fa-plus"></i> Añadir Empleado
         </a>
-        @endif
+        @endcan
     </div>
 
     @if (session('success'))
@@ -43,7 +42,7 @@
                             <th>Celular</th>
                             <th>Cargo</th>
                             <th>Bodega</th>
-                            @if(!in_array($cargo, ['Jefe de bodega']))
+                            @if(auth()->user()->can('editar empleado') || auth()->user()->can('eliminar empleado'))
                             <th style="width: 120px;">Acciones</th>
                             @endif
                         </tr>
@@ -70,13 +69,16 @@
                                     <span class="badge bg-primary">{{ $empleado->cargoNombre() }}</span>
                                 </td>
                                 <td style="color: var(--secondary);">{{ $empleado->bodega->nombrebodega ?? '—' }}</td>
-                                @if(!in_array($cargo, ['Jefe de bodega']))
+                                @if(auth()->user()->can('editar empleado') || auth()->user()->can('eliminar empleado'))
                                 <td>
                                     <div class="d-flex gap-1">
+                                        @can('editar empleado')
                                         <a href="{{ route('empleados.edit', $empleado->nro_identificacion) }}" 
                                            class="btn btn-warning btn-sm btn-icon" title="Editar">
                                             <i class="fas fa-edit" style="font-size: 12px;"></i>
                                         </a>
+                                        @endcan
+                                        @can('eliminar empleado')
                                         <form action="{{ route('empleados.destroy', $empleado->nro_identificacion) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
@@ -86,6 +88,8 @@
                                                 <i class="fas fa-trash" style="font-size: 12px;"></i>
                                             </button>
                                         </form>
+                                        @endcan
+                                        @can('editar empleado')
                                         <form action="{{ route('empleados.reset_password', $empleado->nro_identificacion) }}" method="POST" class="d-inline">
                                             @csrf
                                             <button type="submit" class="btn btn-secondary btn-sm btn-icon" 
@@ -94,6 +98,7 @@
                                                 <i class="fas fa-key" style="font-size: 12px;"></i>
                                             </button>
                                         </form>
+                                        @endcan
                                     </div>
                                 </td>
                                 @endif

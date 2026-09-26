@@ -20,6 +20,7 @@ class UserSeeder extends Seeder
             // Dashboard
             'ver dashboard general',
             'ver dashboard vendedor',
+            'ver kpis',
 
             // Productos
             'ver productos',

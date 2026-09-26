@@ -1077,6 +1077,10 @@
                     <i class="fas fa-home icon-main"></i>
                     <span>Dashboard</span>
                 </a>
+                <a href="{{ route('kpis.index') }}" class="sidebar-link {{ request()->routeIs('kpis.index') ? 'active' : '' }}">
+                    <i class="fas fa-chart-line icon-main"></i>
+                    <span>KPIs y Analítica</span>
+                </a>
                 @endif
 
                 @if(auth()->user()->can('ver productos') || auth()->user()->can('ver inventario global'))

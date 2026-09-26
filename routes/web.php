@@ -16,6 +16,7 @@ use App\Http\Controllers\VentaBodegaController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\CatalogoController;
+use App\Http\Controllers\KpiController;
 
 
 
@@ -46,6 +47,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // 🔹 Grupo de rutas protegidas (Solo usuarios autenticados pueden acceder)
 Route::middleware(['auth'])->group(function () {
+
+    // 🔹 Ruta para el módulo de KPIs Financieros y Analítica
+    Route::get('/kpis', [KpiController::class, 'index'])->name('kpis.index');
 
     // 🔹 Ruta para la vista principal (home)
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

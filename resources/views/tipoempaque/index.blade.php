@@ -94,7 +94,7 @@
             </div>
 
             <div class="mt-3 d-flex justify-content-center">
-                {{ $tipoEmpaques->links() }}
+                {{ $tipoEmpaques->onEachSide(1)->links('pagination::bootstrap-4') }}
             </div>
         </div>
     </div>

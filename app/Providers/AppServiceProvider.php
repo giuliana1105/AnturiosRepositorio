@@ -6,6 +6,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
 
+use Illuminate\Pagination\Paginator;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -23,9 +25,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // El Administrador tiene todos los permisos del sistema automáticamente
+        Paginator::useBootstrapFour();
+
+        // El Administrador tiene acceso total a todas las funcionalidades del sistema
         Gate::before(function ($user, $ability) {
-            return $user->hasRole('Administrador') ? true : null;
+            if ($user->esAdministrador()) {
+                return true;
+            }
         });
     }
 }

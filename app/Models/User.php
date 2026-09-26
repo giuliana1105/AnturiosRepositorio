@@ -36,7 +36,7 @@ class User extends Authenticatable
      */
     public function esAdministrador(): bool
     {
-        return $this->hasRole('Administrador');
+        return $this->hasRole('Administrador') || ($this->roles && $this->roles->contains('name', 'Administrador'));
     }
 
     public function empleado()

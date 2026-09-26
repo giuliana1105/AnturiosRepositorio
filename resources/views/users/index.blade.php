@@ -123,8 +123,8 @@
                 </table>
             </div>
             @if(method_exists($users, 'links'))
-                <div class="p-3 border-top">
-                    {{ $users->links() }}
+                <div class="mt-3 d-flex justify-content-center">
+                    {{ $users->onEachSide(1)->links('pagination::bootstrap-4') }}
                 </div>
             @endif
         </div>

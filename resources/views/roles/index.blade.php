@@ -128,7 +128,7 @@
     </div>
 
     <div class="d-flex justify-content-center mt-3">
-        {{ $roles->links() }}
+        {{ $roles->onEachSide(1)->links('pagination::bootstrap-4') }}
     </div>
 </div>
 

@@ -3,6 +3,30 @@
 @section('content')
 <div class="container-fluid py-3" id="kpi-dashboard-print">
 
+    {{-- Encabezado con Logo de la Empresa (SOLO visible al imprimir) --}}
+    <div id="print-header" style="display: none;">
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr>
+                <td style="width: 120px; vertical-align: middle; padding-right: 15px; border: none;">
+                    <img src="{{ asset('images/logo-empresa.png') }}" style="width: 110px; height: auto;" alt="Logo Empresa">
+                </td>
+                <td style="vertical-align: middle; border: none;">
+                    <div style="font-size: 22px; font-weight: bold; color: #333;">Importadora Anturios</div>
+                    <div style="font-size: 16px; color: #666; margin-top: 2px;">Informe de KPIs y Desempeño Empresarial</div>
+                    <div style="font-size: 12px; color: #999; margin-top: 4px;">
+                        Generado: {{ now()->format('d/m/Y H:i') }} |
+                        Período: <span id="print-periodo-label"></span>
+                    </div>
+                </td>
+                <td style="text-align: right; vertical-align: middle; border: none; width: 140px;">
+                    <div style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Sistema de Gestión</div>
+                    <div style="font-size: 11px; color: #999;">Reporte Ejecutivo</div>
+                </td>
+            </tr>
+        </table>
+        <hr style="border: none; border-top: 2px solid #e11d48; margin: 0 0 15px 0;">
+    </div>
+
     {{-- Encabezado del Dashboard y Filtros --}}
     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
         <div>
@@ -417,31 +441,85 @@
 }
 
 @media print {
-    #sidebar-wrapper, .sidebar-header, .user-profile, .sidebar-nav, .logout-container, form, button, .breadcrumb-section {
+    @page {
+        size: A4 portrait;
+        margin: 10mm 12mm;
+    }
+
+    /* Ocultar navegación y controles */
+    #sidebar-wrapper, .sidebar-header, .user-profile, .sidebar-nav,
+    .logout-container, form, button, .breadcrumb-section, .top-navbar,
+    .badge.bg-light, .content-scrollable::before {
         display: none !important;
     }
-    #wrapper {
-        padding-left: 0 !important;
+
+    /* Mostrar encabezado de empresa */
+    #print-header {
+        display: block !important;
     }
-    #content-wrapper {
-        margin-left: 0 !important;
-    }
-    body {
+
+    /* Romper restricciones de viewport del layout */
+    html, body {
+        height: auto !important;
+        overflow: visible !important;
         background: #fff !important;
+        margin: 0 !important;
+        padding: 0 !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
+
+    #wrapper {
+        display: block !important;
+        height: auto !important;
+        width: 100% !important;
+        overflow: visible !important;
+        padding: 0 !important;
+    }
+
+    #page-content-wrapper {
+        display: block !important;
+        overflow: visible !important;
+        width: 100% !important;
+    }
+
+    .content-scrollable {
+        overflow: visible !important;
+        height: auto !important;
+        padding: 0 !important;
+    }
+
+    .container-fluid {
+        overflow: visible !important;
+        padding: 0 !important;
+    }
+
+    /* Tarjetas: compactas, sin sombras */
     .card {
         border: 1px solid #ddd !important;
         box-shadow: none !important;
-        break-inside: avoid;
-        page-break-inside: avoid;
+        margin-bottom: 8px !important;
     }
-    .row {
-        break-inside: avoid;
-        page-break-inside: avoid;
+
+    .card-header {
+        padding: 8px 12px !important;
     }
-    /* Ocultar los canvas y mostrar las imágenes estáticas en su lugar */
+
+    .card-body {
+        padding: 10px 12px !important;
+    }
+
+    /* Reducir los gaps de las filas */
+    .row.g-3, .row.g-4 {
+        --bs-gutter-y: 0.5rem !important;
+        --bs-gutter-x: 0.5rem !important;
+    }
+
+    .mb-4 {
+        margin-bottom: 0.5rem !important;
+    }
+
+    /* Ocultar canvas, mostrar imágenes estáticas */
     canvas {
         display: none !important;
     }
@@ -449,8 +527,26 @@
         display: block !important;
         width: 100% !important;
         height: auto !important;
-        max-height: 280px;
+        max-height: 220px;
         object-fit: contain;
+        margin: 0 auto;
+    }
+
+    /* Tablas compactas */
+    .table {
+        font-size: 11px !important;
+    }
+    .table th, .table td {
+        padding: 3px 6px !important;
+    }
+
+    /* Tarjetas resumen más compactas */
+    .col-12.col-sm-6.col-xl-3 .card-body {
+        padding: 8px 10px !important;
+    }
+
+    .fs-4 {
+        font-size: 1.1rem !important;
     }
 }
 </style>
@@ -745,32 +841,35 @@ document.addEventListener('DOMContentLoaded', function() {
 // para que todas las gráficas se muestren en el PDF impreso
 // ---------------------------------------------------------------
 function prepararImpresion() {
-    // Buscar todos los canvas de Chart.js en la página
+    // Establecer el texto del período en el encabezado de impresión
+    const periodoSelect = document.querySelector('select[name="periodo"]');
+    const labelSpan = document.getElementById('print-periodo-label');
+    if (periodoSelect && labelSpan) {
+        labelSpan.textContent = periodoSelect.options[periodoSelect.selectedIndex].text;
+    }
+
+    // Buscar todos los canvas de Chart.js
     const canvases = document.querySelectorAll('canvas');
 
     canvases.forEach(function(canvas) {
-        // Eliminar imágenes previas si ya se habían generado
-        const existingImg = canvas.parentNode.querySelector('.chart-print-img');
-        if (existingImg) {
-            existingImg.remove();
-        }
+        // Eliminar imágenes previas si ya existían
+        const existingImgs = canvas.parentNode.querySelectorAll('.chart-print-img');
+        existingImgs.forEach(function(img) { img.remove(); });
 
-        // Crear una imagen estática a partir del canvas
+        // Crear imagen estática a partir del canvas
         const img = document.createElement('img');
         img.src = canvas.toDataURL('image/png', 1.0);
         img.className = 'chart-print-img';
         img.alt = 'Gráfica KPI';
-        img.style.width = '100%';
-        img.style.height = 'auto';
 
         // Insertar la imagen justo después del canvas
         canvas.parentNode.insertBefore(img, canvas.nextSibling);
     });
 
-    // Pequeña pausa para que las imágenes se rendericen y luego imprimir
+    // Pausa para renderizar imágenes y luego imprimir
     setTimeout(function() {
         window.print();
-    }, 300);
+    }, 400);
 }
 </script>
 @endsection

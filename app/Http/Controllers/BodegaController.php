@@ -37,24 +37,26 @@ public function stockPdf($id)
     $this->authorize('viewAny', Bodega::class);
     $bodega = Bodega::findOrFail($id);
 
-    $productosEnBodega = DB::table('productos_bodega')
-        ->select('producto_id', DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) as enviados'), DB::raw('SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as devueltos'))
-        ->where('bodega_id', $id)
-        ->groupBy('producto_id')
+    $productosEnBodega = DB::table('productos_bodega as pb')
+        ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
+        ->select(
+            'p.codigo',
+            'p.nombre',
+            'p.descripcion',
+            'p.tipoempaque',
+            DB::raw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) as cantidad')
+        )
+        ->where('pb.bodega_id', $id)
+        ->groupBy('p.codigo', 'p.nombre', 'p.descripcion', 'p.tipoempaque')
+        ->havingRaw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) > 0')
         ->get()
-        ->map(function($row) {
-            $producto = \App\Models\Producto::where('codigo', $row->producto_id)->first();
-            $cantidad = ($row->enviados - $row->devueltos);
-            return $cantidad > 0 && $producto ? [
-                'codigo'      => $producto->codigo,
-                'nombre'      => $producto->nombre,
-                'descripcion' => $producto->descripcion,
-                'cantidad'    => $cantidad,
-                'empaque'     => $producto->tipoempaque ?? '',
-            ] : null;
-        })
-        ->filter()
-        ->values();
+        ->map(fn($row) => [
+            'codigo'      => $row->codigo,
+            'nombre'      => $row->nombre,
+            'descripcion' => $row->descripcion ?? '',
+            'cantidad'    => (int) $row->cantidad,
+            'empaque'     => $row->tipoempaque ?? '',
+        ]);
 
     $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.stock_bodega', [
         'bodega' => $bodega,
@@ -93,24 +95,26 @@ public function stockPdf($id)
         $bodega = Bodega::findOrFail($id);
 
         // Productos en stock en la bodega
-        $productosEnBodega = DB::table('productos_bodega')
-            ->select('producto_id', DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) as enviados'), DB::raw('SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as devueltos'))
-            ->where('bodega_id', $id)
-            ->groupBy('producto_id')
+        $productosEnBodega = DB::table('productos_bodega as pb')
+            ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
+            ->select(
+                'p.codigo',
+                'p.nombre',
+                'p.descripcion',
+                'p.tipoempaque',
+                DB::raw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) as cantidad')
+            )
+            ->where('pb.bodega_id', $id)
+            ->groupBy('p.codigo', 'p.nombre', 'p.descripcion', 'p.tipoempaque')
+            ->havingRaw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) > 0')
             ->get()
-            ->map(function($row) {
-                $producto = \App\Models\Producto::where('codigo', $row->producto_id)->first();
-                $cantidad = ($row->enviados - $row->devueltos);
-                return $cantidad > 0 && $producto ? [
-                    'codigo'      => $producto->codigo,
-                    'nombre'      => $producto->nombre,
-                    'descripcion' => $producto->descripcion, // <--- Agregado
-                    'cantidad'    => $cantidad,
-                    'empaque'     => $producto->tipoempaque ?? '',
-                ] : null;
-            })
-            ->filter()
-            ->values();
+            ->map(fn($row) => [
+                'codigo'      => $row->codigo,
+                'nombre'      => $row->nombre,
+                'descripcion' => $row->descripcion ?? '',
+                'cantidad'    => (int) $row->cantidad,
+                'empaque'     => $row->tipoempaque ?? '',
+            ]);
 
         // Productos enviados y devueltos (si los usas en la vista)
         $productos = DB::table('productos_bodega')
@@ -199,23 +203,24 @@ public function stockPdf($id)
     // Para DEVOLUCIÓN: solo productos con stock en la bodega seleccionada
     public function productosEnBodega($id)
     {
-        $productos = DB::table('productos_bodega')
-            ->select('producto_id', DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) as enviados'), DB::raw('SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as devueltos'))
-            ->where('bodega_id', $id)
-            ->groupBy('producto_id')
+        $productos = DB::table('productos_bodega as pb')
+            ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
+            ->select(
+                'p.codigo',
+                'p.nombre',
+                'p.tipoempaque',
+                DB::raw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) as cantidad')
+            )
+            ->where('pb.bodega_id', $id)
+            ->groupBy('p.codigo', 'p.nombre', 'p.tipoempaque')
+            ->havingRaw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) > 0')
             ->get()
-            ->map(function($row) {
-                $producto = \App\Models\Producto::where('codigo', $row->producto_id)->first();
-                $cantidad = ($row->enviados - $row->devueltos);
-                return $cantidad > 0 && $producto ? [
-                    'codigo'      => $producto->codigo,
-                    'nombre'      => $producto->nombre,
-                    'cantidad'    => $cantidad,
-                    'empaque'     => $producto->tipoempaque ?? '', // <-- usa el nombre correcto del campo
-                ] : null;
-            })
-            ->filter()
-            ->values();
+            ->map(fn($row) => [
+                'codigo'      => $row->codigo,
+                'nombre'      => $row->nombre,
+                'cantidad'    => (int) $row->cantidad,
+                'empaque'     => $row->tipoempaque ?? '',
+            ]);
 
         return response()->json($productos);
     }

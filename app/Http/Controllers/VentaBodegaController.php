@@ -24,21 +24,25 @@ class VentaBodegaController extends Controller
         $nroVenta = $nroVenta ? $nroVenta + 1 : 1;
 
         // Solo productos con stock en la bodega
-        $productos = DB::table('productos_bodega')
-            ->select('producto_id', DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock'))
-            ->where('bodega_id', $bodega_id)
-            ->groupBy('producto_id')
-            ->havingRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) > 0')
+        // Optimizado con JOIN para evitar N+1 queries
+        $productos = DB::table('productos_bodega as pb')
+            ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
+            ->select(
+                'p.codigo',
+                'p.nombre',
+                'p.tipoempaque',
+                DB::raw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) as stock')
+            )
+            ->where('pb.bodega_id', $bodega_id)
+            ->groupBy('p.codigo', 'p.nombre', 'p.tipoempaque')
+            ->havingRaw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) > 0')
             ->get()
-            ->map(function($row) {
-                $producto = Producto::where('codigo', $row->producto_id)->first();
-                return [
-                    'codigo' => $producto->codigo,
-                    'nombre' => $producto->nombre,
-                    'stock'  => $row->stock,
-                    'tipoempaque' => $producto->tipoempaque ?? 'Unidad',
-                ];
-            });
+            ->map(fn($row) => [
+                'codigo' => $row->codigo,
+                'nombre' => $row->nombre,
+                'stock'  => (int) $row->stock,
+                'tipoempaque' => $row->tipoempaque ?? 'Unidad',
+            ]);
 
         return view('venta.create', compact('bodega', 'productos', 'nroVenta'));
     }
@@ -61,20 +65,23 @@ class VentaBodegaController extends Controller
             'tipo_pago' => 'required|in:Efectivo,Transferencia,Crédito,Cheque',
         ]);
 
-        // PRIMERO: Verificar stock de TODOS los productos antes de crear la venta
+        // Precargar productos y stock en 2 queries (evita N+1)
+        $productosMap = Producto::whereIn('codigo', $request->producto_id)->get()->keyBy('codigo');
+        $stockMap = DB::table('productos_bodega')
+            ->select('producto_id', DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock'))
+            ->where('bodega_id', $bodega_id)
+            ->whereIn('producto_id', $request->producto_id)
+            ->groupBy('producto_id')
+            ->pluck('stock', 'producto_id');
+
+        // Verificar stock de TODOS los productos antes de crear la venta
         $totalVenta = 0;
         foreach ($request->producto_id as $index => $codigo) {
             $cantidadSolicitada = $request->cantidad[$index];
             $totalVenta += $cantidadSolicitada * $request->precio_unitario[$index];
 
-            // Verifica stock disponible
-            $stock = DB::table('productos_bodega')
-                ->where('bodega_id', $bodega_id)
-                ->where('producto_id', $codigo)
-                ->selectRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as stock')
-                ->value('stock') ?? 0;
-
-            $producto = Producto::where('codigo', $codigo)->first();
+            $stock = $stockMap->get($codigo, 0);
+            $producto = $productosMap->get($codigo);
             $nombreProducto = $producto ? $producto->nombre : $codigo;
 
             if ($cantidadSolicitada > $stock) {
@@ -153,13 +160,12 @@ class VentaBodegaController extends Controller
         $this->authorize('viewAny', \App\Models\Venta::class);
 
         $bodega = Bodega::findOrFail($bodega_id);
-        $ventas = Venta::where('bodega_id', $bodega_id)->with('bodega')->get();
+        $ventas = Venta::where('bodega_id', $bodega_id)->with(['bodega', 'abonos'])->get();
 
-        // Calcula el saldo para cada venta de crédito
+        // Calcula el saldo usando abonos precargados (sin queries adicionales)
         foreach ($ventas as $venta) {
             if ($venta->tipo_pago === 'Crédito') {
-                $abonos = \App\Models\Abono::where('venta_id', $venta->id)->sum('abono');
-                $venta->saldo = $venta->total_venta - $abonos;
+                $venta->saldo = $venta->total_venta - $venta->abonos->sum('abono');
             }
         }
 
@@ -169,12 +175,11 @@ class VentaBodegaController extends Controller
     public function index()
     {
         $this->authorize('viewAny', \App\Models\Venta::class);
-        $ventas = Venta::with('bodega')->get();
+        $ventas = Venta::with(['bodega', 'abonos'])->get();
 
         foreach ($ventas as $venta) {
             if ($venta->tipo_pago === 'Crédito') {
-                $abonos = \App\Models\Abono::where('venta_id', $venta->id)->sum('abono');
-                $venta->saldo = $venta->total_venta - $abonos;
+                $venta->saldo = $venta->total_venta - $venta->abonos->sum('abono');
             }
         }
 

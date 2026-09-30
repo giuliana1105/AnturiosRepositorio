@@ -116,14 +116,21 @@ public function index(Request $request)
         ->paginate(5)
         ->appends($request->all());
 
-    // Carga productos en detalles
-    $tipoNotas->each(function($nota) {
-        $nota->detalles->each(function($detalle) {
-            if (!$detalle->producto) {
-                $detalle->producto = \App\Models\Producto::where('codigo', $detalle->codigoproducto)->first();
-            }
+    // Precargar productos faltantes en una sola consulta (evita N+1)
+    $codigosFaltantes = $tipoNotas->flatMap(function($nota) {
+        return $nota->detalles->filter(fn($d) => !$d->producto)->pluck('codigoproducto');
+    })->unique()->values();
+
+    if ($codigosFaltantes->isNotEmpty()) {
+        $productosMap = \App\Models\Producto::whereIn('codigo', $codigosFaltantes)->get()->keyBy('codigo');
+        $tipoNotas->each(function($nota) use ($productosMap) {
+            $nota->detalles->each(function($detalle) use ($productosMap) {
+                if (!$detalle->producto) {
+                    $detalle->producto = $productosMap->get($detalle->codigoproducto);
+                }
+            });
         });
-    });
+    }
 
     return view('tipoNota.index', [
         'tipoNotas' => $tipoNotas,

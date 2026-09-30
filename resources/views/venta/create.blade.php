@@ -197,7 +197,7 @@
                             </div>
                             <div class="card-body">
                                 <div id="productos-container">
-                                    <div class="row align-items-start mb-3 row-producto border rounded-4 p-3 bg-white shadow-sm">
+                                    <div class="row align-items-start mb-3 row-producto border rounded-4 p-3 bg-white shadow-sm g-3">
                                         <div class="col-md-3">
                                             <label class="form-label fw-bold">
                                                 <i class="fas fa-cube me-2"></i>Producto
@@ -237,13 +237,13 @@
                                             <input type="number" name="precio_total[]" class="form-control rounded-pill precio-total-input" readonly>
                                         </div>
                                         <div class="col-md-1">
-                                            <label class="form-label fw-bold text-transparent">Acciones</label>
-                                            <div class="d-flex flex-column gap-1">
-                                                <button type="button" class="btn btn-success btn-sm rounded-pill btn-add-producto">
-                                                    <i class="fas fa-plus"></i>
+                                            <label class="form-label fw-bold text-transparent d-none d-md-block">Acciones</label>
+                                            <div class="d-flex flex-row flex-md-column gap-2 mt-2 mt-md-0">
+                                                <button type="button" class="btn btn-success btn-sm rounded-pill w-100 btn-add-producto">
+                                                    <i class="fas fa-plus"></i> Añadir
                                                 </button>
-                                                <button type="button" class="btn btn-danger btn-sm rounded-pill btn-remove-producto">
-                                                    <i class="fas fa-minus"></i>
+                                                <button type="button" class="btn btn-danger btn-sm rounded-pill w-100 btn-remove-producto">
+                                                    <i class="fas fa-minus"></i> Quitar
                                                 </button>
                                             </div>
                                         </div>
@@ -290,7 +290,7 @@
                                         </div>
                                         <div class="card-body">
                                             <div id="abonos-container">
-                                                <div class="row align-items-end mb-2 row-abono border rounded-4 p-3 bg-white shadow-sm">
+                                                <div class="row align-items-end mb-2 row-abono border rounded-4 p-3 bg-white shadow-sm g-3">
                                                     <div class="col-md-3">
                                                         <label class="form-label fw-bold">
                                                             <i class="fas fa-money-bill me-2"></i>Abono
@@ -313,14 +313,14 @@
                                                             <option value="Transferencia">Transferencia</option>
                                                         </select>
                                                     </div>
-                                                    <div class="col-md-2">
-                                                        <label class="form-label fw-bold text-transparent">Acciones</label>
-                                                        <div class="d-flex gap-1">
-                                                            <button type="button" class="btn btn-success btn-sm rounded-pill btn-add-abono">
-                                                                <i class="fas fa-plus"></i>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label fw-bold text-transparent d-none d-md-block">Acciones</label>
+                                                        <div class="d-flex flex-row gap-2 mt-2 mt-md-0">
+                                                            <button type="button" class="btn btn-success btn-sm rounded-pill w-100 btn-add-abono">
+                                                                <i class="fas fa-plus"></i> Añadir
                                                             </button>
-                                                            <button type="button" class="btn btn-danger btn-sm rounded-pill btn-remove-abono">
-                                                                <i class="fas fa-minus"></i>
+                                                            <button type="button" class="btn btn-danger btn-sm rounded-pill w-100 btn-remove-abono">
+                                                                <i class="fas fa-minus"></i> Quitar
                                                             </button>
                                                         </div>
                                                     </div>

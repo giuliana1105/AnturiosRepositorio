@@ -37,29 +37,25 @@ class HomeController extends Controller
                 ->orderBy('pb.fecha', 'desc')
                 ->get();
 
-            // Productos en bodega (stock actual)
-            $productosEnBodega = DB::table('productos_bodega')
+            // Productos en bodega (stock actual) - optimizado con JOIN
+            $productosEnBodega = DB::table('productos_bodega as pb')
+                ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
                 ->select(
-                    'producto_id',
-                    DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) as enviados'),
-                    DB::raw('SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as devueltos')
+                    'p.codigo',
+                    'p.nombre',
+                    'p.descripcion',
+                    DB::raw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) as cantidad')
                 )
-                ->where('bodega_id', $id)
-                ->groupBy('producto_id')
-                ->havingRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) > 0')
+                ->where('pb.bodega_id', $id)
+                ->groupBy('p.codigo', 'p.nombre', 'p.descripcion')
+                ->havingRaw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) > 0')
                 ->get()
-                ->map(function($row) {
-                    $producto = Producto::where('codigo', $row->producto_id)->first();
-                    return [
-                        'codigo'      => $producto->codigo ?? $row->producto_id,
-                        'nombre'      => $producto->nombre ?? 'Producto no encontrado',
-                        'descripcion' => $producto->descripcion ?? '',
-                        'cantidad'    => ($row->enviados - $row->devueltos),
-                    ];
-                })
-                ->filter(function($item) {
-                    return $item['cantidad'] > 0;
-                });
+                ->map(fn($row) => [
+                    'codigo'      => $row->codigo,
+                    'nombre'      => $row->nombre ?? 'Producto no encontrado',
+                    'descripcion' => $row->descripcion ?? '',
+                    'cantidad'    => (int) $row->cantidad,
+                ]);
 
             return view('home.bodega', [
                 'bodega' => $bodega,
@@ -114,29 +110,25 @@ class HomeController extends Controller
             ->orderBy('pb.fecha', 'desc')
             ->get();
 
-        // Productos en bodega (stock actual)
-        $productosEnBodega = DB::table('productos_bodega')
+        // Productos en bodega (stock actual) - optimizado con JOIN
+        $productosEnBodega = DB::table('productos_bodega as pb')
+            ->join('productos as p', 'pb.producto_id', '=', 'p.codigo')
             ->select(
-                'producto_id',
-                DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) as enviados'),
-                DB::raw('SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as devueltos')
+                'p.codigo',
+                'p.nombre',
+                'p.descripcion',
+                DB::raw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) as cantidad')
             )
-            ->where('bodega_id', $id)
-            ->groupBy('producto_id')
-            ->havingRaw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) - SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) > 0')
+            ->where('pb.bodega_id', $id)
+            ->groupBy('p.codigo', 'p.nombre', 'p.descripcion')
+            ->havingRaw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) > 0')
             ->get()
-            ->map(function($row) {
-                $producto = Producto::where('codigo', $row->producto_id)->first();
-                return [
-                    'codigo'      => $producto->codigo ?? $row->producto_id,
-                    'nombre'      => $producto->nombre ?? 'Producto no encontrado',
-                    'descripcion' => $producto->descripcion ?? '',
-                    'cantidad'    => ($row->enviados - $row->devueltos),
-                ];
-            })
-            ->filter(function($item) {
-                return $item['cantidad'] > 0;
-            });
+            ->map(fn($row) => [
+                'codigo'      => $row->codigo,
+                'nombre'      => $row->nombre ?? 'Producto no encontrado',
+                'descripcion' => $row->descripcion ?? '',
+                'cantidad'    => (int) $row->cantidad,
+            ]);
 
         return view('home.bodega', [
             'bodega' => $bodega,

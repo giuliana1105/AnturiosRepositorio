@@ -532,8 +532,10 @@
            ============================================ */
         .table-responsive {
             border-radius: var(--radius-md);
-            overflow: hidden;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
             border: 1px solid var(--border);
+            width: 100%;
         }
 
         .table {
@@ -1001,6 +1003,24 @@
                 margin-left: 0;
             }
 
+            .sidebar-backdrop {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+                opacity: 0;
+                transition: opacity var(--duration) var(--ease);
+            }
+
+            #wrapper.toggled .sidebar-backdrop {
+                display: block;
+                opacity: 1;
+            }
+
             .top-navbar {
                 display: flex;
             }
@@ -1049,6 +1069,9 @@
 @if (Auth::check() && !auth()->user()->must_change_password)
     <div id="wrapper">
         
+        <!-- Sidebar Backdrop for Mobile -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
         <!-- Sidebar -->
         <div id="sidebar-wrapper">
             
@@ -1254,6 +1277,10 @@
     document.getElementById("menu-toggle")?.addEventListener("click", function(e) {
         e.preventDefault();
         document.getElementById("wrapper").classList.toggle("toggled");
+    });
+
+    document.getElementById("sidebar-backdrop")?.addEventListener("click", function() {
+        document.getElementById("wrapper").classList.remove("toggled");
     });
 
     // Global Form Loading State

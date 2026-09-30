@@ -104,6 +104,24 @@ class KpiController extends Controller
         // -------------------------------------------------------------
         // KPI 2: PORCENTAJE DE DEVOLUCIONES SEMANALES
         // -------------------------------------------------------------
+        // Obtener datos de devoluciones semanales en una sola consulta (16 queries → 1)
+        $startRange = now()->subWeeks(7)->startOfWeek()->toDateString();
+        $endRange = now()->endOfWeek()->toDateString();
+
+        $movimientosQuery = DB::table('productos_bodega')
+            ->select(
+                'fecha',
+                DB::raw('SUM(CASE WHEN es_devolucion = false THEN cantidad ELSE 0 END) as envios'),
+                DB::raw('SUM(CASE WHEN es_devolucion = true THEN cantidad ELSE 0 END) as devoluciones')
+            )
+            ->whereBetween('fecha', [$startRange, $endRange]);
+
+        if ($bodegaId) {
+            $movimientosQuery->where('bodega_id', $bodegaId);
+        }
+
+        $todosMovimientos = $movimientosQuery->groupBy('fecha')->get();
+
         $semanasDevoluciones = [];
         $totalDevolucionesUltimoMes = 0;
         $totalMovimientosUltimoMes = 0;
@@ -112,21 +130,12 @@ class KpiController extends Controller
             $startOfWeek = now()->subWeeks($i)->startOfWeek();
             $endOfWeek = now()->subWeeks($i)->endOfWeek();
 
-            $enviosQuery = DB::table('productos_bodega')
-                ->whereBetween('fecha', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
-                ->where('es_devolucion', false);
+            $movSemana = $todosMovimientos->filter(function ($m) use ($startOfWeek, $endOfWeek) {
+                return $m->fecha >= $startOfWeek->toDateString() && $m->fecha <= $endOfWeek->toDateString();
+            });
 
-            $devolucionesQuery = DB::table('productos_bodega')
-                ->whereBetween('fecha', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
-                ->where('es_devolucion', true);
-
-            if ($bodegaId) {
-                $enviosQuery->where('bodega_id', $bodegaId);
-                $devolucionesQuery->where('bodega_id', $bodegaId);
-            }
-
-            $cantEnvios = (int) $enviosQuery->sum('cantidad');
-            $cantDevoluciones = (int) $devolucionesQuery->sum('cantidad');
+            $cantEnvios = (int) $movSemana->sum('envios');
+            $cantDevoluciones = (int) $movSemana->sum('devoluciones');
             $totalMovido = $cantEnvios + $cantDevoluciones;
 
             $porcentaje = $totalMovido > 0 
@@ -176,24 +185,42 @@ class KpiController extends Controller
             ? round(($totalRecaudado / $totalCreditoOtorgado) * 100, 2) 
             : 100.0;
 
-        // Tendencia mensual de recuperación de cartera (últimos 6 meses)
+        // Tendencia mensual de recuperación de cartera (12+ queries → 2)
+        $startCartera = now()->subMonths(5)->startOfMonth();
+        $endCartera = now()->endOfMonth();
+
+        $ventasCreditoRangoQuery = DB::table('ventas')
+            ->select('id', 'total_venta', 'fecha')
+            ->where('tipo_pago', 'Crédito')
+            ->whereBetween('fecha', [$startCartera->toDateTimeString(), $endCartera->toDateTimeString()]);
+        if ($bodegaId) {
+            $ventasCreditoRangoQuery->where('bodega_id', $bodegaId);
+        }
+        $ventasCreditoRango = $ventasCreditoRangoQuery->get();
+
+        $abonosPorVenta = collect();
+        if ($ventasCreditoRango->isNotEmpty()) {
+            $abonosPorVenta = DB::table('abonos')
+                ->select('venta_id', DB::raw('SUM(abono) as total_abono'))
+                ->whereIn('venta_id', $ventasCreditoRango->pluck('id'))
+                ->groupBy('venta_id')
+                ->pluck('total_abono', 'venta_id');
+        }
+
         $mesesCartera = [];
         for ($m = 5; $m >= 0; $m--) {
             $startMes = now()->subMonths($m)->startOfMonth();
             $endMes = now()->subMonths($m)->endOfMonth();
 
-            $vCreditoMesQuery = DB::table('ventas')
-                ->where('tipo_pago', 'Crédito')
-                ->whereBetween('fecha', [$startMes->toDateTimeString(), $endMes->toDateTimeString()]);
-            if ($bodegaId) {
-                $vCreditoMesQuery->where('bodega_id', $bodegaId);
-            }
-            $vIds = $vCreditoMesQuery->pluck('id')->toArray();
-            $creditoEmitidoMes = (float) $vCreditoMesQuery->sum('total_venta');
+            $ventasMes = $ventasCreditoRango->filter(function($v) use ($startMes, $endMes) {
+                $fecha = \Carbon\Carbon::parse($v->fecha);
+                return $fecha->between($startMes, $endMes);
+            });
 
-            $recaudadoMes = (float) DB::table('abonos')
-                ->whereIn('venta_id', $vIds)
-                ->sum('abono');
+            $creditoEmitidoMes = (float) $ventasMes->sum('total_venta');
+            $recaudadoMes = (float) $ventasMes->sum(function($v) use ($abonosPorVenta) {
+                return $abonosPorVenta->get($v->id, 0);
+            });
 
             $mesesCartera[] = [
                 'mes' => $startMes->translatedFormat('M Y') ?: $startMes->format('M Y'),

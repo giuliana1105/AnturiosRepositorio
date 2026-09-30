@@ -1168,7 +1168,7 @@
                 </div>
                 @endif
 
-                @if(auth()->user()->can('ver empleados') || auth()->user()->can('ver bodegas') || auth()->user()->can('ver usuarios') || auth()->user()->can('ver roles'))
+                @if(auth()->user()->can('ver empleados') || auth()->user()->can('ver bodegas') || auth()->user()->can('ver usuarios') || auth()->user()->can('ver roles') || auth()->user()->can('ver auditorias'))
                 <div class="nav-section-title">Configuración</div>
                 
                 <a href="#adminSubmenu" data-bs-toggle="collapse" class="sidebar-link" aria-expanded="false">
@@ -1196,6 +1196,11 @@
                         @can('ver roles')
                         <a href="{{ route('roles.index') }}" class="collapse-item">
                             <i class="fas fa-user-shield me-2"></i>Roles y Permisos
+                        </a>
+                        @endcan
+                        @can('ver auditorias')
+                        <a href="{{ route('auditorias.index') }}" class="collapse-item">
+                            <i class="fas fa-history me-2"></i>Auditorías
                         </a>
                         @endcan
                     </div>

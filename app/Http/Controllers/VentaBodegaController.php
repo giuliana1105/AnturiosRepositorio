@@ -151,6 +151,13 @@ class VentaBodegaController extends Controller
             }
         }
 
+        // Registrar en la auditoría
+        \App\Helpers\AuditoriaHelper::registrar(
+            'Ventas',
+            'Creación',
+            "Registró una nueva venta Nro. {$nroVenta} al cliente '{$request->cliente}' por un total de $" . number_format($request->total_venta, 2)
+        );
+
         // Redirige al index de ventas después de guardar
         return redirect()->route('venta.index.bodega', $bodega_id)->with('success', 'Venta registrada correctamente.');
     }

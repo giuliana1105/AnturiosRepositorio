@@ -836,6 +836,13 @@ public function store(Request $request)
 
         DB::commit();
         
+        // Registrar en la auditoría
+        \App\Helpers\AuditoriaHelper::registrar(
+            'Notas',
+            'Creación',
+            "Creó una nueva nota de pedido tipo '{$request->tiponota}' con código {$nuevoCodigo}"
+        );
+
         return redirect()->route('tipoNota.index')->with('success', 
             'Nota creada exitosamente. Recuerde confirmarla cuando esté lista para ser procesada.');
 

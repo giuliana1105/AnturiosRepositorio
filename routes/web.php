@@ -51,6 +51,9 @@ Route::middleware(['auth'])->group(function () {
     // 🔹 Ruta para el módulo de KPIs Financieros y Analítica
     Route::get('/kpis', [KpiController::class, 'index'])->name('kpis.index');
 
+    // 🔹 Ruta para el módulo de Auditorías
+    Route::get('/auditorias', [\App\Http\Controllers\AuditoriaController::class, 'index'])->name('auditorias.index');
+
     // 🔹 Ruta para la vista principal (home)
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 

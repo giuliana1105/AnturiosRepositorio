@@ -47,6 +47,11 @@ class UserController extends Controller
         $role = Role::findById($request->role);
         $user->syncRoles([$role]);
 
+        // Sincronizar el rol con el empleado (si existe) para mantener la coherencia
+        if ($user->empleado) {
+            \App\Models\Empleado::where('email', $user->email)->update(['codigocargo' => $role->id]);
+        }
+
         // Sincronizar permisos directos
         if ($request->has('direct_permissions')) {
             $permissionNames = Permission::whereIn('id', $request->direct_permissions)->pluck('name')->toArray();

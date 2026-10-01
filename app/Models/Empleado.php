@@ -46,20 +46,23 @@ class Empleado extends Model
     protected static function booted()
     {
         static::created(function ($empleado) {
-            // Solo crear si no existe usuario con ese email
-            if (!User::where('email', $empleado->email)->exists()) {
+            $user = User::where('email', $empleado->email)->first();
+            
+            // Si no existe usuario con ese email, lo creamos
+            if (!$user) {
                 $user = User::create([
                     'name' => $empleado->nombreemp . ' ' . $empleado->apellidoemp,
                     'email' => $empleado->email,
                     'username' => $empleado->email,
                     'password' => $empleado->nro_identificacion,
-                    'must_change_password' => true, // <--- importante
+                    'must_change_password' => true,
                 ]);
+            }
 
-                $role = \Spatie\Permission\Models\Role::find($empleado->codigocargo);
-                if ($role) {
-                    $user->assignRole($role);
-                }
+            // Siempre asignar el rol, ya sea que se creó el usuario o ya existía (ej. Seeder o importación con usuarios previos)
+            $role = \Spatie\Permission\Models\Role::find($empleado->codigocargo);
+            if ($role) {
+                $user->syncRoles([$role]);
             }
         });
 

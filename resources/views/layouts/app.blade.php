@@ -116,7 +116,7 @@
             margin: 0;
             padding: 0;
             height: 100vh;
-            overflow: hidden;
+            /* overflow: hidden; REMOVED to allow mobile scrolling */
             font-size: 14px;
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
@@ -130,6 +130,7 @@
             display: flex;
             height: 100vh;
             width: 100vw;
+            overflow: hidden; /* Added here instead of body */
         }
 
         /* ============================================
@@ -142,9 +143,10 @@
             color: var(--on-dark);
             display: flex;
             flex-direction: column;
-            transition: margin-left var(--duration) var(--ease);
-            z-index: 1000;
+            transition: transform var(--duration) var(--ease);
+            z-index: 1050;
             border-right: 1px solid rgba(255,255,255,0.04);
+            height: 100%;
         }
 
         /* Sidebar Header */
@@ -358,11 +360,17 @@
         }
 
         .top-navbar {
-            display: none;
+            display: flex;
             background: var(--bg-surface);
             padding: var(--space-3) var(--space-4);
             border-bottom: 1px solid var(--border);
             align-items: center;
+        }
+
+        @media (min-width: 992px) {
+            .top-navbar {
+                display: none;
+            }
         }
 
         .content-scrollable {
@@ -370,6 +378,7 @@
             overflow-y: auto;
             padding: var(--space-8);
             position: relative;
+            -webkit-overflow-scrolling: touch;
         }
 
         /* Subtle logo watermark */
@@ -992,10 +1001,10 @@
         /* ============================================
            RESPONSIVE
            ============================================ */
-        @media (max-width: 768px) {
+        @media (max-width: 991.98px) {
             #sidebar-wrapper {
                 margin-left: calc(var(--sidebar-width) * -1);
-                position: fixed;
+                position: absolute;
                 height: 100%;
             }
 

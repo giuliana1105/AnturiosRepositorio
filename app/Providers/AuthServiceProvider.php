@@ -47,9 +47,11 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        // El Administrador tiene acceso total sin restricciones
+        // Implicitly grant "Super Admin" role all permissions
+        // This works in the app by using gate-related functions like auth()->user->can() and @can()
         Gate::before(function ($user, $ability) {
-            if ($user->esAdministrador()) {
+            // Revisa directamente si el rol es "Administrador" (usar hasRole de Spatie)
+            if ($user->hasRole('Administrador')) {
                 return true;
             }
         });

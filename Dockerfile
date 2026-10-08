@@ -1,7 +1,7 @@
 # ============================
-# 1. Imagen base (PHP 8.3 + Composer)
+# 1. Imagen base (PHP 8.2 + Composer)
 # ============================
-FROM php:8.3-fpm
+FROM php:8.2-cli
 
 # Instalar dependencias del sistema y extensiones de PHP necesarias para Laravel
 RUN apt-get update && apt-get install -y \
@@ -26,25 +26,31 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # ============================
 # 2. Crear directorio de la app
 # ============================
-WORKDIR /var/www
+WORKDIR /var/www/html
 
-# Copiar archivos de Laravel
+# Copiar archivos de dependencias primero (mejor cache de Docker)
+COPY composer.json composer.lock ./
+RUN composer install --optimize-autoloader --no-dev --no-interaction --prefer-dist --no-scripts
+
+# Copiar archivos de Node
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Copiar el resto de los archivos de Laravel
 COPY . .
 
+# Ejecutar scripts de composer post-install
+RUN composer run-script post-autoload-dump || true
+
+# Build de assets con Vite
+RUN npm run build
+
 # Asignar permisos correctos
-RUN chown -R www-data:www-data /var/www && \
-    chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+RUN chmod -R 775 storage bootstrap/cache
 
-# Instalar dependencias de PHP con Composer
-RUN composer install --optimize-autoloader --no-dev --no-interaction --prefer-dist
-
-# Generar key de la app si no existe
-RUN php artisan key:generate || true
-
-# Limpiar y generar cache de Laravel (evita fallos si algunos caches no existen)
+# Limpiar cache y optimizar para producción
 RUN php artisan config:clear || true && \
     php artisan cache:clear || true && \
-    php artisan config:cache || true && \
     php artisan route:cache || true && \
     php artisan view:cache || true
 

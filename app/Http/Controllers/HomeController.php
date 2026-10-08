@@ -15,6 +15,11 @@ class HomeController extends Controller
     {
         $user = auth()->user();
 
+        // Evitar el error 500: Call to a member function can() on null
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
         if (!$user->can('ver dashboard general') && $user->empleado && $user->empleado->bodega) {
             $bodega = $user->empleado->bodega;
             $id = $bodega->idbodega;

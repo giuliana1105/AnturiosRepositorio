@@ -52,6 +52,7 @@
                 <table class="table align-middle">
                     <thead>
                         <tr>
+                            <th style="width: 60px;" class="text-center">Foto</th>
                             <th>Código</th>
                             <th>Nombre</th>
                             <th>Descripción</th>
@@ -65,6 +66,15 @@
                     <tbody>
                         @forelse($productos as $producto)
                             <tr>
+                                <td class="text-center">
+                                    @if($producto->imagen)
+                                        <img src="{{ $producto->imagen }}" alt="Foto de {{ $producto->nombre }}" class="rounded-circle object-fit-cover shadow-sm border border-2 border-white" style="width: 45px; height: 45px;">
+                                    @else
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-muted mx-auto shadow-sm border border-2 border-white" style="width: 45px; height: 45px;">
+                                            <i class="fas fa-leaf opacity-50"></i>
+                                        </div>
+                                    @endif
+                                </td>
                                 <td><span class="font-mono">{{ $producto->codigo }}</span></td>
                                 <td class="fw-medium">{{ $producto->nombre }}</td>
                                 <td style="color: var(--muted); max-width: 250px;">{{ Str::limit($producto->descripcion, 60) }}</td>
@@ -98,7 +108,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-4" style="color: var(--muted);">
+                                <td colspan="7" class="text-center py-4" style="color: var(--muted);">
                                     <i class="fas fa-inbox d-block mb-2" style="font-size: 24px; opacity: 0.4;"></i>
                                     No se encontraron productos
                                 </td>

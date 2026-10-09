@@ -54,9 +54,9 @@
                                 <td><span class="font-mono fw-medium">{{ $empleado->nro_identificacion }}</span></td>
                                 <td class="fw-medium">{{ $empleado->nombreemp }}</td>
                                 <td>{{ $empleado->apellidoemp }}</td>
-                                <td style="max-width: 200px;">
+                                <td class="text-nowrap">
                                     <div class="d-flex align-items-center gap-2">
-                                        <span id="email-{{ $empleado->nro_identificacion }}" class="text-break" style="color: var(--secondary);">{{ $empleado->email }}</span>
+                                        <span id="email-{{ $empleado->nro_identificacion }}" style="color: var(--secondary);">{{ $empleado->email }}</span>
                                         <button class="btn btn-sm btn-outline-secondary btn-icon flex-shrink-0"
                                                 onclick="copyToClipboard('{{ $empleado->nro_identificacion }}')" 
                                                 title="Copiar email" style="width: 28px; height: 28px; min-width: 28px;">

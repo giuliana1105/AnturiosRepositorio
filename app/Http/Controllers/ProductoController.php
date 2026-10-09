@@ -62,21 +62,31 @@ class ProductoController extends Controller
             ],
             'descripcion' => 'required|string',
             'cantidad' => 'required|integer',
+            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             // Elimina la validación de tipoempaque
         ]);
 
         $validatedData['tipoempaque'] = 'Unidad'; // Siempre "Unidad"
+        
+        $imagenUrl = null;
+        if ($request->hasFile('imagen')) {
+            $resultado = cloudinary()->uploadApi()->upload($request->file('imagen')->getRealPath(), [
+                'folder' => 'productos_anturios'
+            ]);
+            $imagenUrl = $resultado['secure_url'];
+        }
 
         try {
             DB::insert("
-                INSERT INTO productos (codigo, nombre, descripcion, cantidad, tipoempaque, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, NOW(), NOW())
+                INSERT INTO productos (codigo, nombre, descripcion, cantidad, tipoempaque, imagen, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
             ", [
                 $validatedData['codigo'],
                 $validatedData['nombre'],
                 $validatedData['descripcion'],
                 $validatedData['cantidad'],
-                $validatedData['tipoempaque']
+                $validatedData['tipoempaque'],
+                $imagenUrl
             ]);
 
             return redirect()->route('productos.index')->with('success', 'Producto creado correctamente.');

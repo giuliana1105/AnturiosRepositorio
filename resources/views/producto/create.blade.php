@@ -45,7 +45,7 @@
                 
                 <!-- Ingreso Manual -->
                 <div class="tab-pane fade show active" id="manual" role="tabpanel">
-                    <form id="manualForm" action="{{ route('productos.store') }}" method="POST">
+                    <form id="manualForm" action="{{ route('productos.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="row g-4">
                             <div class="col-md-6">
@@ -70,6 +70,13 @@
                                 <label for="descripcion" class="form-label">Descripción Detallada</label>
                                 <textarea name="descripcion" id="descripcion" class="form-control @error('descripcion') is-invalid @enderror" required rows="3" placeholder="Características del producto...">{{ old('descripcion') }}</textarea>
                                 @error('descripcion') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+
+                            <div class="col-12">
+                                <label for="imagen" class="form-label">Imagen del Producto (Opcional)</label>
+                                <input type="file" name="imagen" id="imagen" class="form-control @error('imagen') is-invalid @enderror" accept="image/*">
+                                <div class="form-text">Formatos permitidos: JPG, PNG, WEBP. Tamaño máximo: 2MB.</div>
+                                @error('imagen') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
 

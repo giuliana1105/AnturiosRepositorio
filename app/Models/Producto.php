@@ -19,7 +19,8 @@ class Producto extends Model
         'nombre',
         'descripcion',
         'cantidad',
-        'tipoempaque'
+        'tipoempaque',
+        'imagen'
     ];
 
     public function bodegas()

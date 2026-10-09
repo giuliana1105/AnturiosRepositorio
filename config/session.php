@@ -6,9 +6,9 @@ return [
 
     'driver' => env('SESSION_DRIVER', 'database'),
 
-    'lifetime' => env('SESSION_LIFETIME', 15), // Tiempo de expiración: 15 minutos
+    'lifetime' => env('SESSION_LIFETIME', 120), // Tiempo de expiración: 120 minutos
 
-    'expire_on_close' => true, // Cerrar sesión al cerrar el navegador
+    'expire_on_close' => false, // NO cerrar sesión al cerrar el navegador (causa 419 en móviles)
 
     'encrypt' => env('SESSION_ENCRYPT', false),
 

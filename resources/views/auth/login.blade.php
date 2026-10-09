@@ -2009,6 +2009,16 @@
             </div>
 
             <div class="modal-body">
+                {{-- Session Expired Message --}}
+                @if (session('error'))
+                    <div class="alert-error">
+                        <i class="fas fa-clock"></i>
+                        <ul>
+                            <li>{{ session('error') }}</li>
+                        </ul>
+                    </div>
+                @endif
+
                 {{-- Error Messages --}}
                 @if ($errors->any())
                     <div class="alert-error">
@@ -2098,8 +2108,8 @@
                 intro.style.display = 'none';
             }, 2800);
 
-            // If there are validation errors, open modal automatically
-            @if ($errors->any())
+            // If there are validation errors or session expired, open modal automatically
+            @if ($errors->any() || session('error'))
                 setTimeout(function() {
                     openLoginModal();
                 }, 2200);

@@ -4,30 +4,160 @@
     <meta charset="utf-8">
     <title>Reporte de Ventas</title>
     <style>
-        @page { size: A4 landscape; }
-        body { font-family: sans-serif; color: #222; }
-        .venta-box { border: 1px solid #ccc; padding: 16px; margin-bottom: 24px; }
-        .venta-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
-        th, td { border: 1px solid #ccc; padding: 4px; }
-        th { background: #f5f5f5; }
-        .venta-total { text-align: right; font-size: 1.1em; }
+        @page { size: A4 landscape; margin: 15mm; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff;
+            margin: 0;
+            padding: 0;
+            color: #3C3C3C;
+            font-size: 12px;
+        }
+        .header-table {
+            width: 100%;
+            border-bottom: 3px solid #dc94ca;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .logo-cell {
+            width: 40%;
+            vertical-align: middle;
+        }
+        .logo {
+            width: 200px;
+            height: auto;
+        }
+        .title-cell {
+            width: 60%;
+            text-align: right;
+            vertical-align: middle;
+        }
+        .doc-title {
+            font-size: 26px;
+            font-weight: bold;
+            color: #dc94ca;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .doc-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-top: 5px;
+        }
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table.data-table th, table.data-table td {
+            padding: 8px 10px;
+            text-align: left;
+            border: 1px solid #e2e8f0;
+        }
+        table.data-table th {
+            background: #fdf0f5;
+            color: #880e4f;
+            font-weight: bold;
+            border-bottom: 2px solid #dc94ca;
+        }
+        table.data-table tr:nth-child(even) td {
+            background: #fafafa;
+        }
+        .venta-box { 
+            border: 1px solid #e2e8f0; 
+            margin-bottom: 30px; 
+            border-radius: 8px;
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+        .venta-header { 
+            background: #fdf0f5;
+            padding: 12px 16px;
+            border-bottom: 2px solid #dc94ca;
+        }
+        .venta-header-table {
+            width: 100%;
+            border: none;
+        }
+        .venta-header-table td {
+            border: none;
+            padding: 0;
+        }
+        .venta-total { 
+            text-align: right; 
+            font-size: 1.1em; 
+            padding: 10px 16px;
+            background: #fafafa;
+            border-top: 1px solid #e2e8f0;
+            color: #880e4f;
+        }
+        .totals-box {
+            background: #fdf0f5;
+            border: 2px solid #dc94ca;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            width: 350px;
+            float: right;
+            page-break-inside: avoid;
+        }
+        h3.section-title {
+            color: #dc94ca;
+            font-size: 16px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #fdf0f5;
+            padding-bottom: 5px;
+        }
+        .footer {
+            clear: both;
+            margin-top: 40px;
+            text-align: center;
+            color: #999;
+            font-size: 11px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
     </style>
 </head>
 <body>
+    <table class="header-table">
+        <tr>
+            <td class="logo-cell">
+                <img src="{{ public_path('images/logo-empresa.png') }}" class="logo" alt="Logo Anturios">
+            </td>
+            <td class="title-cell">
+                <h1 class="doc-title">Reporte de Ventas</h1>
+                <div class="doc-subtitle">
+                    @if(request('dia'))
+                        Diario - {{ \Carbon\Carbon::parse(request('dia'))->format('d/m/Y') }}
+                    @elseif(request('fecha_inicio') && request('fecha_fin'))
+                        Periodo: {{ \Carbon\Carbon::parse(request('fecha_inicio'))->format('d/m/Y') }} al {{ \Carbon\Carbon::parse(request('fecha_fin'))->format('d/m/Y') }}
+                    @elseif(request('tipo_pago'))
+                        Filtro: {{ ucwords(str_replace('_', ' ', request('tipo_pago'))) }}
+                    @elseif(request('ciudad'))
+                        Filtro: {{ request('ciudad') }}
+                    @else
+                        Documento Oficial
+                    @endif
+                </div>
+            </td>
+        </tr>
+    </table>
+
 @if(request('dia'))
-    <h3 style="text-align:center; margin-bottom:20px;">
-        Reporte diario - {{ \Carbon\Carbon::parse(request('dia'))->format('d/m/Y') }}
+    <h3 class="section-title">
+        Desglose de Operaciones - {{ \Carbon\Carbon::parse(request('dia'))->format('d/m/Y') }}
     </h3>
-    <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
+    <table class="data-table">
         <thead>
-            <tr style="background:#f5f5f5;">
-                <th style="border:1px solid #ccc; padding:4px;">Nro. Fac</th>
-                <th style="border:1px solid #ccc; padding:4px;">Cliente</th>
-                <th style="border:1px solid #ccc; padding:4px;">Total venta</th>
-                <th style="border:1px solid #ccc; padding:4px;">Forma de pago</th>
-                <th style="border:1px solid #ccc; padding:4px;">Abono</th>
-                <th style="border:1px solid #ccc; padding:4px;">Forma de pago/abonos</th>
+            <tr>
+                <th>Nro. Fac</th>
+                <th>Cliente</th>
+                <th>Total venta</th>
+                <th>Forma de pago</th>
+                <th>Abono</th>
+                <th>Forma de pago/abonos</th>
             </tr>
         </thead>
         <tbody>
@@ -53,18 +183,18 @@
 
             {{-- Fila principal de la venta --}}
             <tr>
-                <td style="border:1px solid #ccc; padding:4px;">{{ $venta->nro_venta }}</td>
-                <td style="border:1px solid #ccc; padding:4px;">{{ $venta->cliente }}</td>
-                <td style="border:1px solid #ccc; padding:4px;">${{ number_format($venta->total_venta, 2) }}</td>
-                <td style="border:1px solid #ccc; padding:4px;">{{ $venta->tipo_pago }}</td>
-                <td style="border:1px solid #ccc; padding:4px;">
+                <td>{{ $venta->nro_venta }}</td>
+                <td>{{ $venta->cliente }}</td>
+                <td>${{ number_format($venta->total_venta, 2) }}</td>
+                <td>{{ $venta->tipo_pago }}</td>
+                <td>
                     @if($venta->tipo_pago === 'Crédito' && $abonosCount > 0)
                         ${{ number_format($abonosDia[0]->abono, 2) }}
                     @else
                         -
                     @endif
                 </td>
-                <td style="border:1px solid #ccc; padding:4px;">
+                <td>
                     @if($venta->tipo_pago === 'Crédito' && $abonosCount > 0)
                         {{ $abonosDia[0]->tipo_pago }}
                     @else
@@ -76,12 +206,12 @@
             @if($venta->tipo_pago === 'Crédito' && $abonosCount > 1)
                 @for($i = 1; $i < $abonosCount; $i++)
                     <tr>
-                        <td style="border:1px solid #ccc; padding:4px;">{{ $venta->nro_venta }}</td>
-                        <td style="border:1px solid #ccc; padding:4px;">{{ $venta->cliente }}</td>
-                        <td style="border:1px solid #ccc; padding:4px;">-</td>
-                        <td style="border:1px solid #ccc; padding:4px;">-</td>
-                        <td style="border:1px solid #ccc; padding:4px;">${{ number_format($abonosDia[$i]->abono, 2) }}</td>
-                        <td style="border:1px solid #ccc; padding:4px;">{{ $abonosDia[$i]->tipo_pago }}</td>
+                        <td>{{ $venta->nro_venta }}</td>
+                        <td>{{ $venta->cliente }}</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>${{ number_format($abonosDia[$i]->abono, 2) }}</td>
+                        <td>{{ $abonosDia[$i]->tipo_pago }}</td>
                     </tr>
                 @endfor
             @endif
@@ -110,12 +240,15 @@
         </tbody>
     </table>
 
-    <div style="margin-top: 30px;">
-        <span style="font-weight:bold; text-decoration: underline;">Total entregar:</span><br><br>
-        EFECTIVO: ${{ number_format($totalEfectivo, 2) }}<br>
-        TRANSFERENCIA: ${{ number_format($totalTransferencia, 2) }}<br>
-        CHEQUE: ${{ number_format($totalCheque, 2) }}
+    <div class="totals-box">
+        <h3 class="section-title" style="margin-top:0;">Total Entregar:</h3>
+        <table style="width: 100%; border: none;">
+            <tr><td style="border:none; padding:4px 0;"><strong>Efectivo:</strong></td><td style="border:none; padding:4px 0; text-align:right;">${{ number_format($totalEfectivo, 2) }}</td></tr>
+            <tr><td style="border:none; padding:4px 0;"><strong>Transferencia:</strong></td><td style="border:none; padding:4px 0; text-align:right;">${{ number_format($totalTransferencia, 2) }}</td></tr>
+            <tr><td style="border:none; padding:4px 0;"><strong>Cheque:</strong></td><td style="border:none; padding:4px 0; text-align:right;">${{ number_format($totalCheque, 2) }}</td></tr>
+        </table>
     </div>
+    <div style="clear: both;"></div>
 
 @elseif(request('fecha_inicio') && request('fecha_fin'))
     @php
@@ -137,18 +270,18 @@
         @endphp
 
         @if($ventasDia->count())
-            <h3 style="text-align:center; margin-bottom:20px;">
-                Reporte diario - {{ $fecha->format('d/m/Y') }}
+            <h3 class="section-title">
+                Desglose de Operaciones - {{ $fecha->format('d/m/Y') }}
             </h3>
-            <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
+            <table class="data-table">
                 <thead>
-                    <tr style="background:#f5f5f5;">
-                        <th style="border:1px solid #ccc; padding:4px;">Nro. Fac</th>
-                        <th style="border:1px solid #ccc; padding:4px;">Cliente</th>
-                        <th style="border:1px solid #ccc; padding:4px;">Total venta</th>
-                        <th style="border:1px solid #ccc; padding:4px;">Forma de pago</th>
-                        <th style="border:1px solid #ccc; padding:4px;">Abono</th>
-                        <th style="border:1px solid #ccc; padding:4px;">Forma de pago/abonos</th>
+                    <tr>
+                        <th>Nro. Fac</th>
+                        <th>Cliente</th>
+                        <th>Total venta</th>
+                        <th>Forma de pago</th>
+                        <th>Abono</th>
+                        <th>Forma de pago/abonos</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -166,18 +299,18 @@
                     @endphp
 
                     <tr>
-                        <td style="border:1px solid #ccc; padding:4px;">{{ $venta->nro_venta }}</td>
-                        <td style="border:1px solid #ccc; padding:4px;">{{ $venta->cliente }}</td>
-                        <td style="border:1px solid #ccc; padding:4px;">${{ number_format($venta->total_venta, 2) }}</td>
-                        <td style="border:1px solid #ccc; padding:4px;">{{ $venta->tipo_pago }}</td>
-                        <td style="border:1px solid #ccc; padding:4px;">
+                        <td>{{ $venta->nro_venta }}</td>
+                        <td>{{ $venta->cliente }}</td>
+                        <td>${{ number_format($venta->total_venta, 2) }}</td>
+                        <td>{{ $venta->tipo_pago }}</td>
+                        <td>
                             @if($venta->tipo_pago === 'Crédito' && $abonosCount > 0)
                                 ${{ number_format($abonosDia[0]->abono, 2) }}
                             @else
                                 -
                             @endif
                         </td>
-                        <td style="border:1px solid #ccc; padding:4px;">
+                        <td>
                             @if($venta->tipo_pago === 'Crédito' && $abonosCount > 0)
                                 {{ $abonosDia[0]->tipo_pago }}
                             @else
@@ -188,12 +321,12 @@
                     @if($venta->tipo_pago === 'Crédito' && $abonosCount > 1)
                         @for($i = 1; $i < $abonosCount; $i++)
                             <tr>
-                                <td style="border:1px solid #ccc; padding:4px;">{{ $venta->nro_venta }}</td>
-                                <td style="border:1px solid #ccc; padding:4px;">{{ $venta->cliente }}</td>
-                                <td style="border:1px solid #ccc; padding:4px;">-</td>
-                                <td style="border:1px solid #ccc; padding:4px;">-</td>
-                                <td style="border:1px solid #ccc; padding:4px;">${{ number_format($abonosDia[$i]->abono, 2) }}</td>
-                                <td style="border:1px solid #ccc; padding:4px;">{{ $abonosDia[$i]->tipo_pago }}</td>
+                                <td>{{ $venta->nro_venta }}</td>
+                                <td>{{ $venta->cliente }}</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>${{ number_format($abonosDia[$i]->abono, 2) }}</td>
+                                <td>{{ $abonosDia[$i]->tipo_pago }}</td>
                             </tr>
                         @endfor
                     @endif
@@ -219,12 +352,15 @@
                 @endforeach
                 </tbody>
             </table>
-            <div style="margin-bottom: 30px;">
-                <span style="font-weight:bold; text-decoration: underline;">Total entregar del día:</span><br><br>
-                EFECTIVO: ${{ number_format($efectivoDia, 2) }}<br>
-                TRANSFERENCIA: ${{ number_format($transferenciaDia, 2) }}<br>
-                CHEQUE: ${{ number_format($chequeDia, 2) }}
+            <div class="totals-box">
+                <h3 class="section-title" style="margin-top:0;">Total Entregar del Día:</h3>
+                <table style="width: 100%; border: none;">
+                    <tr><td style="border:none; padding:4px 0;"><strong>Efectivo:</strong></td><td style="border:none; padding:4px 0; text-align:right;">${{ number_format($efectivoDia, 2) }}</td></tr>
+                    <tr><td style="border:none; padding:4px 0;"><strong>Transferencia:</strong></td><td style="border:none; padding:4px 0; text-align:right;">${{ number_format($transferenciaDia, 2) }}</td></tr>
+                    <tr><td style="border:none; padding:4px 0;"><strong>Cheque:</strong></td><td style="border:none; padding:4px 0; text-align:right;">${{ number_format($chequeDia, 2) }}</td></tr>
+                </table>
             </div>
+            <div style="clear: both; margin-bottom: 30px;"></div>
             @php
                 $totalEfectivo += $efectivoDia;
                 $totalTransferencia += $transferenciaDia;
@@ -243,29 +379,27 @@
     </div>
 
 @else
-    <h3 style="text-align:center; margin-bottom:20px;">
-        @if(request('tipo_pago'))
-            Reporte - {{ ucwords(str_replace('_', ' ', request('tipo_pago'))) }}
-        @elseif(request('ciudad'))
-            Reporte - {{ request('ciudad') }}
-        @else
-            Reporte de Ventas
-        @endif
+    <h3 class="section-title">
+        Detalle de Registros
     </h3>
 
     @foreach($ventas as $venta)
         <div class="venta-box">
             <div class="venta-header">
-                <div>
-                    <strong>Cliente:</strong> {{ $venta->cliente }}<br>
-                    <strong>Ciudad:</strong> {{ $venta->ciudad }}
-                </div>
-                <div>
-                    <strong>Forma de pago:</strong> {{ $venta->tipo_pago }}<br>
-                    <strong>Fecha:</strong> {{ \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') }}
-                </div>
+                <table class="venta-header-table">
+                    <tr>
+                        <td width="60%">
+                            <span class="info-label">Cliente:</span> {{ $venta->cliente }}<br>
+                            <span class="info-label">Ciudad:</span> {{ $venta->ciudad }}
+                        </td>
+                        <td width="40%" style="text-align: right;">
+                            <span class="info-label">Forma de pago:</span> {{ $venta->tipo_pago }}<br>
+                            <span class="info-label">Fecha:</span> {{ \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') }}
+                        </td>
+                    </tr>
+                </table>
             </div>
-            <table>
+            <table class="data-table" style="margin-bottom: 0;">
                 <thead>
                     <tr>
                         <th>Cantidad</th>
@@ -287,9 +421,9 @@
                 @endforeach
                 </tbody>
             </table>
-            <div class="venta-total">
-                <strong>Total venta:</strong> ${{ number_format($venta->total_venta, 2) }}
-            </div>
+                <div class="venta-total" style="margin-top: 10px;">
+                    <strong>Total venta:</strong> ${{ number_format($venta->total_venta, 2) }}
+                </div>
             @if($venta->tipo_pago === 'Crédito')
                 @php
                     $saldo = $venta->total_venta;
@@ -304,9 +438,9 @@
                 </div>
             @endif
             @if($venta->tipo_pago === 'Crédito' && isset($venta->abonos) && count($venta->abonos) > 0)
-                <div style="margin-top: 10px;">
-                    <strong>Abonos</strong>
-                    <table>
+                <div style="padding: 10px 16px;">
+                    <h3 class="section-title" style="margin-top:0; font-size: 14px; border:none;">Historial de Abonos</h3>
+                    <table class="data-table" style="margin-bottom:0; width: 60%;">
                         <thead>
                             <tr>
                                 <th>Abono</th>
@@ -329,5 +463,11 @@
         </div>
     @endforeach
 @endif
+
+    <div class="footer">
+        Generado por el Sistema Importadora Anturios el {{ \Carbon\Carbon::now()->format('d/m/Y H:i') }}<br>
+        Documento de uso interno y confidencial.
+    </div>
+
 </body>
 </html>

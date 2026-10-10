@@ -5,150 +5,175 @@
     <title>Nota PDF - {{ $nota->codigo }}</title>
     <style>
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #f8f9fa;
+            font-family: Arial, sans-serif;
+            background: #fff;
             margin: 0;
-            padding: 0;
+            padding: 20px 40px;
+            color: #3C3C3C;
         }
-        .container {
-            width: 95%;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-            padding: 32px 24px;
-        }
-        .title {
-            text-align: center;
-            font-size: 2rem;
-            font-weight: bold;
-            color: #0097a7;
-            margin-bottom: 18px;
-            letter-spacing: 1px;
-        }
-        .info-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            margin-bottom: 18px;
-        }
-        .info-box {
-            flex: 1 1 220px;
-            background: #e0f7fa;
-            border-radius: 8px;
-            padding: 12px 18px;
-            margin-bottom: 8px;
-            font-size: 1rem;
-            color: #00796b;
-        }
-        .label {
-            font-weight: bold;
-            color: #333;
-        }
-        .estado {
-            font-weight: bold;
-            color: #fff;
-            padding: 5px 18px;
-            border-radius: 20px;
-            font-size: 1rem;
-            display: inline-block;
-        }
-        .pendiente { background-color: #ff9800; }
-        .finalizada { background-color: #43a047; }
-        .sin-confirmar { background-color: #607d8b; }
-        h3 {
-            color: #0097a7;
-            font-size: 1.2rem;
-            margin-top: 24px;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-        table {
+        .header-table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin-top: 8px;
-            background: #fff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border-bottom: 3px solid #dc94ca;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
         }
-        th, td {
-            padding: 10px 8px;
-            text-align: left;
-            font-size: 0.98rem;
+        .logo-cell {
+            width: 40%;
+            vertical-align: middle;
         }
-        th {
-            background: #0097a7;
+        .logo {
+            width: 200px;
+            height: auto;
+        }
+        .title-cell {
+            width: 60%;
+            text-align: right;
+            vertical-align: middle;
+        }
+        .doc-title {
+            font-size: 26px;
+            font-weight: bold;
+            color: #dc94ca;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .doc-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .info-grid {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .info-grid td {
+            padding: 8px 0;
+            vertical-align: top;
+            font-size: 14px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #3C3C3C;
+            width: 120px;
+        }
+        .info-value {
+            color: #555;
+        }
+        .estado-badge {
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
             color: #fff;
-            font-weight: 600;
-            border-bottom: 2px solid #00796b;
+            text-transform: uppercase;
         }
-        tr:nth-child(even) td {
-            background: #e0f7fa;
+        .pendiente { background-color: #f59e0b; }
+        .finalizada { background-color: #10b981; }
+        .sin-confirmar { background-color: #6b7280; }
+        
+        h3 {
+            color: #dc94ca;
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
         }
-        tr:last-child td {
-            border-bottom: none;
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .products-table th, .products-table td {
+            padding: 10px;
+            text-align: left;
+            font-size: 13px;
+            border: 1px solid #ddd;
+        }
+        .products-table th {
+            background: #fdf0f5;
+            color: #880e4f;
+            font-weight: bold;
         }
         .footer {
-            margin-top: 32px;
+            margin-top: 40px;
             text-align: center;
-            color: #888;
-            font-size: 0.95rem;
+            color: #999;
+            font-size: 11px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="title">Nota: {{ $nota->codigo }}</div>
-    <div class="info-row">
-        <div class="info-box">
-            <span class="label">Tipo:</span> {{ $nota->tiponota }}
-        </div>
-        <div class="info-box">
-            <span class="label">Solicitante:</span>
-            {{ $nota->responsableEmpleado->nombreemp ?? 'N/A' }}
-            {{ $nota->responsableEmpleado->apellidoemp ?? '' }}
-        </div>
-        <div class="info-box">
-            <span class="label">Bodega:</span> {{ $nota->bodega->nombrebodega ?? 'N/A' }}
-        </div>
-        <div class="info-box">
-            <span class="label">Fecha:</span> {{ $nota->fechanota }}
-        </div>
-        <div class="info-box">
-            <span class="label">Estado:</span>
-            <span class="estado
-                {{ ($nota->transaccion->estado ?? '') == 'PENDIENTE' ? 'pendiente' : 
-                   (($nota->transaccion->estado ?? '') == 'FINALIZADA' ? 'finalizada' : 'sin-confirmar') }}">
-                {{ $nota->transaccion->estado ?? 'Sin Confirmar' }}
-            </span>
-        </div>
-    </div>
-    <h3>Productos</h3>
-    <table>
-        <thead>
+
+    <table class="header-table">
         <tr>
-            <th>Código</th>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Tipo de Empaque</th>
+            <td class="logo-cell">
+                <img src="{{ public_path('images/logo-empresa.png') }}" class="logo" alt="Logo Anturios">
+            </td>
+            <td class="title-cell">
+                <h1 class="doc-title">Nota de Pedido</h1>
+                <div class="doc-subtitle">Documento Oficial N° {{ $nota->codigo }}</div>
+            </td>
         </tr>
+    </table>
+
+    <table class="info-grid">
+        <tr>
+            <td class="info-label">Tipo de Nota:</td>
+            <td class="info-value" style="width: 35%;">{{ $nota->tiponota }}</td>
+            <td class="info-label">Fecha Emisión:</td>
+            <td class="info-value">{{ $nota->fechanota }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">Solicitante:</td>
+            <td class="info-value">
+                {{ $nota->responsableEmpleado->nombreemp ?? 'N/A' }} 
+                {{ $nota->responsableEmpleado->apellidoemp ?? '' }}
+            </td>
+            <td class="info-label">Estado:</td>
+            <td class="info-value">
+                <span class="estado-badge 
+                    {{ ($nota->transaccion->estado ?? '') == 'PENDIENTE' ? 'pendiente' : 
+                       (($nota->transaccion->estado ?? '') == 'FINALIZADA' ? 'finalizada' : 'sin-confirmar') }}">
+                    {{ $nota->transaccion->estado ?? 'Sin Confirmar' }}
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <td class="info-label">Bodega Origen:</td>
+            <td class="info-value" colspan="3">{{ $nota->bodega->nombrebodega ?? 'N/A' }}</td>
+        </tr>
+    </table>
+
+    <h3>Detalle de Productos</h3>
+    <table class="products-table">
+        <thead>
+            <tr>
+                <th width="15%">Código</th>
+                <th width="50%">Descripción del Producto</th>
+                <th width="15%">Cantidad</th>
+                <th width="20%">Empaque</th>
+            </tr>
         </thead>
         <tbody>
-        @foreach ($nota->detalles as $detalle)
-            <tr>
-                <td>{{ $detalle->producto->codigo ?? 'N/A' }}</td>
-                <td>{{ $detalle->producto->nombre ?? 'N/A' }}</td>
-                <td>{{ $detalle->cantidad }}</td>
-                <td>{{ $detalle->producto->tipoempaque ?? 'Sin Empaque' }}</td>
-            </tr>
-        @endforeach
+            @foreach ($nota->detalles as $detalle)
+                <tr>
+                    <td>{{ $detalle->producto->codigo ?? 'N/A' }}</td>
+                    <td>{{ $detalle->producto->nombre ?? 'N/A' }}</td>
+                    <td>{{ $detalle->cantidad }}</td>
+                    <td>{{ $detalle->producto->tipoempaque ?? 'Unidad' }}</td>
+                </tr>
+            @endforeach
         </tbody>
     </table>
+
     <div class="footer">
-        Generado por {{ config('app.name') }} el {{ \Carbon\Carbon::now()->format('d/m/Y H:i') }}
+        Generado por el Sistema Importadora Anturios el {{ \Carbon\Carbon::now()->format('d/m/Y H:i') }}<br>
+        Documento de uso interno y confidencial.
     </div>
-</div>
+
 </body>
 </html>

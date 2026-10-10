@@ -327,8 +327,20 @@
 
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(1, 1fr);
             gap: 28px;
+        }
+
+        @media (min-width: 768px) {
+            .products-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .products-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
 
         .product-card {
@@ -853,9 +865,14 @@
             <div class="products-grid">
                 @foreach($productos as $producto)
                     <div class="product-card">
-                        <div class="product-img-box" style="background: {{ $producto->meta_bg }}; color: {{ $producto->meta_color }};">
-                            <i class="fas {{ $producto->meta_icono }}"></i>
-                            <span class="badge-category">{{ $producto->meta_categoria }}</span>
+                        <div class="product-img-box" style="background: {{ $producto->meta_bg }}; color: {{ $producto->meta_color }}; position: relative;">
+                            @if($producto->imagen)
+                                <img src="{{ $producto->imagen }}" alt="{{ $producto->nombre }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 20px 20px 0 0; position: absolute; top: 0; left: 0;">
+                                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.1); border-radius: 20px 20px 0 0;"></div>
+                            @else
+                                <i class="fas {{ $producto->meta_icono }}" style="z-index: 2; position: relative;"></i>
+                            @endif
+                            <span class="badge-category" style="z-index: 2; position: relative;">{{ $producto->meta_categoria }}</span>
                         </div>
                         <div class="product-body">
                             <span class="product-code"># {{ $producto->codigo }}</span>

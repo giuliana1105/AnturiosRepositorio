@@ -79,22 +79,18 @@
                                         </a>
                                         @endcan
                                         @can('eliminar empleado')
-                                        <form action="{{ route('empleados.destroy', $empleado->nro_identificacion) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('empleados.destroy', $empleado->nro_identificacion) }}" method="POST" class="d-inline form-delete">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm btn-icon" 
-                                                    onclick="return confirm('¿Está seguro de eliminar este empleado?')"
-                                                    title="Eliminar">
+                                            <button type="button" class="btn btn-danger btn-sm btn-icon btn-delete" title="Eliminar">
                                                 <i class="fas fa-trash" style="font-size: 12px;"></i>
                                             </button>
                                         </form>
                                         @endcan
                                         @can('editar empleado')
-                                        <form action="{{ route('empleados.reset_password', $empleado->nro_identificacion) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('empleados.reset_password', $empleado->nro_identificacion) }}" method="POST" class="d-inline form-reset">
                                             @csrf
-                                            <button type="submit" class="btn btn-secondary btn-sm btn-icon" 
-                                                    onclick="return confirm('¿Restablecer contraseña de este empleado?')" 
-                                                    title="Restablecer contraseña">
+                                            <button type="button" class="btn btn-secondary btn-sm btn-icon btn-reset" title="Restablecer contraseña">
                                                 <i class="fas fa-key" style="font-size: 12px;"></i>
                                             </button>
                                         </form>
@@ -125,6 +121,7 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 function copyToClipboard(empleadoId) {
     var emailText = document.getElementById('email-' + empleadoId).innerText;
@@ -140,5 +137,53 @@ function copyToClipboard(empleadoId) {
         console.error('Error al copiar: ', err);
     });
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    const btnsReset = document.querySelectorAll('.btn-reset');
+    btnsReset.forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            let form = this.closest('form');
+            Swal.fire({
+                title: '¿Restablecer contraseña?',
+                text: "La contraseña volverá a su valor por defecto.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc94ca',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, restablecer',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 12px;"></i>';
+                    form.submit();
+                }
+            });
+        });
+    });
+
+    const btnsDelete = document.querySelectorAll('.btn-delete');
+    btnsDelete.forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            let form = this.closest('form');
+            Swal.fire({
+                title: '¿Eliminar empleado?',
+                text: "Esta acción no se puede deshacer.",
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonColor: '#e3342f',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 12px;"></i>';
+                    form.submit();
+                }
+            });
+        });
+    });
+});
 </script>
 @endsection

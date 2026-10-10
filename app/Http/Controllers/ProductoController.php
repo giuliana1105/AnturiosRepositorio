@@ -113,10 +113,17 @@ class ProductoController extends Controller
             ],
             'descripcion' => 'required|string',
             'cantidad' => 'required|integer|min:1',
-            // Elimina la validación de tipoempaque
+            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
 
         $validatedData['tipoempaque'] = 'Unidad'; // Siempre "Unidad"
+
+        if ($request->hasFile('imagen')) {
+            $uploadedFileUrl = cloudinary()->uploadApi()->upload($request->file('imagen')->getRealPath(), [
+                'folder' => 'anturios_productos'
+            ]);
+            $validatedData['imagen'] = $uploadedFileUrl['secure_url'];
+        }
 
         try {
             $producto = Producto::findOrFail($id);

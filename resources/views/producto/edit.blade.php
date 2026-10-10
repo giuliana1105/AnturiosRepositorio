@@ -38,7 +38,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('productos.update', $producto->codigo) }}" method="POST">
+            <form action="{{ route('productos.update', $producto->codigo) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 
@@ -59,6 +59,19 @@
                         <label for="cantidad" class="form-label">Cantidad Actual</label>
                         <input type="number" name="cantidad" id="cantidad" class="form-control font-mono @error('cantidad') is-invalid @enderror" required value="{{ old('cantidad', $producto->cantidad) }}" placeholder="0" min="0">
                         @error('cantidad') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="imagen" class="form-label">Foto del Producto (Opcional)</label>
+                        <input type="file" name="imagen" id="imagen" class="form-control @error('imagen') is-invalid @enderror" accept="image/*">
+                        <div class="form-text">Si no deseas cambiar la foto, deja este campo en blanco.</div>
+                        @if($producto->imagen)
+                            <div class="mt-2">
+                                <span class="d-block text-muted" style="font-size: 0.85rem;">Foto actual:</span>
+                                <img src="{{ $producto->imagen }}" alt="Foto actual" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-light); margin-top: 5px;">
+                            </div>
+                        @endif
+                        @error('imagen') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     
                     <div class="col-12">

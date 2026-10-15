@@ -18,6 +18,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Driver.js — Onboarding Tour -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css">
+
     <style>
         /* ============================================
            DESIGN SYSTEM — Interface Design Tokens
@@ -1070,6 +1073,167 @@
             color: var(--accent);
         }
 
+        /* ============================================
+           DRIVER.JS — Custom Onboarding Tour Theme
+           ============================================ */
+        div#driver-popover-content {
+            font-family: var(--font-sans);
+        }
+
+        .driver-popover {
+            background: var(--bg-surface) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: var(--radius-lg) !important;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.04) !important;
+            max-width: 380px !important;
+            padding: 0 !important;
+            overflow: hidden;
+        }
+
+        .driver-popover .driver-popover-title {
+            font-family: var(--font-sans) !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            color: var(--foreground) !important;
+            padding: var(--space-5) var(--space-5) var(--space-2) !important;
+            line-height: 1.3 !important;
+        }
+
+        .driver-popover .driver-popover-description {
+            font-family: var(--font-sans) !important;
+            font-size: 13px !important;
+            color: var(--secondary) !important;
+            line-height: 1.6 !important;
+            padding: 0 var(--space-5) var(--space-4) !important;
+        }
+
+        .driver-popover .driver-popover-progress-text {
+            font-family: var(--font-sans) !important;
+            font-size: 11px !important;
+            color: var(--muted) !important;
+            font-weight: 500 !important;
+        }
+
+        .driver-popover .driver-popover-footer {
+            padding: var(--space-3) var(--space-5) var(--space-4) !important;
+            border-top: 1px solid var(--border-light) !important;
+            background: var(--bg-base) !important;
+        }
+
+        .driver-popover .driver-popover-navigation-btns {
+            gap: var(--space-2) !important;
+        }
+
+        .driver-popover .driver-popover-prev-btn {
+            font-family: var(--font-sans) !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            color: var(--secondary) !important;
+            background: var(--bg-surface) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: var(--radius-sm) !important;
+            padding: var(--space-2) var(--space-4) !important;
+            transition: all var(--duration) var(--ease) !important;
+            text-shadow: none !important;
+        }
+
+        .driver-popover .driver-popover-prev-btn:hover {
+            background: var(--bg-base) !important;
+            border-color: var(--muted) !important;
+            color: var(--foreground) !important;
+        }
+
+        .driver-popover .driver-popover-next-btn {
+            font-family: var(--font-sans) !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            background: var(--accent) !important;
+            border: 1px solid var(--accent) !important;
+            border-radius: var(--radius-sm) !important;
+            padding: var(--space-2) var(--space-4) !important;
+            color: #fff !important;
+            transition: all var(--duration) var(--ease) !important;
+            text-shadow: none !important;
+        }
+
+        .driver-popover .driver-popover-next-btn:hover {
+            background: var(--accent-dark) !important;
+            border-color: var(--accent-dark) !important;
+            box-shadow: 0 4px 12px var(--accent-ring) !important;
+        }
+
+        .driver-popover .driver-popover-close-btn {
+            color: var(--muted) !important;
+            font-size: 18px !important;
+            top: var(--space-3) !important;
+            right: var(--space-3) !important;
+        }
+
+        .driver-popover .driver-popover-close-btn:hover {
+            color: var(--foreground) !important;
+        }
+
+        .driver-popover-arrow {
+            border: 5px solid var(--bg-surface) !important;
+        }
+
+        /* Overlay highlight ring */
+        .driver-active-element {
+            box-shadow: 0 0 0 4px var(--accent-ring) !important;
+            border-radius: var(--radius-sm) !important;
+        }
+
+        /* ── Help Button (Floating) ── */
+        .tour-help-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 16px var(--accent-ring), 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            z-index: 1040;
+            transition: all 0.3s var(--ease);
+        }
+
+        .tour-help-btn:hover {
+            background: var(--accent-dark);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 24px var(--accent-ring), 0 4px 8px rgba(0,0,0,0.12);
+        }
+
+        .tour-help-btn:active {
+            transform: translateY(0) scale(1);
+        }
+
+        .tour-help-btn .tour-help-tooltip {
+            position: absolute;
+            right: 54px;
+            background: var(--bg-sidebar);
+            color: var(--on-dark);
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s var(--ease);
+            font-family: var(--font-sans);
+        }
+
+        .tour-help-btn:hover .tour-help-tooltip {
+            opacity: 1;
+        }
+
         @yield('styles')
     </style>
 </head>
@@ -1084,14 +1248,14 @@
         <!-- Sidebar -->
         <div id="sidebar-wrapper">
             
-            <div class="sidebar-header">
+            <div class="sidebar-header" id="tour-sidebar-brand">
                 <a href="{{ route('home') }}" class="sidebar-brand">
                     <i class="fas fa-seedling"></i>
                     <span>Anturios</span>
                 </a>
             </div>
 
-            <div class="user-profile">
+            <div class="user-profile" id="tour-user-profile">
                 <div class="user-avatar">
                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                 </div>
@@ -1101,7 +1265,7 @@
                 </div>
             </div>
 
-            <div class="sidebar-nav">
+            <div class="sidebar-nav" id="tour-sidebar-nav">
                 
                 @if(auth()->user()->can('ver dashboard general') || auth()->user()->can('ver dashboard vendedor'))
                 <div class="nav-section-title">Principal</div>
@@ -1218,7 +1382,7 @@
 
             </div>
 
-            <div class="logout-container">
+            <div class="logout-container" id="tour-logout">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="btn-logout">
@@ -1243,7 +1407,7 @@
             </div>
 
             <!-- Main Dynamic Content -->
-            <div class="content-scrollable">
+            <div class="content-scrollable" id="tour-content-area">
                 <div style="position: relative; z-index: 1;">
                     
                     <!-- Dynamic Breadcrumbs -->
@@ -1317,6 +1481,137 @@
         }
     });
 </script>
+
+@if(Auth::check() && !auth()->user()->must_change_password)
+<!-- Botón de ayuda flotante para repetir el tour -->
+<button class="tour-help-btn" id="tour-help-btn" title="Ver guía interactiva">
+    <i class="fas fa-question"></i>
+    <span class="tour-help-tooltip">Repetir guía interactiva</span>
+</button>
+
+<!-- Driver.js -->
+<script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
+<script>
+(function() {
+    'use strict';
+
+    function crearTourAnturios() {
+        const driver = window.driver.js.driver;
+
+        const tourInstance = driver({
+            showProgress: true,
+            animate: true,
+            smoothScroll: true,
+            stagePadding: 8,
+            stageRadius: 8,
+            allowClose: true,
+            overlayColor: 'rgba(28, 25, 23, 0.7)',
+            popoverClass: 'anturios-tour-popover',
+            progressText: 'Paso @{{current}} de @{{total}}',
+            nextBtnText: 'Siguiente →',
+            prevBtnText: '← Atrás',
+            doneBtnText: '¡Entendido! ✓',
+            onDestroyStarted: function() {
+                // Marcar como completado cuando cierra o finaliza
+                completarTour();
+                tourInstance.destroy();
+            },
+            steps: [
+                {
+                    popover: {
+                        title: '🌿 ¡Bienvenido a Anturios!',
+                        description: 'Te daremos un recorrido rápido por las funciones principales del sistema de gestión. Solo tomará un momento.<br><br><strong style="color: var(--muted); font-size: 12px;">Puedes cerrar esta guía en cualquier momento con la X.</strong>',
+                        side: 'over',
+                        align: 'center'
+                    }
+                },
+                {
+                    element: '#tour-sidebar-brand',
+                    popover: {
+                        title: '🏠 Navegación Principal',
+                        description: 'Este es el logo del sistema. Haz clic aquí en cualquier momento para <strong>volver al panel principal</strong> (Dashboard) desde cualquier página.',
+                        side: 'right',
+                        align: 'start'
+                    }
+                },
+                {
+                    element: '#tour-sidebar-nav',
+                    popover: {
+                        title: '📋 Menú de Módulos',
+                        description: 'Aquí encontrarás todos los módulos disponibles según tu rol:<br><br>• <strong>Almacén</strong> — Catálogo e inventario<br>• <strong>Operaciones</strong> — Solicitudes y aprobaciones<br>• <strong>Ventas</strong> — Historial y registro<br>• <strong>Configuración</strong> — Empleados, bodegas y usuarios<br><br>Haz clic en cada sección para expandir sus opciones.',
+                        side: 'right',
+                        align: 'center'
+                    }
+                },
+                {
+                    element: '#tour-content-area',
+                    popover: {
+                        title: '📊 Área de Trabajo',
+                        description: 'Este es el espacio principal donde se muestra el contenido de cada módulo: tablas de datos, formularios, reportes y estadísticas. Todo aparece aquí.',
+                        side: 'left',
+                        align: 'center'
+                    }
+                },
+                {
+                    element: '#tour-user-profile',
+                    popover: {
+                        title: '👤 Tu Perfil',
+                        description: 'Aquí puedes ver tu <strong>nombre de usuario</strong> y tu <strong>rol actual</strong> en el sistema. Los módulos y funciones que ves dependen de los permisos asignados a tu rol.',
+                        side: 'right',
+                        align: 'start'
+                    }
+                },
+                {
+                    element: '#tour-help-btn',
+                    popover: {
+                        title: '❓ ¿Necesitas Ayuda?',
+                        description: 'Si en algún momento quieres <strong>volver a ver esta guía</strong>, solo haz clic en este botón de ayuda. ¡Siempre estará aquí para ti!<br><br><strong style="color: var(--accent);">¡Listo! Ya puedes empezar a usar el sistema. 🎉</strong>',
+                        side: 'left',
+                        align: 'end'
+                    }
+                }
+            ]
+        });
+
+        return tourInstance;
+    }
+
+    function completarTour() {
+        fetch('{{ route("tour.completar") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            }
+        }).catch(function(err) {
+            console.warn('No se pudo guardar el estado del tour:', err);
+        });
+    }
+
+    // Iniciar tour automáticamente si el usuario no lo ha completado
+    @if(!auth()->user()->tour_completado)
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            var tour = crearTourAnturios();
+            tour.drive();
+        }, 800);
+    });
+    @endif
+
+    // Botón de ayuda para repetir el tour manualmente
+    document.addEventListener('DOMContentLoaded', function() {
+        var helpBtn = document.getElementById('tour-help-btn');
+        if (helpBtn) {
+            helpBtn.addEventListener('click', function() {
+                var tour = crearTourAnturios();
+                tour.drive();
+            });
+        }
+    });
+})();
+</script>
+@endif
 
 @yield('scripts')
 </body>

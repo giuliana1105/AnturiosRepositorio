@@ -125,6 +125,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/password/change', [AuthController::class, 'changePassword'])->name('password.change');
 
     Route::get('bodega/{id}/stock/pdf', [BodegaController::class, 'stockPdf'])->name('bodega.stock.pdf');
+
+    // 🔹 Ruta para marcar el tour de onboarding como completado
+    Route::post('/tour/completar', function () {
+        auth()->user()->update(['tour_completado' => true]);
+        return response()->json(['ok' => true]);
+    })->name('tour.completar');
 });
 
 // Password Reset Routes

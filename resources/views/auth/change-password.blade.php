@@ -139,7 +139,7 @@ html, body, #app {
     height: 44px;
     min-width: 44px;
     border-radius: 50%;
-    background: var(--brand-primary, #0097a7);
+    background: var(--brand-primary, #e91e63);
     color: #fff;
     display: flex;
     align-items: center;
@@ -172,7 +172,7 @@ html, body, #app {
     margin-top: 2px;
     padding: 1px 8px;
     border-radius: 20px;
-    background: var(--brand-primary, #0097a7);
+    background: var(--brand-primary, #e91e63);
     color: #fff;
     font-size: 0.65rem;
     font-weight: 600;
@@ -227,7 +227,7 @@ html, body, #app {
     color: #555;
 }
 .cp-field label i {
-    color: var(--brand-primary, #0097a7);
+    color: var(--brand-primary, #e91e63);
     font-size: 0.75rem;
     margin-right: 4px;
 }
@@ -242,8 +242,8 @@ html, body, #app {
     width: 100%;
 }
 .cp-field input:focus {
-    border-color: var(--brand-primary, #0097a7);
-    box-shadow: 0 0 0 3px rgba(0, 151, 167, 0.15);
+    border-color: var(--brand-primary, #e91e63);
+    box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.15);
 }
 .cp-input-error {
     border-color: #e53935 !important;
@@ -254,7 +254,7 @@ html, body, #app {
     margin-top: 2px;
 }
 .cp-hint i {
-    color: var(--brand-primary, #0097a7);
+    color: var(--brand-primary, #e91e63);
 }
 
 /* ===== Row de campos lado a lado ===== */
@@ -267,7 +267,7 @@ html, body, #app {
 .cp-btn-submit {
     margin-top: 6px;
     padding: 12px 24px;
-    background: var(--brand-primary, #0097a7);
+    background: var(--brand-primary, #e91e63);
     color: #fff;
     border: none;
     border-radius: 50rem;
@@ -279,9 +279,9 @@ html, body, #app {
     width: 100%;
 }
 .cp-btn-submit:hover {
-    background: var(--brand-primary-dark, #00796b);
+    background: var(--brand-primary-dark, #c2185b);
     transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(0, 151, 167, 0.35);
+    box-shadow: 0 4px 14px rgba(233, 30, 99, 0.35);
 }
 
 /* ===== Logout ===== */

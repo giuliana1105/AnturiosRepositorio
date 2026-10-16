@@ -75,18 +75,26 @@
                                                 <label class="form-label fw-bold">
                                                     <i class="fas fa-cube me-2"></i>Producto
                                                 </label>
-                                                <select name="producto_id[]" class="form-control producto-select" disabled>
-                                                    <option value="">Seleccione un producto</option>
-                                                    @foreach($productos as $prod)
-                                                        <option value="{{ $prod['codigo'] }}" 
-                                                                data-stock="{{ $prod['stock'] }}" 
-                                                                data-empaque="{{ $prod['tipoempaque'] }}"
-                                                                {{ old('producto_id.'.$i, $detalle->producto_id) == $prod['codigo'] ? 'selected' : '' }}>
-                                                            {{ $prod['codigo'] }} - {{ $prod['nombre'] }} (Stock: {{ $prod['stock'] }})
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                                <input type="hidden" name="producto_id[]" value="{{ $detalle->producto_id }}">
+                                                @if($detalle->es_extra)
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control" value="{{ $detalle->nombre_extra }}" readonly>
+                                                        <span class="input-group-text text-white" style="background-color: #0097a7; font-size: 11px;">Extra</span>
+                                                    </div>
+                                                    <input type="hidden" name="producto_id[]" value="">
+                                                @else
+                                                    <select name="producto_id[]" class="form-control producto-select" disabled>
+                                                        <option value="">Seleccione un producto</option>
+                                                        @foreach($productos as $prod)
+                                                            <option value="{{ $prod['codigo'] }}" 
+                                                                    data-stock="{{ $prod['stock'] }}" 
+                                                                    data-empaque="{{ $prod['tipoempaque'] }}"
+                                                                    {{ old('producto_id.'.$i, $detalle->producto_id) == $prod['codigo'] ? 'selected' : '' }}>
+                                                                {{ $prod['codigo'] }} - {{ $prod['nombre'] }} (Stock: {{ $prod['stock'] }})
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                    <input type="hidden" name="producto_id[]" value="{{ $detalle->producto_id }}">
+                                                @endif
                                             </div>
                                             <div class="col-md-2 mb-3">
                                                 <label class="form-label fw-bold">

@@ -113,9 +113,22 @@
                                     </thead>
                                     <tbody>
                                         @foreach($venta->detalles as $detalle)
-                                            <tr>
-                                                <td class="text-center fw-bold">{{ $detalle->producto->codigo ?? $detalle->producto_id }}</td>
-                                                <td>{{ $detalle->producto->nombre ?? $detalle->producto_id }}</td>
+                                            <tr @if($detalle->es_extra) style="background-color: rgba(0,151,167,0.05);" @endif>
+                                                <td class="text-center fw-bold">
+                                                    @if($detalle->es_extra)
+                                                        <span class="text-muted">—</span>
+                                                    @else
+                                                        {{ $detalle->producto->codigo ?? $detalle->producto_id }}
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($detalle->es_extra)
+                                                        {{ $detalle->nombre_extra }}
+                                                        <span class="badge rounded-pill ms-1" style="background-color: #0097a7; font-size: 10px;">Extra</span>
+                                                    @else
+                                                        {{ $detalle->producto->nombre ?? $detalle->producto_id }}
+                                                    @endif
+                                                </td>
                                                 <td class="text-center">
                                                     <span class="badge bg-secondary rounded-pill">
                                                         {{ $detalle->tipoempaque }}

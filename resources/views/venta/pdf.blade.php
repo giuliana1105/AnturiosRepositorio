@@ -411,9 +411,15 @@
                 </thead>
                 <tbody>
                 @foreach($venta->detalles as $detalle)
-                    <tr>
+                    <tr @if($detalle->es_extra) style="background-color: #f0fdf4;" @endif>
                         <td>{{ $detalle->cantidad }}</td>
-                        <td>{{ $detalle->producto->codigo }} - {{ $detalle->producto->nombre }}</td>
+                        <td>
+                            @if($detalle->es_extra)
+                                {{ $detalle->nombre_extra }} <span style="color: #0097a7; font-weight: bold; font-size: 10px;">(Extra)</span>
+                            @else
+                                {{ $detalle->producto->codigo ?? $detalle->producto_id }} - {{ $detalle->producto->nombre ?? 'N/A' }}
+                            @endif
+                        </td>
                         <td>{{ $detalle->tipoempaque ?? $detalle->empaque ?? '-' }}</td>
                         <td>${{ number_format($detalle->precio_unitario, 2) }}</td>
                         <td>${{ number_format($detalle->cantidad * $detalle->precio_unitario, 2) }}</td>

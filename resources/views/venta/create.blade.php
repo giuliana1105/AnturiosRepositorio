@@ -252,6 +252,71 @@
                             </div>
                         </div>
 
+                        <!-- Producto Extra -->
+                        <div class="card mb-4 border-0 bg-info bg-opacity-10">
+                            <div class="card-header text-white rounded-top-4" style="background-color: #0097a7;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-plus-circle me-2"></i> Producto Extra
+                                    </h5>
+                                    <small class="opacity-75">
+                                        <i class="fas fa-info-circle me-1"></i> Productos no registrados en inventario
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info border-0 py-2 px-3 mb-3" style="font-size: 12px;">
+                                    <i class="fas fa-lightbulb me-1"></i>
+                                    Use esta sección para registrar productos que fueron enviados de más y no aparecen en el inventario oficial de la bodega. Estos productos <strong>no descuentan stock</strong>.
+                                </div>
+                                <div id="extras-container">
+                                    <div class="row align-items-start mb-3 row-extra border rounded-4 p-3 bg-white shadow-sm g-3">
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-bold">
+                                                <i class="fas fa-tag me-2"></i>Nombre del Producto
+                                            </label>
+                                            <input type="text" name="extra_nombre[]" class="form-control rounded-pill extra-nombre-input" placeholder="Ej: Flor Roja">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label fw-bold">
+                                                <i class="fas fa-sort-numeric-up me-2"></i>Cantidad
+                                            </label>
+                                            <input type="number" name="extra_cantidad[]" class="form-control rounded-pill extra-cantidad-input" min="1">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label fw-bold">
+                                                <i class="fas fa-box me-2"></i>Tipo Empaque
+                                            </label>
+                                            <input type="text" name="extra_tipoempaque[]" class="form-control rounded-pill extra-empaque-input" value="Unidad">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label fw-bold">
+                                                <i class="fas fa-dollar-sign me-2"></i>Precio Unitario
+                                            </label>
+                                            <input type="number" name="extra_precio_unitario[]" class="form-control rounded-pill extra-precio-unitario-input" step="0.01" min="0.01">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label fw-bold">
+                                                <i class="fas fa-calculator me-2"></i>Precio Total
+                                            </label>
+                                            <input type="number" name="extra_precio_total[]" class="form-control rounded-pill extra-precio-total-input" readonly>
+                                        </div>
+                                        <div class="col-md-1">
+                                            <label class="form-label fw-bold text-transparent d-none d-md-block">Acciones</label>
+                                            <div class="d-flex flex-row flex-md-column gap-2 mt-2 mt-md-0">
+                                                <button type="button" class="btn btn-success btn-sm rounded-pill w-100 btn-add-extra">
+                                                    <i class="fas fa-plus"></i> Añadir
+                                                </button>
+                                                <button type="button" class="btn btn-danger btn-sm rounded-pill w-100 btn-remove-extra">
+                                                    <i class="fas fa-minus"></i> Quitar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Información de pago -->
                         <div class="card mb-4 border-0 bg-warning bg-opacity-10">
                             <div class="card-header bg-warning text-white rounded-top-4">
@@ -497,10 +562,80 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.precio-total-input').forEach(function(input) {
             total += parseFloat(input.value) || 0;
         });
+        // Sumar productos extra
+        document.querySelectorAll('.extra-precio-total-input').forEach(function(input) {
+            total += parseFloat(input.value) || 0;
+        });
         document.getElementById('total-venta').value = total.toFixed(2);
     }
     document.getElementById('productos-container').addEventListener('input', calcularTotalVenta);
     document.getElementById('productos-container').addEventListener('change', calcularTotalVenta);
+
+    // === PRODUCTO EXTRA ===
+    function actualizarCamposExtra(row) {
+        const cantidadInput = row.querySelector('.extra-cantidad-input');
+        const precioUnitarioInput = row.querySelector('.extra-precio-unitario-input');
+        const precioTotalInput = row.querySelector('.extra-precio-total-input');
+
+        function calcularTotalExtra() {
+            const cantidad = parseFloat(cantidadInput.value) || 0;
+            const precioUnitario = parseFloat(precioUnitarioInput.value) || 0;
+            if (cantidad > 0 && precioUnitario > 0) {
+                precioTotalInput.value = (cantidad * precioUnitario).toFixed(2);
+            } else {
+                precioTotalInput.value = '';
+            }
+            calcularTotalVenta();
+        }
+
+        cantidadInput.addEventListener('input', calcularTotalExtra);
+        precioUnitarioInput.addEventListener('input', calcularTotalExtra);
+    }
+
+    // Inicializar la primera fila extra
+    document.querySelectorAll('.row-extra').forEach(row => actualizarCamposExtra(row));
+
+    // Agregar y eliminar filas de producto extra
+    document.getElementById('extras-container').addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn-add-extra')) {
+            const row = e.target.closest('.row-extra');
+            const newRow = row.cloneNode(true);
+
+            // Limpia los valores
+            newRow.querySelectorAll('input').forEach(input => {
+                if (input.classList.contains('extra-empaque-input')) {
+                    input.value = 'Unidad';
+                } else {
+                    input.value = '';
+                }
+            });
+            actualizarCamposExtra(newRow);
+
+            row.parentNode.appendChild(newRow);
+            calcularTotalVenta();
+        }
+        if (e.target.classList.contains('btn-remove-extra')) {
+            const rows = document.querySelectorAll('.row-extra');
+            if (rows.length > 1) {
+                e.target.closest('.row-extra').remove();
+                calcularTotalVenta();
+            } else {
+                // Si es la última fila, solo limpiar los valores
+                const row = e.target.closest('.row-extra');
+                row.querySelectorAll('input').forEach(input => {
+                    if (input.classList.contains('extra-empaque-input')) {
+                        input.value = 'Unidad';
+                    } else {
+                        input.value = '';
+                    }
+                });
+                calcularTotalVenta();
+            }
+        }
+    });
+
+    // Recalcular total al editar extras
+    document.getElementById('extras-container').addEventListener('input', calcularTotalVenta);
 
     // Sección de abonos
     document.getElementById('abonos-section').style.display = 'none'; // Oculta por defecto
@@ -581,13 +716,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Recalcula saldo al cambiar abonos
     document.getElementById('abonos-container').addEventListener('input', calcularSaldo);
 
-    // Recalcula saldo al cambiar productos
+    // Recalcula saldo al cambiar productos o extras
     document.getElementById('productos-container').addEventListener('input', function() {
         if (tipoPagoSelect.value === 'Crédito') {
             calcularSaldo();
         }
     });
     document.getElementById('productos-container').addEventListener('change', function() {
+        if (tipoPagoSelect.value === 'Crédito') {
+            calcularSaldo();
+        }
+    });
+    document.getElementById('extras-container').addEventListener('input', function() {
         if (tipoPagoSelect.value === 'Crédito') {
             calcularSaldo();
         }
@@ -651,9 +791,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 producto: row.querySelector('select[name="producto_id[]"] option:checked').text,
                 empaque: row.querySelector('input[name="tipoempaque[]"]').value,
                 precio: row.querySelector('input[name="precio_unitario[]"]').value,
-                total: row.querySelector('input[name="precio_total[]"]').value
+                total: row.querySelector('input[name="precio_total[]"]').value,
+                esExtra: false
             });
         });
+
+        // Recoger productos extra con datos válidos
+        document.querySelectorAll('.row-extra').forEach(row => {
+            const nombre = row.querySelector('.extra-nombre-input').value;
+            const cantidad = row.querySelector('.extra-cantidad-input').value;
+            const precio = row.querySelector('.extra-precio-unitario-input').value;
+            const empaque = row.querySelector('.extra-empaque-input').value;
+            const total = row.querySelector('.extra-precio-total-input').value;
+            if (nombre && cantidad && precio) {
+                productos.push({
+                    cantidad: cantidad,
+                    producto: nombre,
+                    empaque: empaque || 'Unidad',
+                    precio: precio,
+                    total: total,
+                    esExtra: true
+                });
+            }
+        });
+
         const totalVenta = document.getElementById('total-venta').value;
 
         let html = `
@@ -693,9 +854,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 <tbody>
         `;
         productos.forEach(p => {
-            html += `<tr>
+            const extraBadge = p.esExtra ? ' <span class="badge rounded-pill" style="background-color: #0097a7; font-size: 10px;">Extra</span>' : '';
+            html += `<tr${p.esExtra ? ' style="background-color: rgba(0,151,167,0.05);"' : ''}>
                 <td class="text-center">${p.cantidad}</td>
-                <td>${p.producto}</td>
+                <td>${p.producto}${extraBadge}</td>
                 <td class="text-center">${p.empaque}</td>
                 <td class="text-end">${parseFloat(p.precio).toFixed(2)}</td>
                 <td class="text-end fw-bold">${parseFloat(p.total).toFixed(2)}</td>

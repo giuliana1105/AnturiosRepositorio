@@ -13,6 +13,8 @@ class DetalleVentaBodega extends Model
         'tipoempaque',
         'precio_unitario',
         'precio_total',
+        'es_extra',
+        'nombre_extra',
     ];
 
     public function producto()

@@ -63,6 +63,13 @@ class VentaBodegaController extends Controller
             'cliente' => 'required|string|max:255',
             'ciudad' => 'required|string|max:255', // <-- Nueva validación
             'tipo_pago' => 'required|in:Efectivo,Transferencia,Crédito,Cheque',
+            // Validación de productos extra (opcionales)
+            'extra_nombre' => 'nullable|array',
+            'extra_nombre.*' => 'required_with:extra_cantidad.*|string|max:255',
+            'extra_cantidad' => 'nullable|array',
+            'extra_cantidad.*' => 'required_with:extra_nombre.*|integer|min:1',
+            'extra_precio_unitario' => 'nullable|array',
+            'extra_precio_unitario.*' => 'required_with:extra_nombre.*|numeric|min:0.01',
         ]);
 
         // Precargar productos y stock en 2 queries (evita N+1)
@@ -89,6 +96,17 @@ class VentaBodegaController extends Controller
             }
         }
 
+        // Sumar el total de los productos extra al total de la venta
+        $totalExtras = 0;
+        if ($request->has('extra_nombre') && is_array($request->extra_nombre)) {
+            foreach ($request->extra_nombre as $index => $nombre) {
+                if (!empty($nombre) && !empty($request->extra_cantidad[$index]) && !empty($request->extra_precio_unitario[$index])) {
+                    $totalExtras += $request->extra_cantidad[$index] * $request->extra_precio_unitario[$index];
+                }
+            }
+        }
+        $totalVenta += $totalExtras;
+
         // Calcula el próximo número de venta SOLO para esta bodega
         $nroVenta = \App\Models\Venta::where('bodega_id', $bodega_id)->max('nro_venta');
         $nroVenta = $nroVenta ? $nroVenta + 1 : 1;
@@ -105,7 +123,7 @@ class VentaBodegaController extends Controller
         ]);
 
         foreach ($request->producto_id as $index => $codigo) {
-            // Guarda el detalle de la venta
+            // Guarda el detalle de la venta (producto normal)
             DetalleVentaBodega::create([
                 'venta_id' => $venta->id,
                 'producto_id' => $codigo,
@@ -113,6 +131,7 @@ class VentaBodegaController extends Controller
                 'tipoempaque' => 'Unidad',
                 'precio_unitario' => $request->precio_unitario[$index],
                 'precio_total' => $request->cantidad[$index] * $request->precio_unitario[$index],
+                'es_extra' => false,
             ]);
 
             // Actualiza el stock en productos_bodega (registra salida por venta)
@@ -126,6 +145,24 @@ class VentaBodegaController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+        }
+
+        // Guardar productos extra (sin descontar inventario)
+        if ($request->has('extra_nombre') && is_array($request->extra_nombre)) {
+            foreach ($request->extra_nombre as $index => $nombre) {
+                if (!empty($nombre) && !empty($request->extra_cantidad[$index]) && !empty($request->extra_precio_unitario[$index])) {
+                    DetalleVentaBodega::create([
+                        'venta_id' => $venta->id,
+                        'producto_id' => null, // No tiene código de catálogo
+                        'cantidad' => $request->extra_cantidad[$index],
+                        'tipoempaque' => $request->extra_tipoempaque[$index] ?? 'Unidad',
+                        'precio_unitario' => $request->extra_precio_unitario[$index],
+                        'precio_total' => $request->extra_cantidad[$index] * $request->extra_precio_unitario[$index],
+                        'es_extra' => true,
+                        'nombre_extra' => $nombre,
+                    ]);
+                }
+            }
         }
         
 
@@ -155,7 +192,7 @@ class VentaBodegaController extends Controller
         \App\Helpers\AuditoriaHelper::registrar(
             'Ventas',
             'Creación',
-            "Registró una nueva venta Nro. {$nroVenta} al cliente '{$request->cliente}' por un total de $" . number_format($request->total_venta, 2)
+            "Registró una nueva venta Nro. {$nroVenta} al cliente '{$request->cliente}' por un total de $" . number_format($totalVenta, 2)
         );
 
         // Redirige al index de ventas después de guardar
@@ -253,7 +290,7 @@ class VentaBodegaController extends Controller
             'cliente' => 'required|string|max:255',
             'ciudad' => 'required|string|max:255',
             'tipo_pago' => 'required|in:Efectivo,Transferencia,Crédito,Cheque',
-            'producto_id.*' => 'required|exists:productos,codigo',
+            'producto_id.*' => 'nullable|string',
             'tipoempaque.*' => 'required|string',
             'cantidad.*' => 'required|numeric|min:1',
             'precio_unitario.*' => 'required|numeric|min:0',
@@ -268,13 +305,16 @@ class VentaBodegaController extends Controller
 
         // Actualiza los detalles
         foreach ($venta->detalles as $i => $detalle) {
-            $detalle->update([
-                'producto_id' => $request->producto_id[$i],
-                'tipoempaque' => $request->tipoempaque[$i],
-                'cantidad' => $request->cantidad[$i],
-                'precio_unitario' => $request->precio_unitario[$i],
-                'precio_total' => $request->precio_total[$i],
-            ]);
+            $dataDetalle = [
+                'tipoempaque' => $request->tipoempaque[$i] ?? $detalle->tipoempaque,
+                'cantidad' => $request->cantidad[$i] ?? $detalle->cantidad,
+                'precio_unitario' => $request->precio_unitario[$i] ?? $detalle->precio_unitario,
+                'precio_total' => $request->precio_total[$i] ?? $detalle->precio_total,
+            ];
+            if (!$detalle->es_extra && !empty($request->producto_id[$i])) {
+                $dataDetalle['producto_id'] = $request->producto_id[$i];
+            }
+            $detalle->update($dataDetalle);
         }
 
         return redirect()->route('venta.index.bodega', $venta->bodega_id)->with('success', 'Venta actualizada correctamente.');

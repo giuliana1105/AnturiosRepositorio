@@ -8,6 +8,11 @@ use App\Models\Bodega;
 
 class KpiController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:ver kpis');
+    }
+
     /**
      * Mapeo de ciudades de Ecuador a sus respectivas provincias.
      */

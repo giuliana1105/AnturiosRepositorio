@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error del Servidor — Importadora Anturios</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('LogoEmpresa.ico') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: #faf9f7;
+            color: #1c1917;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .error-container {
+            text-align: center;
+            max-width: 520px;
+            width: 100%;
+        }
+
+        .error-icon-wrapper {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(233,30,140,0.08), rgba(233,30,140,0.15));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(233,30,140,0.1); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(233,30,140,0); }
+        }
+
+        .error-icon-wrapper i {
+            font-size: 48px;
+            color: #E91E8C;
+        }
+
+        .error-code {
+            font-size: 64px;
+            font-weight: 700;
+            color: #E91E8C;
+            letter-spacing: -2px;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+
+        .error-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1c1917;
+            margin-bottom: 12px;
+        }
+
+        .error-message {
+            font-size: 15px;
+            color: #57534e;
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-error {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary-error {
+            background: #E91E8C;
+            color: #fff;
+        }
+
+        .btn-primary-error:hover {
+            background: #C4177A;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(233,30,140,0.3);
+        }
+
+        .btn-secondary-error {
+            background: #fff;
+            color: #57534e;
+            border: 1px solid #e7e5e2;
+        }
+
+        .btn-secondary-error:hover {
+            background: #faf9f7;
+            border-color: #a8a29e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        .error-footer {
+            margin-top: 48px;
+            font-size: 12px;
+            color: #a8a29e;
+        }
+
+        .error-footer i {
+            color: #E91E8C;
+            margin-right: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon-wrapper">
+            <i class="fas fa-wifi-slash fa-wifi" style="position: relative;">
+                <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(45deg); width: 3px; height: 60px; background: #E91E8C; border-radius: 2px;"></span>
+            </i>
+        </div>
+
+        <div class="error-code">500</div>
+        <h1 class="error-title">Problema de Conexión</h1>
+        <p class="error-message">
+            No se pudo conectar con el servidor en este momento. 
+            Esto puede deberse a un problema temporal de conexión a internet o de mantenimiento del sistema.
+            <br><br>
+            Por favor, verifica tu conexión e intenta nuevamente.
+        </p>
+
+        <div class="error-actions">
+            <a href="javascript:location.reload()" class="btn-error btn-primary-error">
+                <i class="fas fa-redo"></i>
+                Reintentar
+            </a>
+            <a href="{{ url('/') }}" class="btn-error btn-secondary-error">
+                <i class="fas fa-home"></i>
+                Ir al Inicio
+            </a>
+        </div>
+
+        <div class="error-footer">
+            <i class="fas fa-seedling"></i>
+            Importadora Anturios — Sistema de Gestión
+        </div>
+    </div>
+</body>
+</html>

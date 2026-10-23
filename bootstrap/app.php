@@ -31,5 +31,20 @@ return Application::configure(basePath: dirname(__DIR__))
             return redirect()->route('login')
                 ->with('error', 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
         });
+
+        // Manejar errores de conexión con la base de datos (pérdida de internet / Supabase caído)
+        $exceptions->render(function (\PDOException $e, $request) {
+            return response()->view('errors.500', [], 500);
+        });
+
+        $exceptions->render(function (\Illuminate\Database\QueryException $e, $request) {
+            if ($e->getPrevious() instanceof \PDOException || 
+                str_contains($e->getMessage(), 'could not translate host name') || 
+                str_contains($e->getMessage(), 'Connection refused') || 
+                str_contains($e->getMessage(), 'Connection timed out') ||
+                !config('app.debug')) {
+                return response()->view('errors.500', [], 500);
+            }
+        });
     })->create();
 

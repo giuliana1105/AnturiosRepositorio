@@ -117,7 +117,7 @@ class ProductoController extends Controller
         ]);
 
         $validatedData['tipoempaque'] = 'Unidad'; // Siempre "Unidad"
-
+//envía a cloudinary
         if ($request->hasFile('imagen')) {
             $uploadedFileUrl = cloudinary()->uploadApi()->upload($request->file('imagen')->getRealPath(), [
                 'folder' => 'anturios_productos'

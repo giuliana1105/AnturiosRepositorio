@@ -65,11 +65,13 @@ class VentaBodegaController extends Controller
             'tipo_pago' => 'required|in:Efectivo,Transferencia,Crédito,Cheque',
             // Validación de productos extra (opcionales)
             'extra_nombre' => 'nullable|array',
-            'extra_nombre.*' => 'required_with:extra_cantidad.*|string|max:255',
+            'extra_nombre.*' => 'nullable|string|max:255|required_with:extra_cantidad.*,extra_precio_unitario.*',
             'extra_cantidad' => 'nullable|array',
-            'extra_cantidad.*' => 'required_with:extra_nombre.*|integer|min:1',
+            'extra_cantidad.*' => 'nullable|integer|min:1|required_with:extra_nombre.*,extra_precio_unitario.*',
+            'extra_tipoempaque' => 'nullable|array',
+            'extra_tipoempaque.*' => 'nullable|string|max:50',
             'extra_precio_unitario' => 'nullable|array',
-            'extra_precio_unitario.*' => 'required_with:extra_nombre.*|numeric|min:0.01',
+            'extra_precio_unitario.*' => 'nullable|numeric|min:0.01|required_with:extra_nombre.*,extra_cantidad.*',
         ]);
 
         // Precargar productos y stock en 2 queries (evita N+1)
@@ -111,81 +113,93 @@ class VentaBodegaController extends Controller
         $nroVenta = \App\Models\Venta::where('bodega_id', $bodega_id)->max('nro_venta');
         $nroVenta = $nroVenta ? $nroVenta + 1 : 1;
 
-        // Guarda la venta (cabecera) - Solo si todo el stock fue validado correctamente
-        $venta = Venta::create([
-            'bodega_id' => $bodega_id,
-            'nro_venta' => $nroVenta,
-            'fecha' => now(),
-            'cliente' => $request->cliente,
-            'ciudad' => $request->ciudad,
-            'total_venta' => $totalVenta,
-            'tipo_pago' => $request->tipo_pago,
-        ]);
+        // Envolver todas las operaciones de base de datos en una transacción
+        // para garantizar que se guarde TODO o NADA
+        try {
+            DB::beginTransaction();
 
-        foreach ($request->producto_id as $index => $codigo) {
-            // Guarda el detalle de la venta (producto normal)
-            DetalleVentaBodega::create([
-                'venta_id' => $venta->id,
-                'producto_id' => $codigo,
-                'cantidad' => $request->cantidad[$index],
-                'tipoempaque' => 'Unidad',
-                'precio_unitario' => $request->precio_unitario[$index],
-                'precio_total' => $request->cantidad[$index] * $request->precio_unitario[$index],
-                'es_extra' => false,
-            ]);
-
-            // Actualiza el stock en productos_bodega (registra salida por venta)
-            DB::table('productos_bodega')->insert([
+            // Guarda la venta (cabecera) - Solo si todo el stock fue validado correctamente
+            $venta = Venta::create([
                 'bodega_id' => $bodega_id,
-                'producto_id' => $codigo,
-                'cantidad' => -abs($request->cantidad[$index]), // RESTA STOCK
+                'nro_venta' => $nroVenta,
                 'fecha' => now(),
-                'es_devolucion' => false,
-                'tipo_movimiento' => 'venta', // Identifica como venta
-                'created_at' => now(),
-                'updated_at' => now(),
+                'cliente' => $request->cliente,
+                'ciudad' => $request->ciudad,
+                'total_venta' => $totalVenta,
+                'tipo_pago' => $request->tipo_pago,
             ]);
-        }
 
-        // Guardar productos extra (sin descontar inventario)
-        if ($request->has('extra_nombre') && is_array($request->extra_nombre)) {
-            foreach ($request->extra_nombre as $index => $nombre) {
-                if (!empty($nombre) && !empty($request->extra_cantidad[$index]) && !empty($request->extra_precio_unitario[$index])) {
-                    DetalleVentaBodega::create([
-                        'venta_id' => $venta->id,
-                        'producto_id' => null, // No tiene código de catálogo
-                        'cantidad' => $request->extra_cantidad[$index],
-                        'tipoempaque' => $request->extra_tipoempaque[$index] ?? 'Unidad',
-                        'precio_unitario' => $request->extra_precio_unitario[$index],
-                        'precio_total' => $request->extra_cantidad[$index] * $request->extra_precio_unitario[$index],
-                        'es_extra' => true,
-                        'nombre_extra' => $nombre,
-                    ]);
+            foreach ($request->producto_id as $index => $codigo) {
+                // Guarda el detalle de la venta (producto normal)
+                DetalleVentaBodega::create([
+                    'venta_id' => $venta->id,
+                    'producto_id' => $codigo,
+                    'cantidad' => $request->cantidad[$index],
+                    'tipoempaque' => 'Unidad',
+                    'precio_unitario' => $request->precio_unitario[$index],
+                    'precio_total' => $request->cantidad[$index] * $request->precio_unitario[$index],
+                    'es_extra' => false,
+                ]);
+
+                // Actualiza el stock en productos_bodega (registra salida por venta)
+                DB::table('productos_bodega')->insert([
+                    'bodega_id' => $bodega_id,
+                    'producto_id' => $codigo,
+                    'cantidad' => -abs($request->cantidad[$index]), // RESTA STOCK
+                    'fecha' => now(),
+                    'es_devolucion' => false,
+                    'tipo_movimiento' => 'venta', // Identifica como venta
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            // Guardar productos extra (sin descontar inventario)
+            if ($request->has('extra_nombre') && is_array($request->extra_nombre)) {
+                foreach ($request->extra_nombre as $index => $nombre) {
+                    if (!empty($nombre) && !empty($request->extra_cantidad[$index]) && !empty($request->extra_precio_unitario[$index])) {
+                        DetalleVentaBodega::create([
+                            'venta_id' => $venta->id,
+                            'producto_id' => null, // No tiene código de catálogo
+                            'cantidad' => $request->extra_cantidad[$index],
+                            'tipoempaque' => $request->extra_tipoempaque[$index] ?? 'Unidad',
+                            'precio_unitario' => $request->extra_precio_unitario[$index],
+                            'precio_total' => $request->extra_cantidad[$index] * $request->extra_precio_unitario[$index],
+                            'es_extra' => true,
+                            'nombre_extra' => $nombre,
+                        ]);
+                    }
                 }
             }
-        }
-        
+            
 
-        // Guardar abonos si es crédito
-        if ($request->tipo_pago === 'Crédito' && $request->has('abono')) {
-            foreach ($request->abono as $index => $valorAbono) {
-                $tipoPago = is_array($request->tipo_pago_abono)
-                    ? ($request->tipo_pago_abono[$index] ?? null)
-                    : $request->tipo_pago_abono;
+            // Guardar abonos si es crédito
+            if ($request->tipo_pago === 'Crédito' && $request->has('abono')) {
+                foreach ($request->abono as $index => $valorAbono) {
+                    $tipoPago = is_array($request->tipo_pago_abono)
+                        ? ($request->tipo_pago_abono[$index] ?? null)
+                        : $request->tipo_pago_abono;
 
-                $fechaAbono = is_array($request->fecha_abono)
-                    ? ($request->fecha_abono[$index] ?? now())
-                    : ($request->fecha_abono ?? now());
+                    $fechaAbono = is_array($request->fecha_abono)
+                        ? ($request->fecha_abono[$index] ?? now())
+                        : ($request->fecha_abono ?? now());
 
-                if ($valorAbono && $tipoPago) {
-                    \App\Models\Abono::create([
-                        'venta_id' => $venta->id,
-                        'abono' => $valorAbono,
-                        'fecha' => $fechaAbono,
-                        'tipo_pago' => $tipoPago,
-                    ]);
+                    if (floatval($valorAbono) > 0 && !empty($tipoPago)) {
+                        \App\Models\Abono::create([
+                            'venta_id' => $venta->id,
+                            'abono' => $valorAbono,
+                            'fecha' => $fechaAbono,
+                            'tipo_pago' => $tipoPago,
+                        ]);
+                    }
                 }
             }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Error registrando venta: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return back()->withInput()->with('error', 'Ocurrió un error al registrar la venta. Por favor, intente de nuevo. Detalle: ' . $e->getMessage());
         }
 
         // Registrar en la auditoría

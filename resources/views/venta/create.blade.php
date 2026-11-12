@@ -5,68 +5,63 @@
 
 @section('content')
 <div class="container-fluid py-2">
-    <div class="page-header">
+    <!-- Encabezado de la página -->
+    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
-            <h3>Registrar Venta</h3>
-            <p class="page-subtitle">Bodega: {{ $bodega->nombrebodega }}</p>
+            <h3 class="fw-bold mb-1">Registrar Nueva Venta</h3>
+            <p class="page-subtitle mb-0 text-muted">
+                Punto de despacho: <strong>{{ $bodega->nombrebodega }}</strong> &bull; Emisión de comprobante de venta y salida de stock
+            </p>
         </div>
-        <a href="{{ route('bodegas.show', $bodega->idbodega) }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Volver
+        <a href="{{ route('bodegas.show', $bodega->idbodega) }}" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm">
+            <i class="fas fa-arrow-left me-1"></i> Volver a Bodega
         </a>
     </div>
 
-    <div class="card" style="border-top: 3px solid var(--primary);">
-        <div class="card-body p-4">
-                    <!-- Alertas -->
-                    <div id="alert-container">
-                        @if ($errors->any())
-                            <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                <strong>Por favor verifique los siguientes errores:</strong>
-                                <ul class="mb-0 mt-2">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        @endif
+    <!-- Alertas -->
+    <div id="alert-container">
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Por favor verifique los siguientes errores:</strong>
+                <ul class="mb-0 mt-2">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
-                        @if (session('error'))
-                            <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
-                                <i class="fas fa-exclamation-circle me-2"></i>
-                                <strong>Error:</strong> {!! session('error') !!}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        @endif
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <strong>Error:</strong> {!! session('error') !!}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
-                        @if (session('success'))
-                            <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
-                                <i class="fas fa-check-circle me-2"></i>
-                                <strong>Éxito:</strong> {{ session('success') }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        @endif
-                    </div>
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Éxito:</strong> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+    </div>
 
-                    <!-- Botón Volver -->
-                    <div class="mb-4">
-                        <a href="{{ route('bodegas.show', $bodega->idbodega) }}" class="btn btn-secondary fw-bold rounded-pill">
-                            <i class="fas fa-arrow-left me-2"></i> Volver
-                        </a>
-                    </div>
-
-                    <form method="POST" action="{{ route('venta.store', $bodega->idbodega) }}" id="form-venta">
-                        @csrf
-                        
-                        <!-- Información básica de la venta -->
-                        <div class="card mb-4 border-0 bg-primary bg-opacity-10">
-                            <div class="card-header bg-primary text-white rounded-top-4">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-info-circle me-2"></i> Información de la Venta
-                                </h5>
-                            </div>
-                            <div class="card-body">
+    <form method="POST" action="{{ route('venta.store', $bodega->idbodega) }}" id="form-venta">
+        @csrf
+        
+        <!-- Información básica de la venta -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center">
+                <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; background: rgba(0, 151, 167, 0.12); color: var(--primary);">
+                    <i class="fas fa-info-circle" style="font-size: 13px;"></i>
+                </div>
+                <h6 class="fw-bold mb-0 text-dark">Información de la Venta</h6>
+            </div>
+            <div class="card-body p-4">
                                 <div class="row">
                                     <div class="col-md-3 mb-3">
                                         <label class="form-label fw-bold">
@@ -218,13 +213,14 @@
                         </div>
 
                         <!-- Productos -->
-                        <div class="card mb-4 border-0 bg-success bg-opacity-10">
-                            <div class="card-header bg-success text-white rounded-top-4">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-cube me-2"></i> Productos
-                                </h5>
+                        <div class="card border-0 shadow-sm rounded-4 mb-4">
+                            <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.12); color: #059669;">
+                                    <i class="fas fa-boxes" style="font-size: 13px;"></i>
+                                </div>
+                                <h6 class="fw-bold mb-0 text-dark">Productos de Inventario</h6>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body p-4">
                                 <div id="productos-container">
                                     <div class="row align-items-start mb-3 row-producto border rounded-4 p-3 bg-white shadow-sm g-3">
                                         <div class="col-md-3">
@@ -282,18 +278,19 @@
                         </div>
 
                         <!-- Producto Extra -->
-                        <div class="card mb-4 border-0 bg-info bg-opacity-10">
-                            <div class="card-header text-white rounded-top-4" style="background-color: #0097a7;">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-plus-circle me-2"></i> Producto Extra
-                                    </h5>
-                                    <small class="opacity-75">
-                                        <i class="fas fa-info-circle me-1"></i> Productos no registrados en inventario
-                                    </small>
+                        <div class="card border-0 shadow-sm rounded-4 mb-4">
+                            <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; background: rgba(0, 151, 167, 0.12); color: var(--primary);">
+                                        <i class="fas fa-tags" style="font-size: 13px;"></i>
+                                    </div>
+                                    <h6 class="fw-bold mb-0 text-dark">Productos Adicionales / Extras</h6>
                                 </div>
+                                <span class="badge rounded-pill bg-light text-muted border px-2.5 py-1" style="font-size: 11px;">
+                                    <i class="fas fa-info-circle me-1 text-primary"></i> No descuentan stock
+                                </span>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body p-4">
                                 <div class="alert alert-info border-0 py-2 px-3 mb-3" style="font-size: 12px;">
                                     <i class="fas fa-lightbulb me-1"></i>
                                     Use esta sección para registrar productos que fueron enviados de más y no aparecen en el inventario oficial de la bodega. Estos productos <strong>no descuentan stock</strong>.
@@ -347,13 +344,14 @@
                         </div>
 
                         <!-- Información de pago -->
-                        <div class="card mb-4 border-0 bg-warning bg-opacity-10">
-                            <div class="card-header bg-warning text-white rounded-top-4">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-credit-card me-2"></i> Información de Pago
-                                </h5>
+                        <div class="card border-0 shadow-sm rounded-4 mb-4">
+                            <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; background: rgba(245, 158, 11, 0.12); color: #d97706;">
+                                    <i class="fas fa-credit-card" style="font-size: 13px;"></i>
+                                </div>
+                                <h6 class="fw-bold mb-0 text-dark">Información y Condiciones de Pago</h6>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body p-4">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label fw-bold">

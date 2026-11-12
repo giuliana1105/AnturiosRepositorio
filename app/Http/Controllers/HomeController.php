@@ -49,16 +49,18 @@ class HomeController extends Controller
                     'p.codigo',
                     'p.nombre',
                     'p.descripcion',
+                    'p.tipoempaque',
                     DB::raw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) as cantidad')
                 )
                 ->where('pb.bodega_id', $id)
-                ->groupBy('p.codigo', 'p.nombre', 'p.descripcion')
+                ->groupBy('p.codigo', 'p.nombre', 'p.descripcion', 'p.tipoempaque')
                 ->havingRaw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) > 0')
                 ->get()
                 ->map(fn($row) => [
                     'codigo'      => $row->codigo,
                     'nombre'      => $row->nombre ?? 'Producto no encontrado',
                     'descripcion' => $row->descripcion ?? '',
+                    'tipoempaque' => $row->tipoempaque ?? 'Unidad',
                     'cantidad'    => (int) $row->cantidad,
                 ]);
 
@@ -122,16 +124,18 @@ class HomeController extends Controller
                 'p.codigo',
                 'p.nombre',
                 'p.descripcion',
+                'p.tipoempaque',
                 DB::raw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) as cantidad')
             )
             ->where('pb.bodega_id', $id)
-            ->groupBy('p.codigo', 'p.nombre', 'p.descripcion')
+            ->groupBy('p.codigo', 'p.nombre', 'p.descripcion', 'p.tipoempaque')
             ->havingRaw('SUM(CASE WHEN pb.es_devolucion = false THEN pb.cantidad ELSE 0 END) - SUM(CASE WHEN pb.es_devolucion = true THEN pb.cantidad ELSE 0 END) > 0')
             ->get()
             ->map(fn($row) => [
                 'codigo'      => $row->codigo,
                 'nombre'      => $row->nombre ?? 'Producto no encontrado',
                 'descripcion' => $row->descripcion ?? '',
+                'tipoempaque' => $row->tipoempaque ?? 'Unidad',
                 'cantidad'    => (int) $row->cantidad,
             ]);
 

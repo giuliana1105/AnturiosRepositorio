@@ -2,20 +2,24 @@
 
 @section('content')
 <div class="container-fluid py-2">
-    <div class="page-header">
+    <!-- Encabezado de la página -->
+    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
-            <h3>Crear Rol</h3>
-            <p class="page-subtitle">Definición de nuevo perfil y sus permisos</p>
+            <h3 class="fw-bold mb-1">Crear Nuevo Rol</h3>
+            <p class="page-subtitle mb-0 text-muted">Definición de nuevo perfil de usuario y configuración de matriz de permisos</p>
         </div>
-        <a href="{{ route('roles.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Volver
+        <a href="{{ route('roles.index') }}" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm">
+            <i class="fas fa-arrow-left me-1"></i> Volver a Roles
         </a>
     </div>
 
     @if ($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-triangle me-2"></i><strong>Errores de validación:</strong>
-            <ul class="mb-0 mt-2">
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
+            <div class="d-flex align-items-center mb-1">
+                <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+                <strong class="fs-6">Se encontraron errores en el formulario:</strong>
+            </div>
+            <ul class="mb-0 mt-2 ps-3">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -24,67 +28,99 @@
         </div>
     @endif
 
-    <div class="card mb-4" style="max-width: 900px; margin: 0 auto; border-top: 3px solid var(--primary);">
-        <div class="card-body p-4">
+    <div class="card border-0 shadow-sm rounded-4 mb-4" style="max-width: 1000px; margin: 0 auto; border-top: 3px solid var(--primary) !important;">
+        <div class="card-body p-4 p-md-5">
             <form action="{{ route('roles.store') }}" method="POST">
                 @csrf
 
-                <div class="mb-4">
-                    <label for="name" class="form-label fw-semibold">
-                        <i class="fas fa-user-shield me-1" style="color: var(--primary);"></i>Nombre del Rol
+                <!-- Campo Nombre del Rol -->
+                <div class="mb-4 pb-3 border-bottom">
+                    <label for="name" class="form-label fw-bold text-dark" style="font-size: 14px;">
+                        <i class="fas fa-user-shield text-primary me-1"></i> Nombre del Rol <span class="text-danger">*</span>
                     </label>
-                    <input type="text" name="name" id="name" class="form-control" 
-                           placeholder="Ej: Supervisor, Contador, Bodeguero" required value="{{ old('name') }}">
+                    <input type="text" name="name" id="name" class="form-control form-control-lg rounded-3" 
+                           placeholder="Ej: Supervisor de Almacén, Auditor, Asistente Comercial..." required value="{{ old('name') }}">
+                    <small class="text-muted d-block mt-1">Elige un nombre descriptivo para identificar las funciones operativas de este cargo.</small>
                 </div>
 
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <label class="form-label fw-semibold mb-0">
-                            <i class="fas fa-key me-1" style="color: var(--primary);"></i>Permisos del Rol
-                        </label>
+                <!-- Matriz de Permisos Organizada por Módulos -->
+                <div class="mb-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <div>
+                            <h5 class="fw-bold text-dark mb-1">
+                                <i class="fas fa-key text-warning me-2"></i>Matriz de Permisos del Sistema
+                            </h5>
+                            <p class="text-muted mb-0" style="font-size: 13px;">Selecciona las autorizaciones y accesos que tendrán los usuarios asignados a este rol.</p>
+                        </div>
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-sm btn-outline-primary" id="selectAll">
-                                <i class="fas fa-check-double me-1"></i>Seleccionar Todo
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-xs" id="selectAll">
+                                <i class="fas fa-check-double me-1"></i> Marcar Todo
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAll">
-                                <i class="fas fa-times me-1"></i>Deseleccionar Todo
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 shadow-xs" id="deselectAll">
+                                <i class="fas fa-times me-1"></i> Desmarcar Todo
                             </button>
                         </div>
                     </div>
 
-                    @foreach($permissionsGrouped as $grupo => $permisos)
-                        @if($permisos->count() > 0)
-                        <div class="permission-group mb-3">
-                            <div class="permission-group-header d-flex justify-content-between align-items-center">
-                                <span>
-                                    <i class="fas fa-folder-open me-2"></i>{{ $grupo }}
-                                    <span class="badge bg-light text-dark ms-1">{{ $permisos->count() }}</span>
-                                </span>
-                                <button type="button" class="btn btn-sm btn-link toggle-group p-0" style="font-size: 12px;">
-                                    Marcar todos
-                                </button>
-                            </div>
-                            <div class="permission-group-body">
-                                @foreach($permisos as $permission)
-                                    <label class="permission-checkbox">
-                                        <input type="checkbox" name="permissions[]" value="{{ $permission->id }}" 
-                                               class="form-check-input perm-check"
-                                               {{ (collect(old('permissions'))->contains($permission->id)) ? 'checked' : '' }}>
-                                        <span>{{ $permission->name }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
-                    @endforeach
+                    <div class="row g-3">
+                        @foreach($permissionsGrouped as $grupo => $permisos)
+                            @if($permisos->count() > 0)
+                                @php
+                                    $moduloMeta = [
+                                        'Dashboard y KPIs'     => ['icon' => 'fa-chart-pie', 'color' => '#0284c7', 'bg' => '#e0f2fe'],
+                                        'Catálogo y Productos' => ['icon' => 'fa-box-open',  'color' => '#059669', 'bg' => '#d1fae5'],
+                                        'Clientes'             => ['icon' => 'fa-user-tie',  'color' => '#0097a7', 'bg' => '#e0f7fa'],
+                                        'Empleados y Personal' => ['icon' => 'fa-users',     'color' => '#dc2626', 'bg' => '#fee2e2'],
+                                        'Bodegas y Almacén'    => ['icon' => 'fa-warehouse', 'color' => '#d97706', 'bg' => '#fef3c7'],
+                                        'Notas y Solicitudes'  => ['icon' => 'fa-clipboard-list', 'color' => '#7c3aed', 'bg' => '#ede9fe'],
+                                        'Movimientos'          => ['icon' => 'fa-exchange-alt', 'color' => '#0891b2', 'bg' => '#cffafe'],
+                                        'Ventas y Cobros'      => ['icon' => 'fa-cash-register', 'color' => '#b45309', 'bg' => '#fef3c7'],
+                                        'Usuarios'             => ['icon' => 'fa-user-shield', 'color' => '#2563eb', 'bg' => '#dbeafe'],
+                                        'Roles y Seguridad'    => ['icon' => 'fa-lock',      'color' => '#475569', 'bg' => '#f1f5f9'],
+                                    ];
+                                    $meta = $moduloMeta[$grupo] ?? ['icon' => 'fa-folder', 'color' => '#64748b', 'bg' => '#f8fafc'];
+                                @endphp
+                                <div class="col-md-6">
+                                    <div class="card h-100 border rounded-3 shadow-xs permission-group">
+                                        <div class="card-header py-2.5 px-3 bg-white border-bottom d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
+                                                <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 28px; height: 28px; background: {{ $meta['bg'] }}; color: {{ $meta['color'] }}; font-size: 12px;">
+                                                    <i class="fas {{ $meta['icon'] }}"></i>
+                                                </div>
+                                                <span class="fw-bold text-dark" style="font-size: 13px;">{{ $grupo }}</span>
+                                                <span class="badge rounded-pill ms-2" style="background: {{ $meta['bg'] }}; color: {{ $meta['color'] }}; font-size: 11px;">
+                                                    {{ $permisos->count() }}
+                                                </span>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-link toggle-group p-0 text-decoration-none fw-semibold" style="font-size: 11.5px; color: var(--primary);">
+                                                Alternar módulo
+                                            </button>
+                                        </div>
+                                        <div class="card-body p-3">
+                                            <div class="d-flex flex-column gap-1.5">
+                                                @foreach($permisos as $permission)
+                                                    <label class="permission-checkbox-custom p-2 rounded-2 d-flex align-items-center">
+                                                        <input type="checkbox" name="permissions[]" value="{{ $permission->id }}" 
+                                                               class="form-check-input mt-0 me-2 perm-check"
+                                                               {{ (collect(old('permissions'))->contains($permission->id)) ? 'checked' : '' }}>
+                                                        <span class="text-dark" style="font-size: 13px;">{{ $permission->name }}</span>
+                                                    </label>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
                 </div>
 
-                <hr class="my-4" style="border-color: var(--border-light);">
+                <hr class="my-4" style="border-color: #e2e8f0;">
                 
                 <div class="d-flex justify-content-end gap-2">
-                    <a href="{{ route('roles.index') }}" class="btn btn-secondary">Cancelar</a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Guardar Rol
+                    <a href="{{ route('roles.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                        <i class="fas fa-save me-1"></i> Guardar Nuevo Rol
                     </button>
                 </div>
             </form>
@@ -93,42 +129,17 @@
 </div>
 
 <style>
-.permission-group {
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-}
-.permission-group-header {
-    background: var(--accent-subtle);
-    padding: 10px 16px;
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--foreground);
-    border-bottom: 1px solid var(--border-color);
-}
-.permission-group-body {
-    padding: 12px 16px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 8px;
-}
-.permission-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
+.permission-checkbox-custom {
     cursor: pointer;
-    transition: background 0.15s;
-    font-size: 13px;
-    color: var(--foreground);
+    transition: background-color 0.15s ease;
+    border: 1px solid transparent;
 }
-.permission-checkbox:hover {
-    background: var(--accent-subtle);
+.permission-checkbox-custom:hover {
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
 }
-.permission-checkbox .form-check-input {
-    margin: 0;
-    cursor: pointer;
+.shadow-xs {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 </style>
 @endsection
@@ -146,14 +157,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.perm-check').forEach(cb => cb.checked = false);
     });
 
-    // Marcar/desmarcar por grupo
+    // Toggle por grupo
     document.querySelectorAll('.toggle-group').forEach(btn => {
         btn.addEventListener('click', function() {
             const group = this.closest('.permission-group');
             const checkboxes = group.querySelectorAll('.perm-check');
-            const allChecked = [...checkboxes].every(cb => cb.checked);
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
             checkboxes.forEach(cb => cb.checked = !allChecked);
-            this.textContent = allChecked ? 'Marcar todos' : 'Desmarcar todos';
         });
     });
 });

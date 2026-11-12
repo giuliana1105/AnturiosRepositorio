@@ -2,30 +2,30 @@
 
 @section('content')
 <div class="container-fluid py-2">
-    <div class="page-header">
+    <!-- Encabezado de la página -->
+    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
-            <h3>Editar Venta</h3>
-            <p class="page-subtitle">Bodega: {{ $bodega->nombrebodega }}</p>
+            <h3 class="fw-bold mb-1">Editar Venta #{{ $venta->nro_venta ?? $venta->id }}</h3>
+            <p class="page-subtitle mb-0 text-muted">Bodega: <strong>{{ $bodega->nombrebodega }}</strong> &bull; Modificación de datos de entrega y condiciones</p>
         </div>
-        <a href="{{ route('bodegas.show', $bodega->idbodega) }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Volver
+        <a href="{{ route('venta.show', $venta->id) }}" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm">
+            <i class="fas fa-arrow-left me-1"></i> Volver al Detalle
         </a>
     </div>
 
-    <div class="card" style="border-top: 3px solid var(--primary);">
-        <div class="card-body p-4">
-                    <form method="POST" action="{{ route('venta.update', $venta->id) }}">
-                        @csrf
-                        @method('PUT')
-                        
-                        <!-- Información Básica de la Venta -->
-                        <div class="card mb-4 border-0 bg-primary bg-opacity-10">
-                            <div class="card-header bg-primary text-white rounded-top-4">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-info-circle me-2"></i> Información Básica
-                                </h5>
-                            </div>
-                            <div class="card-body">
+    <form method="POST" action="{{ route('venta.update', $venta->id) }}">
+        @csrf
+        @method('PUT')
+        
+        <!-- Información Básica de la Venta -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center">
+                <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; background: rgba(0, 151, 167, 0.12); color: var(--primary);">
+                    <i class="fas fa-info-circle" style="font-size: 13px;"></i>
+                </div>
+                <h6 class="fw-bold mb-0 text-dark">Información de la Venta</h6>
+            </div>
+            <div class="card-body p-4">
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label fw-bold">
@@ -71,13 +71,14 @@
                         </div>
 
                         <!-- Productos -->
-                        <div class="card mb-4 border-0 bg-success bg-opacity-10">
-                            <div class="card-header bg-success text-white rounded-top-4">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-shopping-bag me-2"></i> Productos de la Venta
-                                </h5>
+                        <div class="card border-0 shadow-sm rounded-4 mb-4">
+                            <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.12); color: #059669;">
+                                    <i class="fas fa-boxes" style="font-size: 13px;"></i>
+                                </div>
+                                <h6 class="fw-bold mb-0 text-dark">Productos de la Venta</h6>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body p-4">
                                 <div id="productos-container">
                                     @if($venta->detalles && count($venta->detalles) > 0)
                                         @foreach($venta->detalles as $i => $detalle)
@@ -184,13 +185,14 @@
 
                         <!-- Sección de Abonos (solo si es crédito) -->
                         <div id="abonos-section" style="display: {{ $mostrarAbonos ? 'block' : 'none' }};">
-                            <div class="card mb-4 border-0 bg-warning bg-opacity-10">
-                                <div class="card-header bg-warning text-white rounded-top-4">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-money-bill-wave me-2"></i> Gestión de Abonos
-                                    </h5>
+                            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                                <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; background: rgba(245, 158, 11, 0.12); color: #d97706;">
+                                        <i class="fas fa-hand-holding-usd" style="font-size: 13px;"></i>
+                                    </div>
+                                    <h6 class="fw-bold mb-0 text-dark">Gestión de Abonos y Amortizaciones</h6>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body p-4">
                                     <div id="abonos-container">
                                         @if(isset($abonos) && count($abonos) > 0)
                                             @foreach($abonos as $j => $abono)

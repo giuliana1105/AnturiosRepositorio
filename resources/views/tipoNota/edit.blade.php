@@ -8,19 +8,20 @@
 
 @section('content')
 <div class="container-fluid py-2">
-    <div class="page-header">
+    <!-- Encabezado de la página -->
+    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
-            <h3>Editar Nota</h3>
-            <p class="page-subtitle">Modificación de envío o devolución de productos</p>
+            <h3 class="fw-bold mb-1">Editar Nota de Pedido #{{ $tipoNota->codigo }}</h3>
+            <p class="page-subtitle mb-0 text-muted">Modificación de solicitud de envío o devolución de productos</p>
         </div>
-        <a href="{{ route('tipoNota.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Volver
+        <a href="{{ route('tipoNota.index') }}" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm">
+            <i class="fas fa-arrow-left me-1"></i> Volver a Notas
         </a>
     </div>
 
     <!-- Alertas -->
     @if ($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
             <i class="fas fa-exclamation-circle me-2"></i><strong>Errores de validación:</strong>
             <ul class="mb-0 mt-2">
                 @foreach ($errors->all() as $error)
@@ -32,24 +33,30 @@
     @endif
 
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
             <i class="fas fa-check-circle me-2"></i><strong>Éxito:</strong> {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert">
             <i class="fas fa-exclamation-circle me-2"></i><strong>Error:</strong> {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
-    <div class="card" style="border-top: 3px solid var(--primary);">
-        <div class="card-body p-4">
-            <h6 class="fw-semibold mb-4" style="color: var(--foreground);">
-                <i class="fas fa-file-signature me-2" style="color: var(--primary);"></i>Datos de la Nota
-            </h6>
+    <div class="card border-0 shadow-sm rounded-4 mb-4" style="max-width: 960px; margin: 0 auto; border-top: 3px solid var(--primary) !important;">
+        <div class="card-body p-4 p-md-5">
+            <div class="d-flex align-items-center mb-4 pb-2 border-bottom">
+                <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 44px; height: 44px; background: rgba(0, 151, 167, 0.12); color: var(--primary);">
+                    <i class="fas fa-file-signature fs-5"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark">Modificar Datos de la Nota</h5>
+                    <small class="text-muted">Ajusta la bodega de destino, tipo de nota o cantidades solicitadas.</small>
+                </div>
+            </div>
 
             <form action="{{ route('tipoNota.update', $tipoNota->codigo) }}" method="POST">
                 @csrf
@@ -163,9 +170,9 @@
                 <hr class="my-4" style="border-color: var(--border-light);">
                 
                 <div class="d-flex justify-content-end gap-2">
-                    <a href="{{ route('tipoNota.index') }}" class="btn btn-secondary">Cancelar</a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Guardar Cambios
+                    <a href="{{ route('tipoNota.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                        <i class="fas fa-save me-1"></i> Guardar Cambios
                     </button>
                 </div>
             </form>

@@ -23,7 +23,15 @@ class RoleController extends Controller
     {
         $roles = Role::with('permissions')->withCount('users')->paginate(10);
         $rolesProtegidos = $this->rolesProtegidos;
-        return view('roles.index', compact('roles', 'rolesProtegidos'));
+        $totalPermisos = Permission::count();
+        $totalUsuarios = User::count();
+
+        foreach ($roles as $role) {
+            $role->permissionsGrouped = $this->agruparPermisos($role->permissions);
+            $role->esAdminTotal = ($role->name === 'Administrador' || ($totalPermisos > 0 && $role->permissions->count() >= $totalPermisos));
+        }
+
+        return view('roles.index', compact('roles', 'rolesProtegidos', 'totalPermisos', 'totalUsuarios'));
     }
 
     public function create()
@@ -117,22 +125,23 @@ class RoleController extends Controller
     private function agruparPermisos($permissions)
     {
         $grupos = [
-            'Dashboard' => ['dashboard'],
-            'Productos' => ['producto'],
-            'Empleados' => ['empleado'],
-            'Bodegas' => ['bodega'],
-            'Notas / Solicitudes' => ['nota', 'solicitud'],
-            'Transacciones' => ['transacci', 'historial transferencias'],
-            'Ventas' => ['venta', 'cuentas cobrar', 'liquidacion'],
-            'Usuarios' => ['usuario'],
-            'Roles' => ['rol'],
+            'Dashboard y KPIs'     => ['dashboard', 'kpis', 'reporte'],
+            'Catálogo y Productos' => ['producto'],
+            'Clientes'             => ['cliente'],
+            'Empleados y Personal' => ['empleado'],
+            'Bodegas y Almacén'    => ['bodega'],
+            'Notas y Solicitudes'  => ['nota', 'solicitud'],
+            'Movimientos'          => ['transacci', 'transferencia', 'historial'],
+            'Ventas y Cobros'      => ['venta', 'cuentas cobrar', 'liquidacion', 'cobrar'],
+            'Usuarios'             => ['usuario'],
+            'Roles y Seguridad'    => ['rol', 'auditoria'],
         ];
 
         $grouped = [];
         $assigned = [];
 
         foreach ($grupos as $label => $keywords) {
-            $grouped[$label] = $permissions->filter(function ($perm) use ($keywords, &$assigned) {
+            $matched = $permissions->filter(function ($perm) use ($keywords, &$assigned) {
                 foreach ($keywords as $keyword) {
                     if (stripos($perm->name, $keyword) !== false && !in_array($perm->id, $assigned)) {
                         $assigned[] = $perm->id;
@@ -141,6 +150,10 @@ class RoleController extends Controller
                 }
                 return false;
             });
+
+            if ($matched->isNotEmpty()) {
+                $grouped[$label] = $matched;
+            }
         }
 
         // Permisos que no encajaron en ningún grupo

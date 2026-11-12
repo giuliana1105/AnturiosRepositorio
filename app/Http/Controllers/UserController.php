@@ -18,11 +18,33 @@ class UserController extends Controller
         $this->authorizeResource(User::class, 'user');
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $users = User::with('roles')->paginate(10);
+        $query = User::with('roles');
 
-        return view('users.index', compact('users'));
+        if ($request->filled('search')) {
+            $search = strtolower(trim($request->search));
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                  ->orWhereRaw('LOWER(email) LIKE ?', ["%{$search}%"]);
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->whereHas('roles', function ($q) use ($request) {
+                $q->where('roles.id', $request->role);
+            });
+        }
+
+        $users = $query->orderBy('name', 'asc')->paginate(10)->appends($request->query());
+        $roles = Role::orderBy('name')->get();
+
+        $totalUsuarios = User::count();
+        $totalRoles = Role::count();
+        $usuariosPendientesClave = User::where('must_change_password', true)->count();
+        $usuariosActivos = $totalUsuarios - $usuariosPendientesClave;
+
+        return view('users.index', compact('users', 'roles', 'totalUsuarios', 'totalRoles', 'usuariosActivos', 'usuariosPendientesClave'));
     }
 
     public function edit(User $user)
@@ -71,22 +93,23 @@ class UserController extends Controller
     private function agruparPermisos($permissions)
     {
         $grupos = [
-            'Dashboard' => ['dashboard'],
-            'Productos' => ['producto'],
-            'Empleados' => ['empleado'],
-            'Bodegas' => ['bodega'],
-            'Notas / Solicitudes' => ['nota', 'solicitud'],
-            'Transacciones' => ['transacci', 'historial transferencias'],
-            'Ventas' => ['venta', 'cuentas cobrar', 'liquidacion'],
-            'Usuarios' => ['usuario'],
-            'Roles' => ['rol'],
+            'Dashboard y KPIs'     => ['dashboard', 'kpis', 'reporte'],
+            'Catálogo y Productos' => ['producto'],
+            'Clientes'             => ['cliente'],
+            'Empleados y Personal' => ['empleado'],
+            'Bodegas y Almacén'    => ['bodega'],
+            'Notas y Solicitudes'  => ['nota', 'solicitud'],
+            'Movimientos'          => ['transacci', 'transferencia', 'historial'],
+            'Ventas y Cobros'      => ['venta', 'cuentas cobrar', 'liquidacion', 'cobrar'],
+            'Usuarios'             => ['usuario'],
+            'Roles y Seguridad'    => ['rol', 'auditoria'],
         ];
 
         $grouped = [];
         $assigned = [];
 
         foreach ($grupos as $label => $keywords) {
-            $grouped[$label] = $permissions->filter(function ($perm) use ($keywords, &$assigned) {
+            $matched = $permissions->filter(function ($perm) use ($keywords, &$assigned) {
                 foreach ($keywords as $keyword) {
                     if (stripos($perm->name, $keyword) !== false && !in_array($perm->id, $assigned)) {
                         $assigned[] = $perm->id;
@@ -95,6 +118,10 @@ class UserController extends Controller
                 }
                 return false;
             });
+
+            if ($matched->isNotEmpty()) {
+                $grouped[$label] = $matched;
+            }
         }
 
         // Permisos que no encajaron en ningún grupo

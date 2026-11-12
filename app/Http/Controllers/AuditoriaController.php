@@ -52,7 +52,10 @@ class AuditoriaController extends Controller
         $auditorias = $query->paginate(20)->withQueryString();
         
         $users = User::orderBy('name')->get();
+        $totalAuditorias = Auditoria::count();
+        $auditoriasHoy = Auditoria::whereDate('created_at', today())->count();
+        $modulosActivos = Auditoria::distinct('modulo')->count('modulo');
 
-        return view('auditorias.index', compact('auditorias', 'users'));
+        return view('auditorias.index', compact('auditorias', 'users', 'totalAuditorias', 'auditoriasHoy', 'modulosActivos'));
     }
 }

@@ -12,20 +12,39 @@ class ClienteController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $tipo = $request->input('tipo'); // 'empresa' o 'personal'
 
-        $clientes = Cliente::query()
+        $clientesQuery = Cliente::query()
             ->when($search, function ($query, $search) {
-                return $query->where('nombres', 'ilike', "%{$search}%")
-                    ->orWhere('apellidos', 'ilike', "%{$search}%")
-                    ->orWhere('cedula', 'like', "%{$search}%")
-                    ->orWhere('nombre_empresa', 'ilike', "%{$search}%")
-                    ->orWhere('celular', 'like', "%{$search}%");
+                return $query->where(function ($q) use ($search) {
+                    $q->where('nombres', 'ilike', "%{$search}%")
+                      ->orWhere('apellidos', 'ilike', "%{$search}%")
+                      ->orWhere('cedula', 'like', "%{$search}%")
+                      ->orWhere('nombre_empresa', 'ilike', "%{$search}%")
+                      ->orWhere('celular', 'like', "%{$search}%")
+                      ->orWhere('correo', 'ilike', "%{$search}%");
+                });
+            })
+            ->when($tipo === 'empresa', function ($query) {
+                return $query->whereNotNull('nombre_empresa')->where('nombre_empresa', '!=', '');
+            })
+            ->when($tipo === 'personal', function ($query) {
+                return $query->where(function ($q) {
+                    $q->whereNull('nombre_empresa')->orWhere('nombre_empresa', '');
+                });
             })
             ->withCount('ventas')
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+            ->orderBy('id', 'desc');
 
-        return view('clientes.index', compact('clientes', 'search'));
+        $clientes = $clientesQuery->paginate(10);
+
+        // Métricas KPI ejecutivas
+        $totalClientes = Cliente::count();
+        $clientesEmpresa = Cliente::whereNotNull('nombre_empresa')->where('nombre_empresa', '!=', '')->count();
+        $totalVentas = \App\Models\Venta::whereNotNull('cliente_id')->count();
+        $totalFacturado = \App\Models\Venta::whereNotNull('cliente_id')->sum('total_venta');
+
+        return view('clientes.index', compact('clientes', 'search', 'tipo', 'totalClientes', 'clientesEmpresa', 'totalVentas', 'totalFacturado'));
     }
 
     public function create()

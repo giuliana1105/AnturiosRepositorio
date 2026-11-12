@@ -27,16 +27,26 @@ class ProductoController extends Controller
         $query = Producto::query();
 
         if ($request->filled('search_codigo')) {
-            $query->whereRaw('LOWER(codigo) LIKE ?', ['%' . strtolower($request->search_codigo) . '%']);
+            $query->whereRaw('LOWER(codigo) LIKE ?', ['%' . strtolower(trim($request->search_codigo)) . '%']);
         }
 
         if ($request->filled('search_nombre')) {
-            $query->whereRaw('LOWER(nombre) LIKE ?', ['%' . strtolower($request->search_nombre) . '%']);
+            $query->whereRaw('LOWER(nombre) LIKE ?', ['%' . strtolower(trim($request->search_nombre)) . '%']);
         }
 
-        $productos = $query->orderBy('nombre', 'ASC')->paginate(5)->appends($request->all());
+        if ($request->filled('tipoempaque')) {
+            $query->where('tipoempaque', $request->tipoempaque);
+        }
 
-        return view('producto.index', compact('productos'));
+        $productos = $query->orderBy('nombre', 'ASC')->paginate(10)->appends($request->all());
+
+        // Estadísticas y filtros para el panel KPI
+        $totalProductos = Producto::count();
+        $totalStock = (int) Producto::sum('cantidad');
+        $productosStockBajo = Producto::where('cantidad', '<=', 10)->count();
+        $empaquesDisponibles = Producto::distinct('tipoempaque')->whereNotNull('tipoempaque')->pluck('tipoempaque')->filter()->values();
+
+        return view('producto.index', compact('productos', 'totalProductos', 'totalStock', 'productosStockBajo', 'empaquesDisponibles'));
     }
 
     /**

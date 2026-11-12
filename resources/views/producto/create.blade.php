@@ -83,9 +83,9 @@
                         <hr class="my-4" style="border-color: var(--border-light);">
                         
                         <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('productos.index') }}" class="btn btn-secondary">Cancelar</a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Guardar Producto
+                            <a href="{{ route('productos.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                                <i class="fas fa-save me-1"></i> Guardar Producto
                             </button>
                         </div>
                     </form>

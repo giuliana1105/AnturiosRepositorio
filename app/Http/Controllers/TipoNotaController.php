@@ -113,7 +113,7 @@ public function index(Request $request)
     $tipoNotas = $query
         ->orderBy('created_at', 'desc')
         ->orderBy('codigo', 'desc')
-        ->paginate(5)
+        ->paginate(10)
         ->appends($request->all());
 
     // Precargar productos faltantes en una sola consulta (evita N+1)
@@ -132,9 +132,16 @@ public function index(Request $request)
         });
     }
 
+    $totalNotas = TipoNota::count();
+    $totalEnvios = TipoNota::where('tiponota', 'ENVIO')->count();
+    $totalDevoluciones = TipoNota::where('tiponota', 'DEVOLUCION')->count();
+
     return view('tipoNota.index', [
         'tipoNotas' => $tipoNotas,
         'bodegas' => $bodegas,
+        'totalNotas' => $totalNotas,
+        'totalEnvios' => $totalEnvios,
+        'totalDevoluciones' => $totalDevoluciones,
     ]);
 }
 

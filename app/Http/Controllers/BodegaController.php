@@ -24,11 +24,21 @@ class BodegaController extends Controller
      * Display a listing of the resource.
      */
 
-    public function index()
+    public function index(Request $request)
     {
+        $search = trim($request->input('search', ''));
+        $query = Bodega::withCount(['empleados', 'ventas']);
 
-        $bodegas = Bodega::orderBy('nombrebodega', 'ASC')->paginate(5);
-        return view('bodegas.index', compact('bodegas'));
+        if ($search !== '') {
+            $lower = strtolower($search);
+            $query->whereRaw('LOWER(nombrebodega) LIKE ?', ["%{$lower}%"]);
+        }
+
+        $bodegas = $query->orderBy('nombrebodega', 'ASC')->paginate(10)->appends($request->query());
+        $totalBodegas = Bodega::count();
+        $totalEmpleados = \App\Models\Empleado::count();
+
+        return view('bodegas.index', compact('bodegas', 'totalBodegas', 'totalEmpleados'));
     }
 
     

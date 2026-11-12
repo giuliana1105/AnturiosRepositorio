@@ -20,16 +20,39 @@ class EmpleadoController extends Controller
 
     public function index(Request $request)
     {
+        $search = trim($request->input('search', ''));
+        $cargoFilter = $request->input('cargo');
+        $bodegaFilter = $request->input('bodega');
 
-        $search = $request->input('search');
-        $empleados = Empleado::with('bodega')
-            ->when($search, function ($query, $search) {
-                return $query->where('nombreemp', 'like', "%{$search}%")
-                    ->orWhere('nro_identificacion', 'like', "%{$search}%");
-            })
-            ->paginate(5);
+        $query = Empleado::with('bodega');
 
-        return view('empleados.index', compact('empleados'));
+        if ($search !== '') {
+            $lower = strtolower($search);
+            $query->where(function ($q) use ($lower) {
+                $q->whereRaw('LOWER(nombreemp) LIKE ?', ["%{$lower}%"])
+                  ->orWhereRaw('LOWER(apellidoemp) LIKE ?', ["%{$lower}%"])
+                  ->orWhereRaw('LOWER(nro_identificacion) LIKE ?', ["%{$lower}%"])
+                  ->orWhereRaw('LOWER(email) LIKE ?', ["%{$lower}%"]);
+            });
+        }
+
+        if (!empty($cargoFilter)) {
+            $query->where('codigocargo', $cargoFilter);
+        }
+
+        if (!empty($bodegaFilter)) {
+            $query->where('idbodega', $bodegaFilter);
+        }
+
+        $empleados = $query->orderBy('nombreemp', 'asc')->paginate(10)->appends($request->query());
+
+        // Datos para KPIs y filtros
+        $totalEmpleados = Empleado::count();
+        $totalBodegas = Bodega::count();
+        $bodegas = Bodega::orderBy('nombrebodega')->get();
+        $cargos = \Spatie\Permission\Models\Role::pluck('name', 'id')->toArray();
+
+        return view('empleados.index', compact('empleados', 'totalEmpleados', 'totalBodegas', 'bodegas', 'cargos'));
     }
 
     public function create()

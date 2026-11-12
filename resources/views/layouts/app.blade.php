@@ -1038,11 +1038,45 @@
             }
 
             .content-scrollable {
-                padding: var(--space-4);
+                padding: var(--space-3);
             }
 
             .page-header {
                 flex-direction: column;
+                align-items: flex-start !important;
+                gap: 12px;
+            }
+
+            .table-responsive {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .container-fluid {
+                padding-left: 8px !important;
+                padding-right: 8px !important;
+            }
+
+            .card-body {
+                padding: 1rem !important;
+            }
+
+            h3, .h3 {
+                font-size: 1.35rem !important;
+            }
+
+            h2, .h2 {
+                font-size: 1.5rem !important;
+            }
+
+            .btn {
+                font-size: 13px;
+            }
+
+            .badge {
+                white-space: normal;
+                word-break: break-word;
             }
         }
 

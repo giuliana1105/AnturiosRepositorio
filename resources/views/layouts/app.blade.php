@@ -1339,6 +1339,9 @@
                             <i class="fas fa-shopping-cart me-2"></i>Historial de Ventas
                         </a>
                         @endcan
+                        <a href="{{ route('clientes.index') }}" class="collapse-item {{ request()->routeIs('clientes.*') ? 'active' : '' }}">
+                            <i class="fas fa-user-friends me-2"></i>Gestión de Clientes
+                        </a>
                     </div>
                 </div>
                 @endif

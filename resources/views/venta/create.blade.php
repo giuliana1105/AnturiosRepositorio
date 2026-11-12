@@ -81,10 +81,26 @@
                                         <input type="text" class="form-control rounded-pill" value="{{ now()->format('Y-m-d') }}" readonly>
                                     </div>
                                     <div class="col-md-3 mb-3">
-                                        <label class="form-label fw-bold">
-                                            <i class="fas fa-user me-2"></i>Cliente
-                                        </label>
-                                        <input type="text" name="cliente" class="form-control rounded-pill" required placeholder="Nombre del cliente">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <label class="form-label fw-bold mb-0">
+                                                <i class="fas fa-user me-2"></i>Cliente <span class="text-danger">*</span>
+                                            </label>
+                                            <a href="{{ route('clientes.create') }}" target="_blank" class="badge bg-primary text-decoration-none" title="Registrar nuevo cliente">
+                                                <i class="fas fa-plus"></i> Nuevo
+                                            </a>
+                                        </div>
+                                        <select name="cliente_id" id="cliente_id" class="form-control rounded-pill" required>
+                                            <option value="">Seleccione un cliente registrado...</option>
+                                            @foreach($clientes as $c)
+                                                <option value="{{ $c->id }}" 
+                                                        data-nombre="{{ $c->nombre_completo }}"
+                                                        data-empresa="{{ $c->nombre_empresa ?? '' }}"
+                                                        {{ old('cliente_id') == $c->id ? 'selected' : '' }}>
+                                                    {{ $c->nombre_completo }}{{ $c->nombre_empresa ? ' - ' . $c->nombre_empresa : '' }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <input type="hidden" name="cliente" id="cliente_hidden" value="{{ old('cliente') }}">
                                     </div>
                                     <div class="col-md-3 mb-3">
                                         <label class="form-label fw-bold">
@@ -799,7 +815,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function mostrarDetalleVenta() {
-        const cliente = document.querySelector('input[name="cliente"]').value;
+        const clienteSelect = document.getElementById('cliente_id');
+        const clienteHidden = document.getElementById('cliente_hidden');
+        if (clienteSelect && clienteSelect.selectedIndex > 0) {
+            clienteHidden.value = clienteSelect.options[clienteSelect.selectedIndex].getAttribute('data-nombre') || clienteSelect.options[clienteSelect.selectedIndex].text;
+        }
+        const cliente = clienteSelect && clienteSelect.selectedIndex > 0 ? clienteSelect.options[clienteSelect.selectedIndex].text : (clienteHidden ? clienteHidden.value : '');
         const ciudad = document.querySelector('select[name="ciudad"]').value;
         const tipoPago = document.querySelector('select[name="tipo_pago"]').value;
         const productos = [];

@@ -58,6 +58,12 @@ class UserSeeder extends Seeder
             'gestionar cuentas cobrar',
             'generar liquidacion',
 
+            // Clientes
+            'ver clientes',
+            'crear cliente',
+            'editar cliente',
+            'eliminar cliente',
+
             // Usuarios
             'ver usuarios',
             'crear usuario',
@@ -99,6 +105,7 @@ class UserSeeder extends Seeder
             'aprobar solicitudes',
             'ver historial transferencias',
             'ver empleados',
+            'ver clientes',
         ]);
 
         // Vendedor (Mostrador o Camión)
@@ -114,6 +121,9 @@ class UserSeeder extends Seeder
             'registrar ventas',
             'gestionar cuentas cobrar',
             'generar liquidacion',
+            'ver clientes',
+            'crear cliente',
+            'editar cliente',
         ]);
 
         // 4. Crear Usuarios de Prueba y Asignar Roles

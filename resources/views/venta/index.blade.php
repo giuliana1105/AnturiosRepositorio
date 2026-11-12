@@ -110,7 +110,20 @@
                             <tr>
                                 <td><span class="font-mono">{{ $venta->nro_venta }}</span></td>
                                 <td style="color: var(--muted); font-size: 12px;">{{ \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') }}</td>
-                                <td class="fw-medium">{{ $venta->cliente }}</td>
+                                <td class="fw-medium">
+                                    @if($venta->cliente_id)
+                                        <a href="{{ route('clientes.show', $venta->cliente_id) }}" class="text-decoration-none text-dark fw-semibold" title="Ver perfil de {{ $venta->cliente }}">
+                                            {{ $venta->cliente }}
+                                        </a>
+                                        @if($venta->clienteRelacion && $venta->clienteRelacion->nombre_empresa)
+                                            <small class="d-block text-muted" style="font-size: 11px;">
+                                                <i class="fas fa-building me-1"></i>{{ $venta->clienteRelacion->nombre_empresa }}
+                                            </small>
+                                        @endif
+                                    @else
+                                        {{ $venta->cliente }}
+                                    @endif
+                                </td>
                                 <td style="color: var(--secondary);">{{ $venta->ciudad ?? '—' }}</td>
                                 <td style="color: var(--secondary);">{{ $venta->bodega->nombrebodega ?? $venta->bodega_id }}</td>
                                 <td class="text-end">

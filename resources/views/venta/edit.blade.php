@@ -35,12 +35,23 @@
                                                value="{{ $venta->fecha ? \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d') : '' }}">
                                     </div>
                                     <div class="col-md-4 mb-3">
-                                        <label class="form-label fw-bold">
-                                            <i class="fas fa-user me-2"></i>Cliente
-                                        </label>
-                                        <input type="text" name="cliente" class="form-control" 
-                                               value="{{ old('cliente', $venta->cliente) }}" required 
-                                               placeholder="Nombre del cliente">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <label class="form-label fw-bold mb-0">
+                                                <i class="fas fa-user me-2"></i>Cliente <span class="text-danger">*</span>
+                                            </label>
+                                            <a href="{{ route('clientes.create') }}" target="_blank" class="badge bg-primary text-decoration-none">
+                                                <i class="fas fa-plus"></i> Nuevo
+                                            </a>
+                                        </div>
+                                        <select name="cliente_id" id="cliente_id" class="form-control" required>
+                                            <option value="">Seleccione un cliente registrado...</option>
+                                            @foreach($clientes as $c)
+                                                <option value="{{ $c->id }}" 
+                                                        {{ (old('cliente_id', $venta->cliente_id) == $c->id || (empty($venta->cliente_id) && trim(strtolower($venta->cliente)) == trim(strtolower($c->nombre_completo)))) ? 'selected' : '' }}>
+                                                    {{ $c->nombre_completo }}{{ $c->nombre_empresa ? ' - ' . $c->nombre_empresa : '' }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label fw-bold">

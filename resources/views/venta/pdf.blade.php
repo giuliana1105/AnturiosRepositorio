@@ -389,7 +389,7 @@
                 <table class="venta-header-table">
                     <tr>
                         <td width="60%">
-                            <span class="info-label">Cliente:</span> {{ $venta->cliente }}<br>
+                            <span class="info-label">Cliente:</span> {{ $venta->cliente }}@if($venta->clienteRelacion && $venta->clienteRelacion->nombre_empresa) ({{ $venta->clienteRelacion->nombre_empresa }})@endif<br>
                             <span class="info-label">Ciudad:</span> {{ $venta->ciudad }}
                         </td>
                         <td width="40%" style="text-align: right;">

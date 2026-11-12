@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Bodega;
 use App\Models\Producto;
+use App\Models\Cliente;
 use App\Models\Venta; // Nuevo modelo para cabecera
 use App\Models\DetalleVentaBodega; // Nuevo modelo para detalle
 use App\Models\Abono;
@@ -44,7 +45,9 @@ class VentaBodegaController extends Controller
                 'tipoempaque' => $row->tipoempaque ?? 'Unidad',
             ]);
 
-        return view('venta.create', compact('bodega', 'productos', 'nroVenta'));
+        $clientes = Cliente::orderBy('nombres')->orderBy('apellidos')->get();
+
+        return view('venta.create', compact('bodega', 'productos', 'nroVenta', 'clientes'));
     }
 
     public function store(Request $request, $bodega_id)
@@ -60,7 +63,8 @@ class VentaBodegaController extends Controller
             'cantidad.*' => 'required|integer|min:1',
             'precio_unitario' => 'required|array|min:1',
             'precio_unitario.*' => 'required|numeric|min:0.01',
-            'cliente' => 'required|string|max:255',
+            'cliente_id' => 'required|exists:clientes,id',
+            'cliente' => 'nullable|string|max:255',
             'ciudad' => 'required|string|max:255', // <-- Nueva validación
             'tipo_pago' => 'required|in:Efectivo,Transferencia,Crédito,Cheque',
             // Validación de productos extra (opcionales)
@@ -118,12 +122,15 @@ class VentaBodegaController extends Controller
         try {
             DB::beginTransaction();
 
+            $clienteModel = Cliente::findOrFail($request->cliente_id);
+
             // Guarda la venta (cabecera) - Solo si todo el stock fue validado correctamente
             $venta = Venta::create([
                 'bodega_id' => $bodega_id,
+                'cliente_id' => $clienteModel->id,
+                'cliente' => $clienteModel->nombre_completo,
                 'nro_venta' => $nroVenta,
                 'fecha' => now(),
-                'cliente' => $request->cliente,
                 'ciudad' => $request->ciudad,
                 'total_venta' => $totalVenta,
                 'tipo_pago' => $request->tipo_pago,
@@ -206,7 +213,7 @@ class VentaBodegaController extends Controller
         \App\Helpers\AuditoriaHelper::registrar(
             'Ventas',
             'Creación',
-            "Registró una nueva venta Nro. {$nroVenta} al cliente '{$request->cliente}' por un total de $" . number_format($totalVenta, 2)
+            "Registró una nueva venta Nro. {$nroVenta} al cliente '{$clienteModel->nombre_completo}' por un total de $" . number_format($totalVenta, 2)
         );
 
         // Redirige al index de ventas después de guardar
@@ -218,7 +225,7 @@ class VentaBodegaController extends Controller
         $this->authorize('viewAny', \App\Models\Venta::class);
 
         $bodega = Bodega::findOrFail($bodega_id);
-        $ventas = Venta::where('bodega_id', $bodega_id)->with(['bodega', 'abonos'])->get();
+        $ventas = Venta::where('bodega_id', $bodega_id)->with(['bodega', 'abonos', 'clienteRelacion'])->get();
 
         // Calcula el saldo usando abonos precargados (sin queries adicionales)
         foreach ($ventas as $venta) {
@@ -233,7 +240,7 @@ class VentaBodegaController extends Controller
     public function index()
     {
         $this->authorize('viewAny', \App\Models\Venta::class);
-        $ventas = Venta::with(['bodega', 'abonos'])->get();
+        $ventas = Venta::with(['bodega', 'abonos', 'clienteRelacion'])->get();
 
         foreach ($ventas as $venta) {
             if ($venta->tipo_pago === 'Crédito') {
@@ -246,7 +253,7 @@ class VentaBodegaController extends Controller
 
     public function show($id)
     {
-        $venta = Venta::with(['bodega', 'detalles.producto'])->findOrFail($id);
+        $venta = Venta::with(['bodega', 'detalles.producto', 'clienteRelacion'])->findOrFail($id);
         $this->authorize('view', $venta);
         $abonos = [];
         if ($venta->tipo_pago === 'Crédito') {
@@ -257,7 +264,7 @@ class VentaBodegaController extends Controller
 
     public function abonoForm($id)
     {
-        $venta = Venta::with(['bodega', 'detalles.producto'])->findOrFail($id);
+        $venta = Venta::with(['bodega', 'detalles.producto', 'clienteRelacion'])->findOrFail($id);
         $this->authorize('manageCuentasPorCobrar', $venta);
         $abonos = \App\Models\Abono::where('venta_id', $venta->id)->get();
         $saldo = $venta->total_venta - $abonos->sum('abono');
@@ -288,11 +295,12 @@ class VentaBodegaController extends Controller
 
     public function edit($id)
     {
-        $venta = Venta::with(['bodega', 'detalles.producto'])->findOrFail($id);
+        $venta = Venta::with(['bodega', 'detalles.producto', 'clienteRelacion'])->findOrFail($id);
         $this->authorize('update', $venta);
         $bodega = $venta->bodega;
         $productos = Producto::all();
-        return view('venta.edit', compact('venta', 'bodega', 'productos'));
+        $clientes = Cliente::orderBy('nombres')->orderBy('apellidos')->get();
+        return view('venta.edit', compact('venta', 'bodega', 'productos', 'clientes'));
     }
 
     public function update(Request $request, $id)
@@ -301,7 +309,8 @@ class VentaBodegaController extends Controller
         $this->authorize('update', $venta);
 
         $request->validate([
-            'cliente' => 'required|string|max:255',
+            'cliente_id' => 'required|exists:clientes,id',
+            'cliente' => 'nullable|string|max:255',
             'ciudad' => 'required|string|max:255',
             'tipo_pago' => 'required|in:Efectivo,Transferencia,Crédito,Cheque',
             'producto_id.*' => 'nullable|string',
@@ -311,8 +320,11 @@ class VentaBodegaController extends Controller
             'precio_total.*' => 'required|numeric|min:0',
         ]);
 
+        $clienteModel = Cliente::findOrFail($request->cliente_id);
+
         $venta->update([
-            'cliente' => $request->cliente,
+            'cliente_id' => $clienteModel->id,
+            'cliente' => $clienteModel->nombre_completo,
             'ciudad' => $request->ciudad,
             'tipo_pago' => $request->tipo_pago,
         ]);
@@ -345,9 +357,17 @@ class VentaBodegaController extends Controller
     public function exportarVentas(Request $request)
     {
         $this->authorize('viewAny', \App\Models\Venta::class);
-        $ventas = Venta::with(['detalles.producto', 'abonos'])
+        $ventas = Venta::with(['detalles.producto', 'abonos', 'clienteRelacion'])
             ->when($request->bodega_id, fn($q) => $q->where('bodega_id', $request->bodega_id))
-            ->when($request->cliente, fn($q) => $q->where('cliente', 'like', '%'.$request->cliente.'%'))
+            ->when($request->cliente, fn($q) => $q->where(function($query) use ($request) {
+                $query->where('cliente', 'like', '%'.$request->cliente.'%')
+                      ->orWhereHas('clienteRelacion', function($cq) use ($request) {
+                          $cq->where('nombres', 'ilike', '%'.$request->cliente.'%')
+                             ->orWhere('apellidos', 'ilike', '%'.$request->cliente.'%')
+                             ->orWhere('cedula', 'like', '%'.$request->cliente.'%')
+                             ->orWhere('nombre_empresa', 'ilike', '%'.$request->cliente.'%');
+                      });
+            }))
             ->when($request->ciudad, fn($q) => $q->where('ciudad', $request->ciudad))
             ->when($request->tipo_pago, function($q) use ($request) {
                 if ($request->tipo_pago === 'Crédito liquidado' || $request->tipo_pago === 'Crédito pendiente') {

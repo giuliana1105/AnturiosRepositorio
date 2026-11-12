@@ -17,6 +17,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\KpiController;
+use App\Http\Controllers\ClienteController;
 
 
 
@@ -72,6 +73,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('empleados', EmpleadoController::class);
     Route::post('empleados/import', [EmpleadoController::class, 'import'])->name('empleados.import'); // <-- OPCIONAL, para mantener consistencia
+
+    Route::get('clientes/buscar', [ClienteController::class, 'buscar'])->name('clientes.buscar');
+    Route::resource('clientes', ClienteController::class);
 
     Route::resource('bodegas', BodegaController::class);
     Route::resource('tipoNota', TipoNotaController::class);

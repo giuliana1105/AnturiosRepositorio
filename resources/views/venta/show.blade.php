@@ -43,7 +43,21 @@
                                             <th class="fw-bold text-primary">
                                                 <i class="fas fa-user me-2"></i>Cliente
                                             </th>
-                                            <td>{{ $venta->cliente }}</td>
+                                            <td>
+                                                <span class="fw-bold">{{ $venta->cliente }}</span>
+                                                @if($venta->cliente_id && $venta->clienteRelacion)
+                                                    <div class="small text-muted mt-1">
+                                                        <span class="me-2"><i class="fas fa-id-card me-1"></i>{{ $venta->clienteRelacion->cedula }}</span>
+                                                        @if($venta->clienteRelacion->nombre_empresa)
+                                                            <span class="me-2">| <i class="fas fa-building me-1"></i>{{ $venta->clienteRelacion->nombre_empresa }}</span>
+                                                        @endif
+                                                        <span class="me-2">| <i class="fas fa-phone me-1"></i>{{ $venta->clienteRelacion->celular }}</span>
+                                                        <a href="{{ route('clientes.show', $venta->cliente_id) }}" class="btn btn-sm btn-outline-primary py-0 px-2 ms-2" style="font-size: 11px;">
+                                                            Ver perfil cliente
+                                                        </a>
+                                                    </div>
+                                                @endif
+                                            </td>
                                         </tr>
                                         <tr>
                                             <th class="fw-bold text-primary">

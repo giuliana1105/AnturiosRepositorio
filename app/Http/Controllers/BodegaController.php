@@ -93,7 +93,14 @@ public function stockPdf($id)
             'nombrebodega' => 'required|max:10',  // Solo validamos el nombre
         ]);
 
-        Bodega::create($request->all());  // Aquí idbodega será asignado automáticamente
+        $bodega = Bodega::create($request->all());  // Aquí idbodega será asignado automáticamente
+
+        \App\Helpers\AuditoriaHelper::registrar(
+            'Bodegas',
+            'Creación',
+            "Creó la bodega '{$request->nombrebodega}'"
+        );
+
         return redirect()->route('bodegas.index')->with('success', 'Registro creado satisfactoriamente');
     }
 
@@ -174,7 +181,14 @@ public function stockPdf($id)
 
         // No es necesario enviar 'idbodega' porque será un campo autoincremental
         $bodega = Bodega::findOrFail($idbodega);
+        $nombreAnterior = $bodega->nombrebodega;
         $bodega->update($request->all());
+
+        \App\Helpers\AuditoriaHelper::registrar(
+            'Bodegas',
+            'Edición',
+            "Actualizó la bodega '{$nombreAnterior}' a '{$bodega->nombrebodega}'"
+        );
         
         return redirect()->route('bodegas.index')->with('success', 'Registro actualizado satisfactoriamente');
     }
@@ -184,8 +198,16 @@ public function stockPdf($id)
      */
     public function destroy(string $idbodega)
     {
+        $bodega = Bodega::findOrFail($idbodega);
+        $nombre = $bodega->nombrebodega;
+        $bodega->delete();
 
-        Bodega::findOrFail($idbodega)->delete();
+        \App\Helpers\AuditoriaHelper::registrar(
+            'Bodegas',
+            'Eliminación',
+            "Eliminó la bodega '{$nombre}'"
+        );
+
         return redirect()->route('bodegas.index')->with('success', 'Registro eliminado satisfactoriamente');
     }
 

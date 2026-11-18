@@ -108,6 +108,13 @@ class EmpleadoController extends Controller
                 'tipo_identificacion' => $request->tipo_identificacion,
                 'codigocargo' => $validatedData['codigocargo'],
             ]);
+
+            \App\Helpers\AuditoriaHelper::registrar(
+                'Empleados',
+                'Creación',
+                "Registró al empleado '{$request->nombreemp} {$request->apellidoemp}' (Identificación: {$request->nro_identificacion})"
+            );
+
             return redirect()->route('empleados.index')->with('success', 'Empleado creado con éxito.');
         } catch (\Illuminate\Database\QueryException $e) {
             $errorMessage = $e->getMessage();
@@ -158,6 +165,13 @@ class EmpleadoController extends Controller
                 'codigocargo' => $validatedData['codigocargo'],
                 'idbodega' => $validatedData['idbodega'],
             ]);
+
+            \App\Helpers\AuditoriaHelper::registrar(
+                'Empleados',
+                'Edición',
+                "Actualizó datos del empleado '{$request->nombreemp} {$request->apellidoemp}' (Identificación: {$request->nro_identificacion})"
+            );
+
             return redirect()->route('empleados.index')->with('success', 'Empleado actualizado exitosamente.');
         } catch (\Illuminate\Database\QueryException $e) {
             $errorMessage = $e->getMessage();
@@ -172,7 +186,16 @@ class EmpleadoController extends Controller
 
     public function destroy($nro_identificacion)
     {
-        Empleado::findOrFail($nro_identificacion)->delete();
+        $empleado = Empleado::findOrFail($nro_identificacion);
+        $nombreCompleto = $empleado->nombreemp . ' ' . $empleado->apellidoemp;
+        $empleado->delete();
+
+        \App\Helpers\AuditoriaHelper::registrar(
+            'Empleados',
+            'Eliminación',
+            "Eliminó al empleado '{$nombreCompleto}' (Identificación: {$nro_identificacion})"
+        );
+
         return redirect()->route('empleados.index')->with('success', 'Empleado eliminado exitosamente.');
     }
 

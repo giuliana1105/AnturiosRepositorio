@@ -1035,6 +1035,13 @@ public function debug($codigo)
             }
 
             DB::commit();
+
+            \App\Helpers\AuditoriaHelper::registrar(
+                'Notas',
+                'Edición',
+                "Actualizó los datos y detalles de la nota de pedido código {$tipoNota->codigo}"
+            );
+
             return redirect()->route('tipoNota.index')->with('success', 'Nota actualizada correctamente.');
         } catch (QueryException $e) {
             DB::rollBack();
@@ -1059,6 +1066,12 @@ public function debug($codigo)
             $nota->detalles()->delete();
             $nota->delete();
             DB::commit();
+
+            \App\Helpers\AuditoriaHelper::registrar(
+                'Notas',
+                'Eliminación',
+                "Eliminó la nota de pedido código {$codigo}"
+            );
 
             return redirect()->route('tipoNota.index')->with('success', 'Nota eliminada correctamente.');
         } catch (QueryException $e) {

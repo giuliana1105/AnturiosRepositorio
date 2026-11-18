@@ -2,37 +2,67 @@
 
 @php
     $cargo = auth()->user()->cargoNombre();
-    $totalVentasCount = $ventas->count();
-    $totalFacturado = $ventas->sum('total_venta');
-    $totalSaldoPendiente = $ventas->where('tipo_pago', 'Crédito')->sum('saldo');
-    $creditosPendientesCount = $ventas->where('tipo_pago', 'Crédito')->where('saldo', '>', 0)->count();
+    $totalVentasCount = $totalVentasCount ?? ($ventas instanceof \Illuminate\Pagination\LengthAwarePaginator ? $ventas->total() : $ventas->count());
+    $totalFacturado = $totalFacturado ?? $ventas->sum('total_venta');
+    $totalSaldoPendiente = $totalSaldoPendiente ?? $ventas->where('tipo_pago', 'Crédito')->sum('saldo');
+    $creditosPendientesCount = $creditosPendientesCount ?? $ventas->where('tipo_pago', 'Crédito')->where('saldo', '>', 0)->count();
 @endphp
 
 @section('content')
-<div class="container-fluid py-2">
-    <!-- Encabezado de la página -->
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-        <div>
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <h3 class="fw-bold mb-0">Gestión de Ventas</h3>
+<div class="container-fluid py-3 px-3 px-md-4">
+    <!-- Breadcrumb & Status Wayfinding -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0" style="font-size: 13px;">
+                <li class="breadcrumb-item">
+                    <a href="{{ route('home') }}" class="text-decoration-none text-muted">
+                        <i class="fas fa-home me-1 text-primary"></i> Inicio
+                    </a>
+                </li>
                 @if(isset($bodega))
-                    <span class="badge rounded-pill px-3 py-1" style="background: rgba(0, 151, 167, 0.12); color: var(--primary); font-size: 13px; border: 1px solid rgba(0, 151, 167, 0.25);">
-                        <i class="fas fa-warehouse me-1"></i> Bodega: {{ $bodega->nombrebodega }}
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('bodegas.index') }}" class="text-decoration-none text-muted">Bodegas</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('bodega.show', $bodega->idbodega) }}" class="text-decoration-none text-muted">{{ $bodega->nombrebodega }}</a>
+                    </li>
+                @endif
+                <li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">
+                    Ventas
+                </li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Encabezado de la página -->
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 pb-3 mb-4 border-bottom" style="border-color: #e2e8f0 !important;">
+        <div>
+            <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                <h2 class="fw-bold mb-0 text-dark tracking-tight" style="letter-spacing: -0.025em;">
+                    Gestión de Ventas
+                </h2>
+                @if(isset($bodega))
+                    <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1" style="font-size: 12px;">
+                        <i class="fas fa-warehouse me-1"></i> {{ $bodega->nombrebodega }}
                     </span>
                 @endif
             </div>
-            <p class="page-subtitle mb-0 text-muted">Historial de facturación, control de cobros y ventas a crédito</p>
+            <p class="text-muted mb-0" style="font-size: 14px;">
+                Historial de facturación, emisión de recibos, control de pagos y gestión de saldos a crédito.
+            </p>
         </div>
-        <div class="d-flex flex-wrap gap-2">
+        <div class="d-flex flex-wrap align-items-center gap-2">
             @if(isset($bodega))
-                <a href="{{ route('bodega.show', $bodega->idbodega) }}" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm">
+                <a href="{{ route('bodega.show', $bodega->idbodega) }}" class="btn btn-sm btn-outline-secondary rounded-3 px-3 py-2 fw-medium">
                     <i class="fas fa-arrow-left me-1"></i> Volver a Bodega
                 </a>
-                <a href="{{ route('venta.create', $bodega->idbodega) }}" class="btn btn-primary rounded-pill px-3 shadow-sm">
+                @can('registrar ventas')
+                <a href="{{ route('venta.create', $bodega->idbodega) }}" class="btn btn-sm btn-primary rounded-3 px-3 py-2 fw-semibold shadow-sm">
                     <i class="fas fa-plus me-1"></i> Registrar Nueva Venta
                 </a>
+                @endcan
             @endif
-            <button id="btn-reporte" class="btn btn-danger rounded-pill px-3 shadow-sm" data-bodega="{{ isset($bodega) ? $bodega->idbodega : '' }}">
+            <button id="btn-reporte" class="btn btn-sm btn-outline-danger rounded-3 px-3 py-2 fw-medium" data-bodega="{{ isset($bodega) ? $bodega->idbodega : '' }}">
                 <i class="fas fa-file-pdf me-1"></i> Exportar Reporte PDF
             </button>
         </div>
@@ -52,89 +82,118 @@
         </div>
     @endif
 
-    <!-- Tarjetas de Resumen KPI -->
+    <!-- Tarjetas de Resumen Ejecutivo (Estilo Impeccable) -->
     <div class="row g-3 mb-4">
+        <!-- KPI 1: Ventas Totales -->
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
-                <div class="card-body p-3 d-flex align-items-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 48px; height: 48px; background: rgba(0, 151, 167, 0.12); color: var(--primary);">
-                        <i class="fas fa-shopping-bag fs-5"></i>
+            <div class="card h-100 metric-card">
+                <div class="card-body p-3.5">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="metric-label">Ventas Totales</span>
+                        <span class="badge rounded-pill bg-primary-subtle text-primary fw-semibold" style="font-size: 11px;">
+                            Operaciones
+                        </span>
                     </div>
-                    <div>
-                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 11px; letter-spacing: 0.5px;">Ventas Totales</small>
-                        <h4 class="fw-bold mb-0 text-dark">{{ number_format($totalVentasCount) }}</h4>
+                    <div class="metric-value">
+                        {{ number_format($totalVentasCount) }}
+                        <span class="metric-unit">ventas</span>
+                    </div>
+                    <div class="metric-caption text-muted mt-1">
+                        <i class="fas fa-receipt text-primary me-1"></i> Total transacciones emitidas
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- KPI 2: Total Facturado -->
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
-                <div class="card-body p-3 d-flex align-items-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.12); color: #059669;">
-                        <i class="fas fa-dollar-sign fs-5"></i>
+            <div class="card h-100 metric-card">
+                <div class="card-body p-3.5">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="metric-label">Total Facturado</span>
+                        <span class="badge rounded-pill bg-success-subtle text-success fw-semibold" style="font-size: 11px;">
+                            Ingresos
+                        </span>
                     </div>
-                    <div>
-                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 11px; letter-spacing: 0.5px;">Total Facturado</small>
-                        <h4 class="fw-bold mb-0 text-dark">${{ number_format($totalFacturado, 2) }}</h4>
+                    <div class="metric-value text-success font-mono">
+                        ${{ number_format($totalFacturado, 2) }}
+                    </div>
+                    <div class="metric-caption text-muted mt-1">
+                        <i class="fas fa-dollar-sign text-success me-1"></i> Facturación bruta consolidada
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- KPI 3: Saldo por Cobrar -->
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
-                <div class="card-body p-3 d-flex align-items-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.12); color: #d97706;">
-                        <i class="fas fa-clock fs-5"></i>
+            <div class="card h-100 metric-card">
+                <div class="card-body p-3.5">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="metric-label">Saldo por Cobrar</span>
+                        <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-semibold" style="font-size: 11px;">
+                            Cartera
+                        </span>
                     </div>
-                    <div>
-                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 11px; letter-spacing: 0.5px;">Saldo por Cobrar</small>
-                        <h4 class="fw-bold mb-0 text-dark">${{ number_format($totalSaldoPendiente, 2) }}</h4>
+                    <div class="metric-value text-warning-emphasis font-mono">
+                        ${{ number_format($totalSaldoPendiente, 2) }}
+                    </div>
+                    <div class="metric-caption text-muted mt-1">
+                        <i class="fas fa-clock text-warning me-1"></i> Créditos activos por liquidar
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- KPI 4: Créditos Pendientes -->
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
-                <div class="card-body p-3 d-flex align-items-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 48px; height: 48px; background: rgba(239, 68, 68, 0.12); color: #dc2626;">
-                        <i class="fas fa-hand-holding-usd fs-5"></i>
+            <div class="card h-100 metric-card">
+                <div class="card-body p-3.5">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="metric-label">Créditos con Saldo</span>
+                        <span class="badge rounded-pill bg-danger-subtle text-danger fw-semibold" style="font-size: 11px;">
+                            Pendientes
+                        </span>
                     </div>
-                    <div>
-                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 11px; letter-spacing: 0.5px;">Créditos con Saldo</small>
-                        <h4 class="fw-bold mb-0 text-dark">{{ $creditosPendientesCount }}</h4>
+                    <div class="metric-value text-dark font-mono">
+                        {{ $creditosPendientesCount }}
+                        <span class="metric-unit">cuentas</span>
+                    </div>
+                    <div class="metric-caption text-muted mt-1">
+                        <i class="fas fa-hand-holding-usd text-danger me-1"></i> Facturas con cuota abierta
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Filtros de Búsqueda Dinámica -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
-        <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center">
-            <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 28px; height: 28px; background: rgba(0, 151, 167, 0.12); color: var(--primary);">
-                <i class="fas fa-filter" style="font-size: 12px;"></i>
+    <!-- Módulo de Filtros de Búsqueda Rápida -->
+    <div class="card border rounded-3 mb-4 bg-white" style="border-color: #e2e8f0 !important;">
+        <div class="card-header bg-white border-bottom py-3 px-3 px-md-4 d-flex align-items-center justify-content-between" style="border-color: #e2e8f0 !important;">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 28px; height: 28px; background: rgba(0, 151, 167, 0.1); color: var(--primary);">
+                    <i class="fas fa-filter" style="font-size: 12px;"></i>
+                </div>
+                <h6 class="fw-bold mb-0 text-dark" style="font-size: 14px;">Filtros Dinámicos de Búsqueda</h6>
             </div>
-            <h6 class="fw-bold mb-0 text-dark">Filtros de Búsqueda Rápida</h6>
+            <span class="text-muted d-none d-sm-inline" style="font-size: 12px;">Filtrado en tiempo real</span>
         </div>
-        <div class="card-body p-4">
+        <div class="card-body p-3 p-md-4">
             <div class="row g-3">
-                <div class="col-md-3">
-                    <label for="filtro-cliente" class="form-label fw-bold text-dark" style="font-size: 13px;">Cliente</label>
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <label for="filtro-cliente" class="form-label fw-bold text-dark" style="font-size: 12.5px;">Cliente</label>
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0 text-muted ps-3">
-                            <i class="fas fa-user"></i>
+                            <i class="fas fa-user" style="font-size: 12px;"></i>
                         </span>
                         <input type="text" class="form-control border-start-0 ps-1" id="filtro-cliente" placeholder="Nombre o empresa...">
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <label for="filtro-ciudad" class="form-label fw-bold text-dark" style="font-size: 13px;">Ciudad de Entrega</label>
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <label for="filtro-ciudad" class="form-label fw-bold text-dark" style="font-size: 12.5px;">Ciudad de Entrega</label>
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0 text-muted ps-3">
-                            <i class="fas fa-map-marker-alt"></i>
+                            <i class="fas fa-map-marker-alt" style="font-size: 12px;"></i>
                         </span>
                         <select class="form-select border-start-0 ps-1" id="filtro-ciudad">
                             <option value="">Todas las ciudades</option>
@@ -147,11 +206,11 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <label for="filtro-pago" class="form-label fw-bold text-dark" style="font-size: 13px;">Forma / Estado de Pago</label>
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <label for="filtro-pago" class="form-label fw-bold text-dark" style="font-size: 12.5px;">Forma / Estado de Pago</label>
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0 text-muted ps-3">
-                            <i class="fas fa-credit-card"></i>
+                            <i class="fas fa-credit-card" style="font-size: 12px;"></i>
                         </span>
                         <select class="form-select border-start-0 ps-1" id="filtro-pago">
                             <option value="">Todos los métodos</option>
@@ -164,8 +223,8 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <label for="filtro-dia" class="form-label fw-bold text-dark" style="font-size: 13px;">Fecha Exacta</label>
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <label for="filtro-dia" class="form-label fw-bold text-dark" style="font-size: 12.5px;">Fecha Exacta</label>
                     <div class="input-group">
                         <input type="date" class="form-control rounded-start-3" id="filtro-dia">
                         <button type="button" id="clear-dia" class="btn btn-outline-secondary" title="Limpiar"><i class="fas fa-times"></i></button>
@@ -173,9 +232,9 @@
                 </div>
             </div>
 
-            <div class="row g-3 mt-1 pt-2 border-top">
-                <div class="col-md-6">
-                    <label class="form-label fw-bold text-dark mb-1" style="font-size: 13px;">Filtrar por Rango de Fechas</label>
+            <div class="row g-3 mt-1 pt-3 border-top" style="border-color: #f1f5f9 !important;">
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-bold text-dark mb-1" style="font-size: 12.5px;">Filtrar por Rango de Fechas</label>
                     <div class="d-flex gap-2">
                         <div class="input-group">
                             <span class="input-group-text bg-white text-muted" style="font-size: 12px;">Desde</span>
@@ -194,33 +253,33 @@
     </div>
 
     <!-- Tabla Principal de Ventas -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card border rounded-3 overflow-hidden shadow-xs bg-white" style="border-color: #e2e8f0 !important;">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="tabla-ventas">
-                    <thead style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                <table class="table table-hover align-middle mb-0 operational-table" id="tabla-ventas">
+                    <thead>
                         <tr>
-                            <th class="ps-4 py-3 text-uppercase text-muted fw-bold" style="font-size: 11.5px; letter-spacing: 0.5px;">Nro.</th>
-                            <th class="py-3 text-uppercase text-muted fw-bold" style="font-size: 11.5px; letter-spacing: 0.5px;">Fecha</th>
-                            <th class="py-3 text-uppercase text-muted fw-bold" style="font-size: 11.5px; letter-spacing: 0.5px;">Cliente</th>
-                            <th class="py-3 text-uppercase text-muted fw-bold" style="font-size: 11.5px; letter-spacing: 0.5px;">Destino / Ciudad</th>
-                            <th class="py-3 text-uppercase text-muted fw-bold" style="font-size: 11.5px; letter-spacing: 0.5px;">Bodega</th>
-                            <th class="py-3 text-uppercase text-muted fw-bold text-end" style="font-size: 11.5px; letter-spacing: 0.5px;">Total Venta</th>
-                            <th class="py-3 text-uppercase text-muted fw-bold text-end" style="font-size: 11.5px; letter-spacing: 0.5px;">Saldo Pendiente</th>
-                            <th class="py-3 text-uppercase text-muted fw-bold text-center" style="font-size: 11.5px; letter-spacing: 0.5px;">Estado de Pago</th>
-                            <th class="text-end pe-4 py-3 text-uppercase text-muted fw-bold" style="font-size: 11.5px; letter-spacing: 0.5px;">Acciones</th>
+                            <th class="ps-4 py-3" style="width: 100px;">Nro.</th>
+                            <th class="py-3" style="width: 130px;">Fecha</th>
+                            <th class="py-3">Cliente</th>
+                            <th class="py-3">Destino / Ciudad</th>
+                            <th class="py-3">Bodega</th>
+                            <th class="py-3 text-end" style="width: 130px;">Total Venta</th>
+                            <th class="py-3 text-end" style="width: 130px;">Saldo Pdte.</th>
+                            <th class="py-3 text-center" style="width: 160px;">Estado de Pago</th>
+                            <th class="text-end pe-4 py-3" style="width: 130px;">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y">
+                    <tbody>
                         @forelse($ventas as $venta)
                             @php
                                 $fechaFormat = \Carbon\Carbon::parse($venta->fecha)->format('Y-m-d');
                                 $esCredito = ($venta->tipo_pago === 'Crédito');
                                 $saldoVal = (float) ($venta->saldo ?? 0);
                             @endphp
-                            <tr style="transition: background-color 0.15s ease;">
+                            <tr class="operational-row">
                                 <td class="ps-4 py-3">
-                                    <span class="badge rounded-pill bg-light text-dark border px-2.5 py-1 font-mono fw-bold" style="font-size: 12px;">
+                                    <span class="font-mono text-dark fw-bold" style="font-size: 13px;">
                                         #{{ $venta->nro_venta }}
                                     </span>
                                 </td>
@@ -246,7 +305,7 @@
                                 </td>
                                 <td class="py-3">
                                     @if($venta->ciudad)
-                                        <span class="badge rounded-pill bg-light text-secondary border px-2.5 py-1" style="font-size: 11.5px;">
+                                        <span class="badge rounded-pill bg-light text-secondary border px-2.5 py-1" style="font-size: 11.5px; border-color: #e2e8f0 !important;">
                                             <i class="fas fa-map-marker-alt me-1 text-primary"></i>{{ $venta->ciudad }}
                                         </span>
                                     @else
@@ -275,25 +334,25 @@
                                 <td class="py-3 text-center" @if($esCredito) data-saldo="{{ $saldoVal }}" @endif>
                                     @if($esCredito)
                                         @if($saldoVal > 0)
-                                            <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-size: 11.5px;">
-                                                <i class="fas fa-clock me-1"></i>Crédito Pdte.
+                                            <span class="status-badge status-warning">
+                                                <span class="status-indicator-dot"></span> Crédito Pdte.
                                             </span>
                                         @else
-                                            <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; font-size: 11.5px;">
-                                                <i class="fas fa-check-circle me-1"></i>Crédito Pagado
+                                            <span class="status-badge status-success">
+                                                <span class="status-indicator-dot"></span> Crédito Pagado
                                             </span>
                                         @endif
                                     @elseif($venta->tipo_pago === 'Efectivo')
-                                        <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; font-size: 11.5px;">
-                                            <i class="fas fa-money-bill-wave me-1"></i>Efectivo
+                                        <span class="status-badge status-success">
+                                            <span class="status-indicator-dot"></span> Efectivo
                                         </span>
                                     @elseif($venta->tipo_pago === 'Transferencia')
-                                        <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; font-size: 11.5px;">
-                                            <i class="fas fa-university me-1"></i>Transferencia
+                                        <span class="status-badge status-info">
+                                            <span class="status-indicator-dot"></span> Transferencia
                                         </span>
                                     @elseif($venta->tipo_pago === 'Cheque')
                                         <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; font-size: 11.5px;">
-                                            <i class="fas fa-money-check me-1"></i>Cheque
+                                            <i class="fas fa-money-check me-1"></i> Cheque
                                         </span>
                                     @else
                                         <span class="badge rounded-pill bg-light text-muted border px-2.5 py-1" style="font-size: 11.5px;">
@@ -303,24 +362,24 @@
                                 </td>
                                 <td class="text-end pe-4 py-3">
                                     <div class="d-inline-flex gap-1">
-                                        <a href="{{ route('venta.show', $venta->id) }}" class="btn btn-sm btn-outline-info rounded-circle" title="Ver Detalle de Factura" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
+                                        <a href="{{ route('venta.show', $venta->id) }}" class="btn-action-circle" title="Ver Detalle de Factura">
                                             <i class="fas fa-eye" style="font-size: 12px;"></i>
                                         </a>
 
                                         @if($esCredito && $saldoVal > 0)
-                                            <a href="{{ route('venta.abono', $venta->id) }}" class="btn btn-sm btn-outline-success rounded-circle" title="Registrar Abono a este Crédito" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
+                                            <a href="{{ route('venta.abono', $venta->id) }}" class="btn-action-circle text-success" title="Registrar Abono a este Crédito">
                                                 <i class="fas fa-hand-holding-usd" style="font-size: 12px;"></i>
                                             </a>
                                         @endif
 
                                         @if(in_array($cargo, ['Administrador', 'Gerente']))
-                                            <a href="{{ route('venta.edit', $venta->id) }}" class="btn btn-sm btn-outline-primary rounded-circle" title="Editar Venta" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
+                                            <a href="{{ route('venta.edit', $venta->id) }}" class="btn-action-circle text-primary" title="Editar Venta">
                                                 <i class="fas fa-edit" style="font-size: 12px;"></i>
                                             </a>
                                             <form action="{{ route('venta.destroy', $venta->id) }}" method="POST" class="d-inline form-delete-venta">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="btn btn-sm btn-outline-danger rounded-circle btn-delete-venta" title="Eliminar Venta" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
+                                                <button type="button" class="btn-action-circle danger btn-delete-venta" title="Eliminar Venta">
                                                     <i class="fas fa-trash" style="font-size: 12px;"></i>
                                                 </button>
                                             </form>
@@ -332,8 +391,8 @@
                             <tr>
                                 <td colspan="9" class="text-center py-5">
                                     <div class="py-4">
-                                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; background: #f1f5f9; color: #94a3b8;">
-                                            <i class="fas fa-shopping-cart fs-3"></i>
+                                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px; background: #f1f5f9; color: #94a3b8;">
+                                            <i class="fas fa-shopping-cart fs-4"></i>
                                         </div>
                                         <h6 class="fw-bold text-dark mb-1">No hay ventas registradas</h6>
                                         <p class="text-muted mb-0" style="font-size: 13.5px;">Las ventas registradas en las bodegas aparecerán listadas aquí.</p>
@@ -344,6 +403,13 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Paginación -->
+            @if(method_exists($ventas, 'hasPages') && $ventas->hasPages())
+                <div class="p-3 border-top d-flex justify-content-center" style="border-color: #e2e8f0 !important;">
+                    {{ $ventas->links('pagination::bootstrap-4') }}
+                </div>
+            @endif
         </div>
     </div>
 </div>
@@ -353,7 +419,7 @@
     color: var(--primary) !important;
 }
 .shadow-xs {
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 </style>
 @endsection

@@ -16,6 +16,7 @@ class VentaBodegaController extends Controller
 {
     public function create($bodega_id)
     {
+        @set_time_limit(120);
         $this->authorize('create', \App\Models\Venta::class);
 
         $bodega = Bodega::findOrFail($bodega_id);
@@ -52,6 +53,7 @@ class VentaBodegaController extends Controller
 
     public function store(Request $request, $bodega_id)
     {
+        @set_time_limit(120);
         $this->authorize('create', \App\Models\Venta::class);
         // Depuración
          //dd($request->all());
@@ -225,22 +227,62 @@ class VentaBodegaController extends Controller
         $this->authorize('viewAny', \App\Models\Venta::class);
 
         $bodega = Bodega::findOrFail($bodega_id);
-        $ventas = Venta::where('bodega_id', $bodega_id)->with(['bodega', 'abonos', 'clienteRelacion'])->get();
 
-        // Calcula el saldo usando abonos precargados (sin queries adicionales)
+        // Métricas globales acumuladas para los KPI cards superiores
+        $todasVentas = Venta::where('bodega_id', $bodega_id)->with('abonos')->get();
+        foreach ($todasVentas as $v) {
+            if ($v->tipo_pago === 'Crédito') {
+                $v->saldo = $v->total_venta - $v->abonos->sum('abono');
+            }
+        }
+        $totalVentasCount = $todasVentas->count();
+        $totalFacturado = $todasVentas->sum('total_venta');
+        $totalSaldoPendiente = $todasVentas->where('tipo_pago', 'Crédito')->sum('saldo');
+        $creditosPendientesCount = $todasVentas->where('tipo_pago', 'Crédito')->where('saldo', '>', 0)->count();
+
+        // Ventas paginadas a 10 registros por página
+        $ventas = Venta::where('bodega_id', $bodega_id)
+            ->with(['bodega', 'abonos', 'clienteRelacion'])
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+
+        // Calcula el saldo usando abonos precargados para la página actual
         foreach ($ventas as $venta) {
             if ($venta->tipo_pago === 'Crédito') {
                 $venta->saldo = $venta->total_venta - $venta->abonos->sum('abono');
             }
         }
 
-        return view('venta.index', compact('ventas', 'bodega'));
+        return view('venta.index', compact(
+            'ventas',
+            'bodega',
+            'totalVentasCount',
+            'totalFacturado',
+            'totalSaldoPendiente',
+            'creditosPendientesCount'
+        ));
     }
 
     public function index()
     {
         $this->authorize('viewAny', \App\Models\Venta::class);
-        $ventas = Venta::with(['bodega', 'abonos', 'clienteRelacion'])->get();
+
+        // Métricas globales acumuladas para los KPI cards superiores
+        $todasVentas = Venta::with('abonos')->get();
+        foreach ($todasVentas as $v) {
+            if ($v->tipo_pago === 'Crédito') {
+                $v->saldo = $v->total_venta - $v->abonos->sum('abono');
+            }
+        }
+        $totalVentasCount = $todasVentas->count();
+        $totalFacturado = $todasVentas->sum('total_venta');
+        $totalSaldoPendiente = $todasVentas->where('tipo_pago', 'Crédito')->sum('saldo');
+        $creditosPendientesCount = $todasVentas->where('tipo_pago', 'Crédito')->where('saldo', '>', 0)->count();
+
+        // Ventas paginadas a 10 registros por página
+        $ventas = Venta::with(['bodega', 'abonos', 'clienteRelacion'])
+            ->orderBy('id', 'desc')
+            ->paginate(10);
 
         foreach ($ventas as $venta) {
             if ($venta->tipo_pago === 'Crédito') {
@@ -248,7 +290,13 @@ class VentaBodegaController extends Controller
             }
         }
 
-        return view('venta.index', compact('ventas'));
+        return view('venta.index', compact(
+            'ventas',
+            'totalVentasCount',
+            'totalFacturado',
+            'totalSaldoPendiente',
+            'creditosPendientesCount'
+        ));
     }
 
     public function show($id)
@@ -288,6 +336,12 @@ class VentaBodegaController extends Controller
             'fecha' => $request->fecha_abono,
             'tipo_pago' => $request->tipo_pago_abono,
         ]);
+
+        \App\Helpers\AuditoriaHelper::registrar(
+            'Ventas',
+            'Abono',
+            "Registró un abono de $" . number_format($request->abono, 2) . " ({$request->tipo_pago_abono}) a la venta Nro. {$venta->nro_venta}"
+        );
 
         // Redirige al index de ventas de la bodega correspondiente
         return redirect()->route('venta.abono', $venta->id)->with('success', 'Abono agregado correctamente.');
@@ -343,6 +397,12 @@ class VentaBodegaController extends Controller
             $detalle->update($dataDetalle);
         }
 
+        \App\Helpers\AuditoriaHelper::registrar(
+            'Ventas',
+            'Edición',
+            "Actualizó los datos de la venta Nro. {$venta->nro_venta} del cliente '{$clienteModel->nombre_completo}'"
+        );
+
         return redirect()->route('venta.index.bodega', $venta->bodega_id)->with('success', 'Venta actualizada correctamente.');
     }
 
@@ -350,7 +410,16 @@ class VentaBodegaController extends Controller
     {
         $venta = Venta::findOrFail($id);
         $this->authorize('delete', $venta);
+        $nroVenta = $venta->nro_venta;
+        $totalVenta = $venta->total_venta;
         $venta->delete();
+
+        \App\Helpers\AuditoriaHelper::registrar(
+            'Ventas',
+            'Eliminación',
+            "Eliminó la venta Nro. {$nroVenta} con un total de $" . number_format($totalVenta, 2)
+        );
+
         return redirect()->route('venta.index.bodega', $venta->bodega_id)->with('success', 'Venta eliminada correctamente.');
     }
 

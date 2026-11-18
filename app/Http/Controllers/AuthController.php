@@ -21,6 +21,13 @@ class AuthController extends Controller
         // Permitir login con email y nro_identificacion como password
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+
+            \App\Helpers\AuditoriaHelper::registrar(
+                'Autenticación',
+                'Login',
+                "Inicio de sesión exitoso del usuario '" . auth()->user()->name . "' (" . auth()->user()->email . ")"
+            );
+
             if (auth()->user()->must_change_password) {
                 return redirect()->route('password.change.form');
             }
@@ -34,6 +41,14 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        if (Auth::check()) {
+            \App\Helpers\AuditoriaHelper::registrar(
+                'Autenticación',
+                'Logout',
+                "Cierre de sesión del usuario '" . Auth::user()->name . "'"
+            );
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -65,6 +80,12 @@ class AuthController extends Controller
         $user->password = $request->password;
         $user->must_change_password = false;
         $user->save();
+
+        \App\Helpers\AuditoriaHelper::registrar(
+            'Autenticación',
+            'Edición',
+            "Cambio de contraseña exitoso del usuario '{$user->name}'"
+        );
 
         return redirect()->route('home')->with('success', 'Contraseña cambiada correctamente.');
     }

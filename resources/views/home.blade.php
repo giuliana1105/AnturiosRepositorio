@@ -1,67 +1,120 @@
 @extends('layouts.app')
 
-@section('title', 'Selección de Bodega')
+@section('title', 'Puntos de Almacenamiento')
 
 @section('content')
-<div class="container-fluid py-2">
+<div class="container-fluid py-3 px-3 px-md-4">
+    <!-- Breadcrumb & Wayfinding -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0" style="font-size: 13px;">
+                <li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">
+                    <i class="fas fa-warehouse me-1 text-primary"></i> Puntos de Almacenamiento
+                </li>
+            </ol>
+        </nav>
+        <div class="text-muted font-mono" style="font-size: 12.5px;">
+            {{ count($bodegas) + 1 }} centros de control
+        </div>
+    </div>
+
     <!-- Encabezado de Página -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 pb-3 mb-4 border-bottom" style="border-color: #e2e8f0 !important;">
         <div>
-            <h3 class="fw-bold mb-1" style="color: var(--foreground); letter-spacing: -0.5px;">
-                <i class="fas fa-warehouse me-2" style="color: var(--primary);"></i>Puntos de Almacenamiento
-            </h3>
+            <h2 class="fw-bold mb-1 text-dark tracking-tight" style="letter-spacing: -0.025em;">
+                Puntos de Almacenamiento
+            </h2>
             <p class="text-muted mb-0" style="font-size: 14px;">
-                Seleccione la bodega o punto de venta para consultar su stock disponible, recepciones y despachos.
+                Seleccione la bodega o centro de acopio para consultar existencias físicas en tiempo real, recepciones y devoluciones.
             </p>
         </div>
         @can('ver dashboard general')
-        <a href="{{ route('home.master') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-            <i class="fas fa-crown me-2"></i>Panel General Maestro
-        </a>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <a href="{{ route('home.master') }}" class="btn btn-sm btn-primary rounded-3 px-3 py-2 fw-semibold shadow-sm">
+                <i class="fas fa-layer-group me-1.5"></i> Panel General Maestro
+            </a>
+        </div>
         @endcan
     </div>
 
     @can('ver dashboard general')
     <div class="row g-3">
+        {{-- Tarjeta 1: Bodega Master (Siempre PRIMERA como solicitó el usuario) --}}
+        <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+            <a href="{{ route('home.master') }}" class="card h-100 border rounded-3 text-decoration-none text-dark hover-card overflow-hidden bg-white" style="border-color: var(--primary) !important; border-width: 1.5px !important;">
+                <div class="card-body p-3.5 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" 
+                                 style="width: 44px; height: 44px; background: rgba(0, 151, 167, 0.12); color: var(--primary);">
+                                <i class="fas fa-network-wired fs-5"></i>
+                            </div>
+                            <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle fw-semibold px-2.5 py-1" style="font-size: 11px;">
+                                Principal
+                            </span>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark tracking-tight" style="font-size: 15px;">Bodega Master</h6>
+                            <small class="text-muted" style="font-size: 12px;">Inventario consolidado general</small>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-3" style="border-color: #f1f5f9 !important;">
+                        <span class="text-primary fw-semibold" style="font-size: 12.5px;">
+                            Ver Consolidado <i class="fas fa-arrow-right ms-1"></i>
+                        </span>
+                        <span class="badge rounded-pill px-2 py-0.5 font-mono" style="background: rgba(0, 151, 167, 0.08); color: var(--primary); font-size: 11px;">
+                            Global
+                        </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        {{-- Demás Bodegas del Sistema --}}
         @foreach($bodegas as $bodega)
             @php
                 $icon = 'fa-warehouse';
-                $color = '#0ea5e9';
-                $bg = 'rgba(14, 165, 233, 0.12)';
+                $color = '#0284c7';
+                $bg = 'rgba(14, 165, 233, 0.1)';
                 $nombreLower = Str::lower($bodega->nombrebodega);
 
                 if (Str::contains($nombreLower, 'camión') || Str::contains($nombreLower, 'camion')) {
                     $icon = 'fa-truck-moving';
-                    $color = '#f59e0b';
-                    $bg = 'rgba(245, 158, 11, 0.12)';
+                    $color = '#d97706';
+                    $bg = 'rgba(245, 158, 11, 0.1)';
                 } elseif (Str::contains($nombreLower, 'central') || Str::contains($nombreLower, 'matriz')) {
                     $icon = 'fa-industry';
                     $color = '#0097a7';
-                    $bg = 'rgba(0, 151, 167, 0.12)';
+                    $bg = 'rgba(0, 151, 167, 0.1)';
                 } elseif (Str::contains($nombreLower, 'tienda') || Str::contains($nombreLower, 'local')) {
                     $icon = 'fa-store';
-                    $color = '#8b5cf6';
-                    $bg = 'rgba(139, 92, 246, 0.12)';
+                    $color = '#7c3aed';
+                    $bg = 'rgba(124, 58, 237, 0.1)';
                 }
             @endphp
             <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
-                <a href="{{ route('home.bodega', $bodega->idbodega) }}" class="card h-100 border-0 shadow-sm rounded-4 text-decoration-none text-dark transition-all hover-lift overflow-hidden">
-                    <div class="card-body p-4 d-flex flex-column justify-content-between">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" 
-                                 style="width: 52px; height: 52px; background: {{ $bg }}; color: {{ $color }};">
-                                <i class="fas {{ $icon }} fs-4"></i>
+                <a href="{{ route('home.bodega', $bodega->idbodega) }}" class="card h-100 border rounded-3 text-decoration-none text-dark hover-card overflow-hidden bg-white" style="border-color: #e2e8f0 !important;">
+                    <div class="card-body p-3.5 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" 
+                                     style="width: 44px; height: 44px; background: {{ $bg }}; color: {{ $color }};">
+                                    <i class="fas {{ $icon }} fs-5"></i>
+                                </div>
+                                <span class="badge rounded-pill bg-light text-secondary border font-mono px-2 py-0.5" style="font-size: 11px; border-color: #e2e8f0 !important;">
+                                    ID: #{{ $bodega->idbodega }}
+                                </span>
                             </div>
                             <div>
-                                <h6 class="fw-bold mb-0 text-dark">{{ $bodega->nombrebodega }}</h6>
-                                <small class="text-muted" style="font-size: 12px;">ID: #{{ $bodega->idbodega }}</small>
+                                <h6 class="fw-bold mb-0 text-dark tracking-tight" style="font-size: 14.5px;">{{ $bodega->nombrebodega }}</h6>
+                                <small class="text-muted" style="font-size: 12px;">Punto de almacenamiento</small>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                            <span class="text-primary fw-semibold" style="font-size: 13px;">
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-3" style="border-color: #f1f5f9 !important;">
+                            <span class="text-primary fw-medium" style="font-size: 12.5px;">
                                 Consultar Inventario <i class="fas fa-arrow-right ms-1"></i>
                             </span>
-                            <span class="badge rounded-pill bg-light text-muted border px-2 py-1" style="font-size: 11px;">
+                            <span class="badge rounded-pill px-2 py-0.5" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 11px;">
                                 Activa
                             </span>
                         </div>
@@ -69,37 +122,11 @@
                 </a>
             </div>
         @endforeach
-
-        {{-- Tarjeta Bodega Master --}}
-        <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
-            <a href="{{ route('home.master') }}" class="card h-100 border-0 shadow-sm rounded-4 text-decoration-none text-dark transition-all hover-lift overflow-hidden" style="border: 2px dashed rgba(0, 151, 167, 0.3) !important;">
-                <div class="card-body p-4 d-flex flex-column justify-content-between">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" 
-                             style="width: 52px; height: 52px; background: rgba(0, 151, 167, 0.15); color: var(--primary);">
-                            <i class="fas fa-network-wired fs-4"></i>
-                        </div>
-                        <div>
-                            <h6 class="fw-bold mb-0 text-dark">Bodega Master</h6>
-                            <small class="text-muted" style="font-size: 12px;">Inventario consolidado</small>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                        <span class="text-primary fw-semibold" style="font-size: 13px;">
-                            Ver Consolidado <i class="fas fa-arrow-right ms-1"></i>
-                        </span>
-                        <span class="badge rounded-pill text-white px-2 py-1" style="background: var(--primary); font-size: 11px;">
-                            Global
-                        </span>
-                    </div>
-                </div>
-            </a>
-        </div>
     </div>
     @else
-    <div class="card border-0 shadow-sm rounded-4 text-center py-5 my-4">
+    <div class="card border rounded-3 text-center py-5 my-4 bg-white" style="border-color: #e2e8f0 !important;">
         <div class="card-body">
-            <div class="rounded-circle d-inline-flex align-items-center justify-content-center bg-light text-warning mb-3" style="width: 72px; height: 72px; font-size: 32px;">
+            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px; background: #fef3c7; color: #d97706; font-size: 24px;">
                 <i class="fas fa-exclamation-triangle"></i>
             </div>
             <h5 class="fw-bold text-dark mb-1">Sin Bodega Asignada</h5>
@@ -112,12 +139,12 @@
 </div>
 
 <style>
-.hover-lift {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+.hover-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-.hover-lift:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
+.hover-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
 }
 </style>
 @endsection

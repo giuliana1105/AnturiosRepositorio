@@ -1,16 +1,41 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid py-2">
+<div class="container-fluid py-3 px-3 px-md-4">
+    <!-- Breadcrumb & Wayfinding -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0" style="font-size: 13px;">
+                <li class="breadcrumb-item">
+                    <a href="{{ route('home') }}" class="text-decoration-none text-muted">
+                        <i class="fas fa-home me-1 text-primary"></i> Inicio
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">
+                    Aprobación de Transacciones
+                </li>
+            </ol>
+        </nav>
+    </div>
+
     <!-- Encabezado de la página -->
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 pb-3 mb-4 border-bottom" style="border-color: #e2e8f0 !important;">
         <div>
-            <h3 class="fw-bold mb-1">Aprobación de Transacciones</h3>
-            <p class="page-subtitle mb-0 text-muted">Auditoría, verificación de stock físico y liquidación de notas de pedido</p>
+            <h2 class="fw-bold mb-1 text-dark tracking-tight" style="letter-spacing: -0.025em;">
+                Aprobación de Transacciones
+            </h2>
+            <p class="text-muted mb-0" style="font-size: 14px;">
+                Auditoría física de pedidos, liquidación de notas de despacho y verificación de transferencias entre bodegas.
+            </p>
         </div>
-        <a href="{{ route('tipoNota.index') }}" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm">
-            <i class="fas fa-clipboard-list me-1"></i> Ver Notas de Pedido
-        </a>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <a href="{{ route('home') }}" class="btn btn-sm btn-outline-secondary rounded-3 px-3 py-2 fw-medium">
+                <i class="fas fa-arrow-left me-1"></i> Volver al Panel
+            </a>
+            <a href="{{ route('tipoNota.index') }}" class="btn btn-sm btn-outline-primary rounded-3 px-3 py-2 fw-medium">
+                <i class="fas fa-clipboard-list me-1"></i> Notas de Pedido
+            </a>
+        </div>
     </div>
 
     <!-- Alertas de Sesión -->
@@ -27,86 +52,120 @@
         </div>
     @endif
 
-    <!-- Tarjetas de Resumen KPI -->
+    <!-- Tarjetas de Resumen Ejecutivo (Estilo Impeccable) -->
     <div class="row g-3 mb-4">
+        <!-- KPI 1: Total Movimientos -->
         <div class="col-12 col-sm-6 col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
-                <div class="card-body p-3 d-flex align-items-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 48px; height: 48px; background: rgba(0, 151, 167, 0.12); color: var(--primary);">
-                        <i class="fas fa-exchange-alt fs-5"></i>
+            <div class="card h-100 metric-card">
+                <div class="card-body p-3.5">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="metric-label">Total Transacciones</span>
+                        <span class="badge rounded-pill bg-primary-subtle text-primary fw-semibold" style="font-size: 11px;">
+                            Historial
+                        </span>
                     </div>
-                    <div>
-                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 11px; letter-spacing: 0.5px;">Total Movimientos</small>
-                        <h4 class="fw-bold mb-0 text-dark">{{ ($pendientes ?? 0) + ($finalizadas ?? 0) }}</h4>
+                    <div class="metric-value">
+                        {{ ($pendientes ?? 0) + ($finalizadas ?? 0) }}
+                        <span class="metric-unit">movimientos</span>
+                    </div>
+                    <div class="metric-caption text-muted mt-1">
+                        <i class="fas fa-exchange-alt text-primary me-1"></i> Despachos y retornos
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- KPI 2: Pendientes -->
         <div class="col-12 col-sm-6 col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
-                <div class="card-body p-3 d-flex align-items-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.12); color: #d97706;">
-                        <i class="fas fa-clock fs-5"></i>
+            <div class="card h-100 metric-card">
+                <div class="card-body p-3.5">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="metric-label">Pendientes de Aprobación</span>
+                        <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-semibold" style="font-size: 11px;">
+                            Por Liquidar
+                        </span>
                     </div>
-                    <div>
-                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 11px; letter-spacing: 0.5px;">Pendientes de Aprobación</small>
-                        <h4 class="fw-bold mb-0 text-warning">{{ $pendientes ?? 0 }}</h4>
+                    <div class="metric-value font-mono {{ ($pendientes ?? 0) > 0 ? 'text-warning-emphasis' : 'text-dark' }}">
+                        {{ $pendientes ?? 0 }}
+                        <span class="metric-unit">pendientes</span>
+                    </div>
+                    <div class="metric-caption text-muted mt-1">
+                        @if(($pendientes ?? 0) > 0)
+                            <span class="text-warning-emphasis fw-semibold">
+                                <i class="fas fa-clock me-1"></i> Requieren verificación física
+                            </span>
+                        @else
+                            <i class="fas fa-check-circle text-success me-1"></i> Sin transacciones por procesar
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- KPI 3: Finalizadas -->
         <div class="col-12 col-sm-6 col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
-                <div class="card-body p-3 d-flex align-items-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.12); color: #059669;">
-                        <i class="fas fa-check-circle fs-5"></i>
+            <div class="card h-100 metric-card">
+                <div class="card-body p-3.5">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="metric-label">Finalizadas con Éxito</span>
+                        <span class="badge rounded-pill bg-success-subtle text-success fw-semibold" style="font-size: 11px;">
+                            Liquidadas
+                        </span>
                     </div>
-                    <div>
-                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 11px; letter-spacing: 0.5px;">Finalizadas con Éxito</small>
-                        <h4 class="fw-bold mb-0 text-success">{{ $finalizadas ?? 0 }}</h4>
+                    <div class="metric-value text-success font-mono">
+                        {{ $finalizadas ?? 0 }}
+                        <span class="metric-unit">completadas</span>
+                    </div>
+                    <div class="metric-caption text-muted mt-1">
+                        <i class="fas fa-check-double text-success me-1"></i> Con stock debitado correctamente
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Pestañas de Filtro por Estado -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
-        <div class="card-body p-3 d-flex flex-wrap gap-2 align-items-center">
-            <span class="text-muted fw-bold me-2" style="font-size: 13px;">Filtrar por estado:</span>
-            <a href="{{ route('transaccionProducto.index', ['estado' => '']) }}" 
-               class="btn btn-sm rounded-pill px-3 {{ request('estado') == '' ? 'btn-primary shadow-sm' : 'btn-outline-secondary' }}">
-                <i class="fas fa-list me-1"></i> Todas las Transacciones
-            </a>
-            <a href="{{ route('transaccionProducto.index', ['estado' => 'PENDIENTE']) }}" 
-               class="btn btn-sm rounded-pill px-3 {{ request('estado') == 'PENDIENTE' ? 'btn-warning text-dark fw-bold shadow-sm' : 'btn-outline-secondary' }}">
-                <i class="fas fa-clock me-1"></i> Pendientes ({{ $pendientes ?? 0 }})
-            </a>
-            <a href="{{ route('transaccionProducto.index', ['estado' => 'FINALIZADA']) }}" 
-               class="btn btn-sm rounded-pill px-3 {{ request('estado') == 'FINALIZADA' ? 'btn-success text-white fw-bold shadow-sm' : 'btn-outline-secondary' }}">
-                <i class="fas fa-check-circle me-1"></i> Finalizadas ({{ $finalizadas ?? 0 }})
-            </a>
+    <!-- Barra de Pestañas Segmentada (Filtro por Estado) -->
+    <div class="card border rounded-3 mb-4 bg-white" style="border-color: #e2e8f0 !important;">
+        <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="segmented-rail">
+                <a href="{{ route('transaccionProducto.index', ['estado' => '']) }}" 
+                   class="segmented-tab {{ request('estado') == '' ? 'active' : '' }}">
+                    <i class="fas fa-list me-1"></i> Todas
+                    <span class="counter-badge">{{ ($pendientes ?? 0) + ($finalizadas ?? 0) }}</span>
+                </a>
+                <a href="{{ route('transaccionProducto.index', ['estado' => 'PENDIENTE']) }}" 
+                   class="segmented-tab {{ request('estado') == 'PENDIENTE' ? 'active' : '' }}">
+                    <i class="fas fa-clock me-1 text-warning"></i> Pendientes
+                    <span class="counter-badge" style="{{ ($pendientes ?? 0) > 0 ? 'background: #fef3c7; color: #b45309;' : '' }}">{{ $pendientes ?? 0 }}</span>
+                </a>
+                <a href="{{ route('transaccionProducto.index', ['estado' => 'FINALIZADA']) }}" 
+                   class="segmented-tab {{ request('estado') == 'FINALIZADA' ? 'active' : '' }}">
+                    <i class="fas fa-check-circle me-1 text-success"></i> Finalizadas
+                    <span class="counter-badge">{{ $finalizadas ?? 0 }}</span>
+                </a>
+            </div>
+            <div class="text-muted d-none d-sm-block" style="font-size: 12.5px;">
+                <i class="fas fa-filter text-muted me-1"></i> Filtro de estado operativo
+            </div>
         </div>
     </div>
 
     <!-- Tabla Principal de Transacciones -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card border rounded-3 overflow-hidden shadow-xs bg-white" style="border-color: #e2e8f0 !important;">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                <table class="table table-hover align-middle mb-0 operational-table">
+                    <thead>
                         <tr>
-                            <th class="ps-4 py-3 text-uppercase text-muted fw-bold" style="font-size: 11.5px; letter-spacing: 0.5px;">Código Nota</th>
-                            <th class="py-3 text-uppercase text-muted fw-bold" style="font-size: 11.5px; letter-spacing: 0.5px;">Tipo de Nota</th>
-                            <th class="py-3 text-uppercase text-muted fw-bold" style="font-size: 11.5px; letter-spacing: 0.5px;">Bodega Solicitante</th>
-                            <th class="py-3 text-uppercase text-muted fw-bold" style="font-size: 11.5px; letter-spacing: 0.5px;">Estado</th>
-                            <th class="py-3 text-uppercase text-muted fw-bold" style="font-size: 11.5px; letter-spacing: 0.5px;">Productos Involucrados</th>
-                            <th class="text-end pe-4 py-3 text-uppercase text-muted fw-bold" style="font-size: 11.5px; letter-spacing: 0.5px;">Acciones</th>
+                            <th class="ps-4 py-3" style="width: 130px;">Código Nota</th>
+                            <th class="py-3" style="width: 140px;">Tipo de Nota</th>
+                            <th class="py-3" style="width: 190px;">Bodega Solicitante</th>
+                            <th class="py-3" style="width: 150px;">Estado</th>
+                            <th class="py-3">Productos Involucrados</th>
+                            <th class="text-end pe-4 py-3" style="width: 180px;">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y">
+                    <tbody>
                         @forelse ($transacciones as $transaccion)
                             @php
                                 $esEnvio = ($transaccion->tipoNota->tiponota === 'ENVIO');
@@ -115,21 +174,21 @@
                                     : ['bg' => '#fef3c7', 'color' => '#92400e', 'border' => '#fde68a', 'icon' => 'fa-undo'];
                                 
                                 $estadoStyles = [
-                                    'PENDIENTE' => ['bg' => '#fef3c7', 'color' => '#92400e', 'border' => '#fde68a', 'icon' => 'fa-clock'],
-                                    'FINALIZADA' => ['bg' => '#dcfce7', 'color' => '#166534', 'border' => '#bbf7d0', 'icon' => 'fa-check-circle'],
-                                    'FINALIZADA_PARCIAL' => ['bg' => '#e0f2fe', 'color' => '#0369a1', 'border' => '#bae6fd', 'icon' => 'fa-info-circle'],
-                                    'RECHAZADA' => ['bg' => '#fee2e2', 'color' => '#991b1b', 'border' => '#fecaca', 'icon' => 'fa-times-circle'],
+                                    'PENDIENTE' => ['class' => 'status-warning', 'label' => 'Pendiente'],
+                                    'FINALIZADA' => ['class' => 'status-success', 'label' => 'Finalizada'],
+                                    'FINALIZADA_PARCIAL' => ['class' => 'status-info', 'label' => 'Parcial'],
+                                    'RECHAZADA' => ['class' => 'status-danger', 'label' => 'Rechazada'],
                                 ];
-                                $eStyle = $estadoStyles[$transaccion->estado] ?? ['bg' => '#f1f5f9', 'color' => '#334155', 'border' => '#e2e8f0', 'icon' => 'fa-check'];
+                                $eStyle = $estadoStyles[$transaccion->estado] ?? ['class' => 'status-info', 'label' => str_replace('_', ' ', $transaccion->estado)];
                             @endphp
-                            <tr style="transition: background-color 0.15s ease;">
+                            <tr class="operational-row">
                                 <td class="ps-4 py-3">
-                                    <span class="badge rounded-pill bg-light text-dark border px-2.5 py-1 font-mono fw-bold" style="font-size: 12px;">
+                                    <span class="font-mono text-dark fw-bold" style="font-size: 13px;">
                                         #{{ $transaccion->tipoNota->codigo }}
                                     </span>
                                 </td>
                                 <td class="py-3">
-                                    <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background: {{ $tipoBadge['bg'] }}; color: {{ $tipoBadge['color'] }}; border: 1px solid {{ $tipoBadge['border'] }}; font-size: 11.5px;">
+                                    <span class="badge rounded-pill px-2.5 py-1 fw-semibold" style="background: {{ $tipoBadge['bg'] }}; color: {{ $tipoBadge['color'] }}; border: 1px solid {{ $tipoBadge['border'] }}; font-size: 11.5px;">
                                         <i class="fas {{ $tipoBadge['icon'] }} me-1" style="font-size: 10px;"></i>{{ $transaccion->tipoNota->tiponota }}
                                     </span>
                                 </td>
@@ -139,16 +198,16 @@
                                     </span>
                                 </td>
                                 <td class="py-3">
-                                    <span class="badge rounded-pill px-2.5 py-1 fw-semibold" style="background: {{ $eStyle['bg'] }}; color: {{ $eStyle['color'] }}; border: 1px solid {{ $eStyle['border'] }}; font-size: 11.5px;">
-                                        <i class="fas {{ $eStyle['icon'] }} me-1" style="font-size: 10px;"></i>{{ str_replace('_', ' ', $transaccion->estado) }}
+                                    <span class="status-badge {{ $eStyle['class'] }}">
+                                        <span class="status-indicator-dot"></span> {{ $eStyle['label'] }}
                                     </span>
                                 </td>
                                 <td class="py-3" style="max-width: 340px;">
                                     <div class="d-flex flex-wrap gap-1">
                                         @foreach ($transaccion->tipoNota->detalles as $detalle)
-                                            <span class="badge bg-white text-dark border fw-medium px-2 py-1 shadow-xs" style="font-size: 11.5px; border-color: #e2e8f0 !important;">
+                                            <span class="badge bg-white text-dark border fw-medium px-2 py-1 shadow-xs font-mono" style="font-size: 11.5px; border-color: #e2e8f0 !important;">
                                                 <strong class="text-primary me-1">{{ $detalle->cantidad }}x</strong>
-                                                {{ $detalle->producto->nombre ?? 'N/A' }}
+                                                <span class="fw-normal">{{ $detalle->producto->nombre ?? 'N/A' }}</span>
                                                 <small class="text-muted ms-1">({{ $detalle->producto->tipoempaque ?? 'Unidad' }})</small>
                                             </span>
                                         @endforeach
@@ -159,7 +218,7 @@
                                         <form id="form-finalizar-{{ $transaccion->id }}" action="{{ route('transaccionProducto.finalizar', $transaccion->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             <input type="hidden" name="force_reject" id="force-reject-{{ $transaccion->id }}" value="0">
-                                            <button type="button" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm fw-semibold" onclick="verificarYFinalizar({{ $transaccion->id }})">
+                                            <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold shadow-xs" onclick="verificarYFinalizar({{ $transaccion->id }})">
                                                 <i class="fas fa-check me-1"></i> Verificar y Finalizar
                                             </button>
                                         </form>
@@ -174,8 +233,8 @@
                             <tr>
                                 <td colspan="6" class="text-center py-5">
                                     <div class="py-4">
-                                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; background: #f1f5f9; color: #94a3b8;">
-                                            <i class="fas fa-clipboard-check fs-3"></i>
+                                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px; background: #f1f5f9; color: #94a3b8;">
+                                            <i class="fas fa-clipboard-check fs-4"></i>
                                         </div>
                                         <h6 class="fw-bold text-dark mb-1">No hay transacciones registradas</h6>
                                         <p class="text-muted mb-0" style="font-size: 13.5px;">Las transacciones generadas al confirmar notas de pedido se listarán aquí.</p>
@@ -188,7 +247,7 @@
             </div>
 
             @if(method_exists($transacciones, 'links') && $transacciones->hasPages())
-                <div class="px-4 py-3 border-top d-flex justify-content-center bg-white">
+                <div class="px-4 py-3 border-top d-flex justify-content-center bg-white" style="border-color: #e2e8f0 !important;">
                     {{ $transacciones->appends(['estado' => request('estado'), 'search' => request('search')])->onEachSide(1)->links('pagination::bootstrap-4') }}
                 </div>
             @endif
@@ -198,7 +257,7 @@
 
 <style>
 .shadow-xs {
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 </style>
 

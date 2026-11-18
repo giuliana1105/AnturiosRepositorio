@@ -82,7 +82,7 @@
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="text-muted fw-semibold" style="font-size: 12px; text-uppercase; letter-spacing: 0.5px;">Producto Más Vendido</span>
                         <div class="p-2 rounded-circle" style="background: rgba(225, 29, 72, 0.1); color: #e11d48;">
-                            <i class="fas fa-crown" style="font-size: 16px;"></i>
+                            <i class="fas fa-award" style="font-size: 16px;"></i>
                         </div>
                     </div>
                     @if($topProductosFormatted->isNotEmpty())

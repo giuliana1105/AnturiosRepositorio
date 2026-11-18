@@ -2,6 +2,9 @@
 
 use Illuminate\Http\Request;
 
+// Aumentar el tiempo límite a 120s para tolerar latencias y arranques en frío de la base de datos remota (Supabase)
+ini_set('max_execution_time', '120');
+
 define('LARAVEL_START', microtime(true));
 
 // Determine if the application is in maintenance mode...

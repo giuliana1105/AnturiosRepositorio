@@ -81,6 +81,13 @@ class TransaccionProductoController extends Controller
             // ⚠️ Todo el manejo de inventario se hace en finalizar()
 
             DB::commit();
+
+            \App\Helpers\AuditoriaHelper::registrar(
+                'Inventario',
+                'Confirmación',
+                "Confirmó la nota #{$nota->codigo} ({$nota->tiponota}) creando transacción en estado PENDIENTE"
+            );
+
             return redirect()->route('tipoNota.index')->with('success', 'Nota confirmada en estado PENDIENTE. Use "Finalizar" para procesar el inventario.');
             
         } catch (\Exception $e) {
@@ -159,6 +166,13 @@ class TransaccionProductoController extends Controller
                 $transaccion->estado = 'RECHAZADA';
                 $transaccion->save();
                 DB::commit();
+
+                \App\Helpers\AuditoriaHelper::registrar(
+                    'Inventario',
+                    'Rechazo',
+                    "Rechazó la transacción #{$id} para la nota #{$nota->codigo} ({$nota->tiponota})"
+                );
+
                 return redirect()->route('transaccionProducto.index')->with('error', 'La transacción fue RECHAZADA por falta de stock total o decisión del administrador.');
             }
 
@@ -212,6 +226,13 @@ class TransaccionProductoController extends Controller
             $transaccion->save();
 
             DB::commit();
+
+            \App\Helpers\AuditoriaHelper::registrar(
+                'Inventario',
+                'Aprobación',
+                "Finalizó la transacción #{$id} de la nota #{$nota->codigo} ({$nota->tiponota}) actualizando existencias físicas" . ($hayFaltantes ? ' (Parcial)' : '')
+            );
+
             $msg = $hayFaltantes ? 'Transacción finalizada PARCIALMENTE. Solo se despachó lo disponible.' : 'Transacción finalizada correctamente. Inventario actualizado.';
             return redirect()->route('transaccionProducto.index')->with('success', $msg);
             

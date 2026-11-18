@@ -55,6 +55,12 @@ class RoleController extends Controller
 
         app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
+        \App\Helpers\AuditoriaHelper::registrar(
+            'Roles',
+            'Creación',
+            "Creó el rol '{$role->name}' con " . count($permissionsIds) . " permisos asignados"
+        );
+
         return redirect()->route('roles.index')->with('success', 'El rol ha sido creado exitosamente.');
     }
 
@@ -95,6 +101,12 @@ class RoleController extends Controller
 
         app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
+        \App\Helpers\AuditoriaHelper::registrar(
+            'Roles',
+            'Edición',
+            "Actualizó permisos para el rol '{$role->name}' (" . count($permissionsIds) . " permisos)"
+        );
+
         return redirect()->route('roles.index')->with('success', 'Rol actualizado exitosamente.');
     }
 
@@ -112,9 +124,16 @@ class RoleController extends Controller
                 ->with('error', 'No se puede eliminar el rol "' . $role->name . '" porque tiene usuarios asignados. Reasígnelos primero.');
         }
 
+        $nombreRol = $role->name;
         $role->delete();
 
         app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+        \App\Helpers\AuditoriaHelper::registrar(
+            'Roles',
+            'Eliminación',
+            "Eliminó el rol '{$nombreRol}'"
+        );
 
         return redirect()->route('roles.index')->with('success', 'Rol eliminado exitosamente.');
     }

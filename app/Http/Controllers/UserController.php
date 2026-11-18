@@ -84,6 +84,12 @@ class UserController extends Controller
 
         app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
+        \App\Helpers\AuditoriaHelper::registrar(
+            'Usuarios',
+            'Edición',
+            "Actualizó rol a '{$role->name}' y permisos para el usuario '{$user->name}' ({$user->email})"
+        );
+
         return redirect()->route('users.index')->with('success', 'Rol y permisos del usuario actualizados exitosamente.');
     }
 

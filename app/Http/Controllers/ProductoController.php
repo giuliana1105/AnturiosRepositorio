@@ -99,6 +99,12 @@ class ProductoController extends Controller
                 $imagenUrl
             ]);
 
+            \App\Helpers\AuditoriaHelper::registrar(
+                'Productos',
+                'Creación',
+                "Creó el producto '{$validatedData['nombre']}' con código {$validatedData['codigo']} y stock inicial de {$validatedData['cantidad']} unidades"
+            );
+
             return redirect()->route('productos.index')->with('success', 'Producto creado correctamente.');
         } catch (QueryException $e) {
             return $this->handleDatabaseException($e);
@@ -139,6 +145,12 @@ class ProductoController extends Controller
             $producto = Producto::findOrFail($id);
             $producto->update($validatedData);
 
+            \App\Helpers\AuditoriaHelper::registrar(
+                'Productos',
+                'Edición',
+                "Actualizó los datos del producto '{$producto->nombre}' (Código: {$producto->codigo})"
+            );
+
             return redirect()->route('productos.index')->with('success', 'Producto actualizado correctamente.');
         } catch (QueryException $e) {
             return $this->handleDatabaseException($e);
@@ -148,7 +160,16 @@ class ProductoController extends Controller
     public function destroy($id)
     {
         $producto = Producto::findOrFail($id);
+        $nombre = $producto->nombre;
+        $codigo = $producto->codigo;
         $producto->delete();
+
+        \App\Helpers\AuditoriaHelper::registrar(
+            'Productos',
+            'Eliminación',
+            "Eliminó el producto '{$nombre}' (Código: {$codigo})"
+        );
+
         return redirect()->route('productos.index')->with('success', 'Producto eliminado correctamente.');
     }
 

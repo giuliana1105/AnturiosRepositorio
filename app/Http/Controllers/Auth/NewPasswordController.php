@@ -43,11 +43,18 @@ class NewPasswordController extends Controller
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user) use ($request) {
                 $user->forceFill([
-                    'password' => Hash::make($request->password),
+                    'password' => $request->password,
                     'remember_token' => Str::random(60),
+                    'must_change_password' => false,
                 ])->save();
 
                 event(new PasswordReset($user));
+
+                \App\Helpers\AuditoriaHelper::registrar(
+                    'Autenticación',
+                    'Edición',
+                    "Restableció su contraseña exitosamente mediante enlace de recuperación ('{$user->email}')"
+                );
             }
         );
 

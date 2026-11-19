@@ -25,10 +25,18 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // Mutator para encriptar la contraseña al asignarla
+    // Mutator para encriptar la contraseña al asignarla (evita doble encriptación)
     public function setPasswordAttribute($value)
     {
-        $this->attributes['password'] = bcrypt($value);
+        $this->attributes['password'] = \Illuminate\Support\Facades\Hash::needsRehash($value) ? bcrypt($value) : $value;
+    }
+
+    /**
+     * Enviar notificación de restablecimiento de contraseña en español.
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new \App\Notifications\ResetPasswordNotification($token));
     }
 
     /**

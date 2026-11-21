@@ -32,9 +32,11 @@
             <a href="{{ route('home') }}" class="btn btn-sm btn-outline-secondary rounded-3 px-3 py-2 fw-medium">
                 <i class="fas fa-arrow-left me-1"></i> Volver al Panel
             </a>
+            @can('crear bodega')
             <button class="btn btn-sm btn-primary rounded-3 px-3 py-2 fw-semibold shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNuevaBodega" aria-expanded="false" aria-controls="collapseNuevaBodega">
                 <i class="fas fa-plus me-1.5"></i> Registrar Nueva Bodega
             </button>
+            @endcan
         </div>
     </div>
 
@@ -112,6 +114,7 @@
     </div>
 
     <!-- Formulario de Creación Rápida (Colapsable) -->
+    @can('crear bodega')
     <div class="collapse {{ $errors->any() ? 'show' : '' }} mb-4" id="collapseNuevaBodega">
         <div class="card border rounded-3 bg-white" style="border-color: #e2e8f0 !important; border-top: 3px solid var(--primary) !important;">
             <div class="card-body p-4">
@@ -143,6 +146,7 @@
             </div>
         </div>
     </div>
+    @endcan
 
     <!-- Barra de Búsqueda -->
     <div class="card border rounded-3 mb-4 bg-white" style="border-color: #e2e8f0 !important;">
@@ -205,9 +209,12 @@
 
                                 <!-- Menú de edición rápida -->
                                 <div class="d-flex gap-1">
+                                    @can('editar bodega')
                                     <a href="{{ route('bodegas.edit', $bodega->idbodega) }}" class="btn-action-circle text-primary" title="Editar nombre">
                                         <i class="fas fa-edit" style="font-size: 12px;"></i>
                                     </a>
+                                    @endcan
+                                    @can('eliminar bodega')
                                     <form action="{{ route('bodegas.destroy', $bodega->idbodega) }}" method="POST" class="d-inline form-delete-bodega">
                                         @csrf
                                         @method('DELETE')
@@ -215,6 +222,7 @@
                                             <i class="fas fa-trash" style="font-size: 12px;"></i>
                                         </button>
                                     </form>
+                                    @endcan
                                 </div>
                             </div>
                         </div>
@@ -222,16 +230,18 @@
                         <!-- Acciones Principales del Almacén -->
                         <div class="pt-3 border-top mt-2" style="border-color: #f1f5f9 !important;">
                             <div class="row g-2">
-                                <div class="col-6">
+                                <div class="{{ auth()->user()->can('ver ventas') ? 'col-6' : 'col-12' }}">
                                     <a href="{{ route('bodega.show', $bodega->idbodega) }}" class="btn btn-outline-primary rounded-3 w-100 py-1.5 fw-medium" style="font-size: 12.5px;">
                                         <i class="fas fa-boxes me-1"></i> Stock Físico
                                     </a>
                                 </div>
+                                @can('ver ventas')
                                 <div class="col-6">
                                     <a href="{{ route('venta.index.bodega', $bodega->idbodega) }}" class="btn btn-outline-secondary rounded-3 w-100 py-1.5 fw-medium" style="font-size: 12.5px;">
                                         <i class="fas fa-receipt me-1"></i> Ver Ventas
                                     </a>
                                 </div>
+                                @endcan
                             </div>
                         </div>
                     </div>
@@ -246,9 +256,11 @@
                         </div>
                         <h6 class="fw-bold text-dark mb-1">No se encontraron bodegas</h6>
                         <p class="text-muted mb-3" style="font-size: 13.5px;">Comienza registrando la primera bodega para gestionar existencias y ventas.</p>
+                        @can('crear bodega')
                         <button class="btn btn-sm btn-primary rounded-3 px-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNuevaBodega">
                             <i class="fas fa-plus me-1"></i> Crear Bodega Ahora
                         </button>
+                        @endcan
                     </div>
                 </div>
             </div>

@@ -78,6 +78,7 @@
             </div>
             @endcan
 
+            @can('ver ventas')
             <div class="col-12 col-sm-6 col-lg-3">
                 <a href="{{ route('clientes.index') }}" class="card h-100 border rounded-3 text-decoration-none text-dark hover-lift p-3" style="border-color: #e2e8f0 !important; background: #fff;">
                     <div class="d-flex align-items-center">
@@ -93,6 +94,7 @@
                     </div>
                 </a>
             </div>
+            @endcan
 
             @can('ver kpis')
             <div class="col-12 col-sm-6 col-lg-3">

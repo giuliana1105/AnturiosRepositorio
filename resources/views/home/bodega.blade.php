@@ -14,11 +14,19 @@
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0" style="font-size: 13px;">
+                @can('ver bodegas')
                 <li class="breadcrumb-item">
                     <a href="{{ route('bodegas.index') }}" class="text-decoration-none text-muted">
                         <i class="fas fa-warehouse me-1 text-primary"></i> Bodegas
                     </a>
                 </li>
+                @else
+                <li class="breadcrumb-item">
+                    <a href="{{ route('home') }}" class="text-decoration-none text-muted">
+                        <i class="fas fa-home me-1 text-primary"></i> Inicio
+                    </a>
+                </li>
+                @endcan
                 <li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">
                     {{ $bodega->nombrebodega }}
                 </li>
@@ -38,12 +46,21 @@
         </div>
 
         <div class="d-flex flex-wrap align-items-center gap-2">
-            <a href="{{ route('bodegas.index') }}" class="btn btn-sm btn-outline-secondary rounded-3 px-3 py-2 fw-medium">
-                <i class="fas fa-arrow-left me-1"></i> Volver
-            </a>
-            <a href="{{ route('bodega.stock.pdf', $bodega->idbodega) }}" target="_blank" class="btn btn-sm btn-outline-danger rounded-3 px-3 py-2 fw-medium">
-                <i class="fas fa-file-pdf me-1"></i> Exportar Stock PDF
-            </a>
+            @can('ver bodegas')
+                <a href="{{ route('bodegas.index') }}" class="btn btn-sm btn-outline-secondary rounded-3 px-3 py-2 fw-medium">
+                    <i class="fas fa-arrow-left me-1"></i> Volver
+                </a>
+            @else
+                <a href="{{ route('home') }}" class="btn btn-sm btn-outline-secondary rounded-3 px-3 py-2 fw-medium">
+                    <i class="fas fa-arrow-left me-1"></i> Volver
+                </a>
+            @endcan
+
+            @can('ver bodegas')
+                <a href="{{ route('bodega.stock.pdf', $bodega->idbodega) }}" target="_blank" class="btn btn-sm btn-outline-danger rounded-3 px-3 py-2 fw-medium">
+                    <i class="fas fa-file-pdf me-1"></i> Exportar Stock PDF
+                </a>
+            @endcan
             @can('ver ventas')
                 <a href="{{ route('venta.index.bodega', $bodega->idbodega) }}" class="btn btn-sm btn-outline-primary rounded-3 px-3 py-2 fw-medium">
                     <i class="fas fa-receipt me-1"></i> Ventas

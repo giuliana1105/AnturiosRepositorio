@@ -36,11 +36,11 @@
             <a href="{{ route('home') }}" class="btn btn-sm btn-outline-secondary rounded-3 px-3 py-2 fw-medium">
                 <i class="fas fa-arrow-left me-1"></i> Volver al Panel
             </a>
-            @if(!in_array($cargo, ['Jefe de bodega']))
+            @can('crear nota')
             <a href="{{ route('tipoNota.create') }}" class="btn btn-sm btn-primary rounded-3 px-3 py-2 fw-semibold shadow-sm">
                 <i class="fas fa-plus me-1.5"></i> Crear Nueva Nota
             </a>
-            @endif
+            @endcan
         </div>
     </div>
 
@@ -260,16 +260,20 @@
                                 <td class="text-end pe-4 py-3">
                                     <div class="d-inline-flex gap-1">
                                         @if(!$nota->transaccion)
+                                            @can('crear nota')
                                             <form action="{{ route('tipoNota.confirmar', $nota->codigo) }}" method="POST" class="d-inline form-confirm-nota">
                                                 @csrf
                                                 <button type="submit" class="btn-action-circle text-success" title="Confirmar y Generar Transacción">
                                                     <i class="fas fa-check" style="font-size: 12px;"></i>
                                                 </button>
                                             </form>
+                                            @endcan
+                                            @can('editar nota')
                                             <a href="{{ route('tipoNota.edit', $nota->codigo) }}"
                                                class="btn-action-circle text-primary" title="Editar Nota">
                                                 <i class="fas fa-edit" style="font-size: 12px;"></i>
                                             </a>
+                                            @endcan
                                             @can('eliminar nota')
                                                 <form action="{{ route('tipoNota.destroy', $nota->codigo) }}" method="POST" class="d-inline form-delete-nota">
                                                     @csrf 

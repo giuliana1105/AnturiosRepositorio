@@ -32,9 +32,11 @@
             <a href="{{ route('home') }}" class="btn btn-sm btn-outline-secondary rounded-3 px-3 py-2 fw-medium">
                 <i class="fas fa-arrow-left me-1"></i> Volver al Panel
             </a>
+            @can('ver notas')
             <a href="{{ route('tipoNota.index') }}" class="btn btn-sm btn-outline-primary rounded-3 px-3 py-2 fw-medium">
                 <i class="fas fa-clipboard-list me-1"></i> Notas de Pedido
             </a>
+            @endcan
         </div>
     </div>
 
@@ -215,6 +217,7 @@
                                 </td>
                                 <td class="text-end pe-4 py-3">
                                     @if($transaccion->estado == 'PENDIENTE')
+                                        @can('aprobar solicitudes')
                                         <form id="form-finalizar-{{ $transaccion->id }}" action="{{ route('transaccionProducto.finalizar', $transaccion->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             <input type="hidden" name="force_reject" id="force-reject-{{ $transaccion->id }}" value="0">
@@ -222,6 +225,11 @@
                                                 <i class="fas fa-check me-1"></i> Verificar y Finalizar
                                             </button>
                                         </form>
+                                        @else
+                                        <span class="badge rounded-pill bg-warning-subtle text-warning border px-2.5 py-1" style="font-size: 11px;">
+                                            <i class="fas fa-clock me-1"></i>Pendiente de Aprobación
+                                        </span>
+                                        @endcan
                                     @else
                                         <span class="badge rounded-pill bg-light text-muted border px-2.5 py-1" style="font-size: 11px;">
                                             <i class="fas fa-check-double text-success me-1"></i>Completada

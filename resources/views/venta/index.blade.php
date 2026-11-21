@@ -20,9 +20,11 @@
                     </a>
                 </li>
                 @if(isset($bodega))
+                    @can('ver bodegas')
                     <li class="breadcrumb-item">
                         <a href="{{ route('bodegas.index') }}" class="text-decoration-none text-muted">Bodegas</a>
                     </li>
+                    @endcan
                     <li class="breadcrumb-item">
                         <a href="{{ route('bodega.show', $bodega->idbodega) }}" class="text-decoration-none text-muted">{{ $bodega->nombrebodega }}</a>
                     </li>
@@ -367,12 +369,14 @@
                                         </a>
 
                                         @if($esCredito && $saldoVal > 0)
+                                            @can('gestionar cuentas cobrar')
                                             <a href="{{ route('venta.abono', $venta->id) }}" class="btn-action-circle text-success" title="Registrar Abono a este Crédito">
                                                 <i class="fas fa-hand-holding-usd" style="font-size: 12px;"></i>
                                             </a>
+                                            @endcan
                                         @endif
 
-                                        @if(in_array($cargo, ['Administrador', 'Gerente']))
+                                        @can('registrar ventas')
                                             <a href="{{ route('venta.edit', $venta->id) }}" class="btn-action-circle text-primary" title="Editar Venta">
                                                 <i class="fas fa-edit" style="font-size: 12px;"></i>
                                             </a>
@@ -383,7 +387,7 @@
                                                     <i class="fas fa-trash" style="font-size: 12px;"></i>
                                                 </button>
                                             </form>
-                                        @endif
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

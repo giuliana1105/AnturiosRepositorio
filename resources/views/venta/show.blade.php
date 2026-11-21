@@ -48,15 +48,17 @@
                 <i class="fas fa-arrow-left me-1"></i> Volver a Ventas
             </a>
             @if($esCredito && $saldoPendiente > 0)
+                @can('gestionar cuentas cobrar')
                 <a href="{{ route('venta.abono', $venta->id) }}" class="btn btn-success rounded-pill px-3 shadow-sm">
                     <i class="fas fa-hand-holding-usd me-1"></i> Registrar Abono
                 </a>
+                @endcan
             @endif
-            @if(in_array($cargo, ['Administrador', 'Gerente']))
+            @can('registrar ventas')
                 <a href="{{ route('venta.edit', $venta->id) }}" class="btn btn-outline-primary rounded-pill px-3 shadow-sm">
                     <i class="fas fa-edit me-1"></i> Editar Venta
                 </a>
-            @endif
+            @endcan
         </div>
     </div>
 
@@ -288,9 +290,11 @@
                             <h6 class="fw-bold mb-0 text-dark">Control de Abonos y Estado del Crédito</h6>
                         </div>
                         @if($saldoPendiente > 0)
+                            @can('gestionar cuentas cobrar')
                             <a href="{{ route('venta.abono', $venta->id) }}" class="btn btn-sm btn-primary rounded-pill px-3 shadow-xs">
                                 <i class="fas fa-plus me-1"></i> Nuevo Abono
                             </a>
+                            @endcan
                         @endif
                     </div>
                     <div class="card-body p-4">

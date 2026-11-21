@@ -140,11 +140,21 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label for="cantidad[]" class="form-label font-sm">Cantidad</label>
+                                    @php
+                                        $prodStock = optional($productos->firstWhere('codigo', $detalle->codigoproducto))->cantidad;
+                                    @endphp
                                     <input type="number" name="cantidad[]" class="form-control cantidad-input"
                                         value="{{ $detalle->cantidad }}"
                                         min="1"
-                                        max="{{ optional($productos->firstWhere('codigo', $detalle->codigoproducto))->cantidad }}"
-                                        required>
+                                        max="{{ $prodStock }}"
+                                        required
+                                        oninvalid="this.setCustomValidity(this.validity.rangeOverflow ? ('El valor debe ser menor o igual a ' + this.max) : (this.validity.rangeUnderflow ? 'El valor debe ser mayor o igual a 1' : (this.validity.valueMissing ? 'Ingrese una cantidad' : '')))"
+                                        oninput="this.setCustomValidity('')">
+                                    <div class="stock-feedback font-mono text-muted mt-1" style="font-size: 11.5px;">
+                                        @if($prodStock !== null)
+                                            <i class="fas fa-boxes me-1 text-primary"></i>Stock disponible: <strong class="text-dark">{{ $prodStock }}</strong>
+                                        @endif
+                                    </div>
                                 </div>
                                 <div class="col-md-3">
                                     <label for="empaque[]" class="form-label font-sm">Tipo de Empaque</label>
@@ -182,6 +192,7 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const tipoNotaSelect = document.getElementById('tiponota-select');
@@ -190,6 +201,20 @@ document.addEventListener('DOMContentLoaded', function () {
     let productosDisponibles = [];
     let tipoNotaInicial = tipoNotaSelect.value;
     let bodegaInicial = bodegaSelect ? bodegaSelect.value : null;
+
+    function mostrarAlertaStock(max) {
+        if (window.Swal) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'warning',
+                title: `El valor debe ser menor o igual a ${max}`,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        }
+    }
 
     // Función para obtener productos ya seleccionados
     function getProductosSeleccionados() {
@@ -387,11 +412,17 @@ document.addEventListener('DOMContentLoaded', function () {
         newRow.querySelectorAll('input').forEach(input => {
             if (input.type !== 'hidden') {
                 input.value = '';
+                input.removeAttribute('max');
+                input.removeAttribute('placeholder');
                 input.classList.remove('is-invalid');
+                input.setCustomValidity('');
             } else if (input.name === 'detalle_ids[]') {
                 input.remove(); // No detail id for new rows
             }
         });
+
+        const feedback = newRow.querySelector('.stock-feedback');
+        if (feedback) feedback.innerHTML = '';
 
         const select = newRow.querySelector('.producto-select');
         select.innerHTML = '<option value="">Seleccione un producto</option>';
@@ -418,6 +449,7 @@ document.addEventListener('DOMContentLoaded', function () {
         cantidadInput.value = '';
         cantidadInput.removeAttribute('max');
         cantidadInput.removeAttribute('placeholder');
+        cantidadInput.setCustomValidity('');
 
         productosContainer.appendChild(newRow);
     });
@@ -435,7 +467,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     productosContainer.addEventListener('change', function(e) {
-        if (e.target.classList.contains('producto-select')) {
+        if (e.target.classList.contains('.producto-select') || e.target.classList.contains('producto-select')) {
             const selectedOption = e.target.options[e.target.selectedIndex];
             const tipoNota = tipoNotaSelect.value;
             const bodegaId = tipoNota === 'DEVOLUCION' && bodegaSelect ? bodegaSelect.value : null;
@@ -452,16 +484,51 @@ document.addEventListener('DOMContentLoaded', function () {
             const row = e.target.closest('.row-producto');
             const empaqueInput = row.querySelector('.empaque-input');
             const cantidadInput = row.querySelector('.cantidad-input');
+            const stockFeedback = row.querySelector('.stock-feedback');
             
             empaqueInput.value = empaque ?? '';
             if (cantidadInput) {
-                cantidadInput.max = stock ?? '';
+                if (stock !== null && stock !== undefined && stock !== '') {
+                    cantidadInput.max = stock;
+                    cantidadInput.placeholder = `Máx: ${stock}`;
+                    if (stockFeedback) {
+                        stockFeedback.innerHTML = `<i class="fas fa-boxes me-1 text-primary"></i>Stock disponible: <strong class="text-dark">${stock}</strong>`;
+                    }
+                } else {
+                    cantidadInput.removeAttribute('max');
+                    cantidadInput.placeholder = '';
+                    if (stockFeedback) {
+                        stockFeedback.innerHTML = '';
+                    }
+                }
                 cantidadInput.value = '';
-                cantidadInput.placeholder = stock ? `Máx: ${stock}` : '';
+                cantidadInput.setCustomValidity('');
+                cantidadInput.classList.remove('is-invalid');
             }
 
             // Actualizar opciones en todos los selects para evitar duplicados
             actualizarOpcionesEnSelects();
+        }
+    });
+
+    // Restricción en tiempo real mientras el usuario escribe la cantidad
+    productosContainer.addEventListener('input', function(e) {
+        if (e.target.matches('input[name="cantidad[]"], .cantidad-input')) {
+            const input = e.target;
+            input.setCustomValidity('');
+            
+            const max = parseInt(input.max, 10);
+            if (!isNaN(max) && max > 0 && input.value !== '') {
+                const val = parseInt(input.value, 10);
+                if (val > max) {
+                    input.value = max; // Clampa inmediatamente al valor máximo permitido
+                    input.classList.add('is-invalid');
+                    setTimeout(() => input.classList.remove('is-invalid'), 1800);
+                    mostrarAlertaStock(max);
+                } else if (val < 1) {
+                    input.value = 1;
+                }
+            }
         }
     });
 
@@ -475,33 +542,56 @@ document.addEventListener('DOMContentLoaded', function () {
             if (select.value) {
                 if (productosSeleccionados.includes(select.value)) {
                     valid = false;
-                    alert('No se pueden seleccionar productos duplicados.');
-                    return;
                 }
                 productosSeleccionados.push(select.value);
             }
         });
 
+        if (productosSeleccionados.length !== new Set(productosSeleccionados).size) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'Productos duplicados',
+                text: 'No se pueden seleccionar productos duplicados en la misma solicitud.',
+                confirmButtonColor: '#0097a7',
+                confirmButtonText: 'Entendido'
+            });
+            return;
+        }
+
         // Verificar cantidades máximas
+        let excesoStock = false;
+        let maxPermitido = null;
         document.querySelectorAll('.row-producto').forEach(row => {
             const cantidadInput = row.querySelector('.cantidad-input');
+            if (!cantidadInput) return;
             const max = parseInt(cantidadInput.max, 10);
             const val = parseInt(cantidadInput.value, 10);
-            if (max && val > max) {
+            if (!isNaN(max) && max > 0 && val > max) {
                 valid = false;
+                excesoStock = true;
+                maxPermitido = max;
+                cantidadInput.value = max;
                 cantidadInput.classList.add('is-invalid');
             } else {
                 cantidadInput.classList.remove('is-invalid');
             }
         });
 
+        if (excesoStock) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Stock insuficiente',
+                text: `El valor debe ser menor o igual a ${maxPermitido}`,
+                confirmButtonColor: '#0097a7',
+                confirmButtonText: 'Entendido'
+            });
+            return;
+        }
+
         if (!valid) {
             e.preventDefault();
-            if (productosSeleccionados.length !== new Set(productosSeleccionados).size) {
-                // message handled by alert
-            } else {
-                alert('La cantidad ingresada supera el stock disponible en uno o más productos.');
-            }
         }
     });
 });

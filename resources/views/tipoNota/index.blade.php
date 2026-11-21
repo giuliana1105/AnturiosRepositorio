@@ -176,13 +176,13 @@
                 <table class="table table-hover align-middle mb-0 operational-table">
                     <thead>
                         <tr>
-                            <th class="ps-4 py-3" style="width: 140px;">Nota / Fecha</th>
-                            <th class="py-3" style="width: 130px;">Tipo</th>
-                            <th class="py-3" style="width: 170px;">Bodega Destino</th>
-                            <th class="py-3" style="width: 170px;">Solicitante</th>
-                            <th class="py-3">Productos Solicitados</th>
-                            <th class="py-3" style="width: 150px;">Estado</th>
-                            <th class="text-end pe-4 py-3" style="width: 150px;">Acciones</th>
+                            <th class="ps-4 py-3 text-nowrap" style="width: 140px;">Nota / Fecha</th>
+                            <th class="py-3 text-nowrap" style="width: 120px;">Tipo</th>
+                            <th class="py-3 text-nowrap" style="width: 170px;">Bodega Destino</th>
+                            <th class="py-3 text-nowrap" style="width: 170px;">Solicitante</th>
+                            <th class="py-3" style="min-width: 250px;">Productos Solicitados</th>
+                            <th class="py-3 text-nowrap" style="width: 140px;">Estado</th>
+                            <th class="text-end pe-4 py-3 text-nowrap" style="width: 150px;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -197,27 +197,29 @@
                                 $estadoTransaccion = optional($nota->transaccion)->estado;
                             @endphp
                             <tr class="operational-row">
-                                <td class="ps-4 py-3">
+                                <td class="ps-4 py-3 text-nowrap">
                                     <div>
                                         <span class="font-mono text-dark fw-bold" style="font-size: 13px;">
-                                            #{{ $nota->codigo }}
+                                             #{{ $nota->codigo }}
                                         </span>
                                         <div class="text-muted font-mono mt-0.5" style="font-size: 11.5px;">
                                             <i class="far fa-clock me-1 text-muted"></i>{{ $fechaNota }}
                                         </div>
                                     </div>
                                 </td>
-                                <td class="py-3">
-                                    <span class="badge rounded-pill px-2.5 py-1 fw-semibold" style="background: {{ $tipoStyle['bg'] }}; color: {{ $tipoStyle['color'] }}; border: 1px solid {{ $tipoStyle['border'] }}; font-size: 11.5px;">
-                                        <i class="fas {{ $tipoStyle['icon'] }} me-1" style="font-size: 10px;"></i>{{ $tipoStyle['text'] }}
+                                <td class="py-3 text-nowrap">
+                                    <span class="badge rounded-pill px-2.5 py-1 fw-semibold badge-tipo-pill" style="background: {{ $tipoStyle['bg'] }}; color: {{ $tipoStyle['color'] }}; border: 1px solid {{ $tipoStyle['border'] }}; font-size: 11.5px; white-space: nowrap !important; display: inline-flex; align-items: center; gap: 4px;">
+                                        <i class="fas {{ $tipoStyle['icon'] }}" style="font-size: 10px;"></i>
+                                        <span>{{ $tipoStyle['text'] }}</span>
                                     </span>
                                 </td>
-                                <td class="py-3">
-                                    <span class="badge rounded-pill px-2.5 py-1" style="background: rgba(0, 151, 167, 0.08); color: #006064; border: 1px solid rgba(0, 151, 167, 0.2); font-size: 12px;">
-                                        <i class="fas fa-warehouse me-1 text-primary"></i>{{ optional($nota->bodega)->nombrebodega ?? 'N/A' }}
+                                <td class="py-3 text-nowrap">
+                                    <span class="badge rounded-pill px-2.5 py-1 text-nowrap" style="background: rgba(0, 151, 167, 0.08); color: #006064; border: 1px solid rgba(0, 151, 167, 0.2); font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                                        <i class="fas fa-warehouse text-primary"></i>
+                                        <span>{{ optional($nota->bodega)->nombrebodega ?? 'N/A' }}</span>
                                     </span>
                                 </td>
-                                <td class="py-3">
+                                <td class="py-3 text-nowrap">
                                     <div class="text-dark fw-medium" style="font-size: 13.5px;">
                                         {{ optional($nota->responsableEmpleado)->nombreemp ?? 'N/A' }} {{ optional($nota->responsableEmpleado)->apellidoemp ?? '' }}
                                     </div>
@@ -226,7 +228,7 @@
                                     @if($nota->detalles && $nota->detalles->count() > 0)
                                         <div class="d-flex flex-wrap gap-1">
                                             @foreach ($nota->detalles as $detalle)
-                                                <span class="badge bg-white text-dark border fw-medium px-2 py-1 shadow-xs font-mono" style="font-size: 11.5px; border-color: #e2e8f0 !important;">
+                                                <span class="badge bg-white text-dark border fw-medium px-2 py-1 shadow-xs font-mono text-nowrap" style="font-size: 11.5px; border-color: #e2e8f0 !important;">
                                                     <span class="fw-bold text-primary me-1">{{ $detalle->cantidad ?? 0 }}x</span>
                                                     <span class="fw-normal">{{ $detalle->producto->nombre ?? $detalle->codigoproducto }}</span>
                                                     <small class="text-muted ms-1">({{ $detalle->producto->tipoempaque ?? 'Unidad' }})</small>
@@ -237,7 +239,7 @@
                                         <span class="text-muted fst-italic" style="font-size: 12px;">Sin productos asignados</span>
                                     @endif
                                 </td>
-                                <td class="py-3">
+                                <td class="py-3 text-nowrap">
                                     @if($estadoTransaccion)
                                         @php
                                             $estadoStyles = [
@@ -248,16 +250,16 @@
                                             ];
                                             $eStyle = $estadoStyles[$estadoTransaccion] ?? ['class' => 'status-info', 'label' => str_replace('_', ' ', $estadoTransaccion)];
                                         @endphp
-                                        <span class="status-badge {{ $eStyle['class'] }}">
+                                        <span class="status-badge {{ $eStyle['class'] }} text-nowrap">
                                             <span class="status-indicator-dot"></span> {{ $eStyle['label'] }}
                                         </span>
                                     @else
-                                        <span class="badge rounded-pill px-2.5 py-1 fw-semibold" style="background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; font-size: 11.5px;">
+                                        <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-nowrap" style="background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; font-size: 11.5px;">
                                             <i class="fas fa-hourglass-start me-1"></i>Sin Confirmar
                                         </span>
                                     @endif
                                 </td>
-                                <td class="text-end pe-4 py-3">
+                                <td class="text-end pe-4 py-3 text-nowrap">
                                     <div class="d-inline-flex gap-1">
                                         @if(!$nota->transaccion)
                                             @can('crear nota')
@@ -325,6 +327,20 @@
 <style>
 .shadow-xs {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.operational-table {
+    min-width: 960px;
+}
+.operational-table th,
+.operational-table td {
+    vertical-align: middle;
+}
+.badge-tipo-pill {
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.02em;
 }
 </style>
 @endsection

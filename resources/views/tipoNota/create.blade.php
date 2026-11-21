@@ -129,7 +129,10 @@
                             </div>
                             <div class="col-md-3">
                                 <label for="cantidad[]" class="form-label font-sm">Cantidad</label>
-                                <input type="number" name="cantidad[]" class="form-control" required>
+                                <input type="number" name="cantidad[]" class="form-control cantidad-input" min="1" required
+                                    oninvalid="this.setCustomValidity(this.validity.rangeOverflow ? ('El valor debe ser menor o igual a ' + this.max) : (this.validity.rangeUnderflow ? 'El valor debe ser mayor o igual a 1' : (this.validity.valueMissing ? 'Ingrese una cantidad' : '')))"
+                                    oninput="this.setCustomValidity('')">
+                                <div class="stock-feedback font-mono text-muted mt-1" style="font-size: 11.5px;"></div>
                             </div>
                             <div class="col-md-3">
                                 <label for="empaque[]" class="form-label font-sm">Tipo de Empaque</label>
@@ -162,11 +165,26 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
     const tipoNotaSelect = document.getElementById('tiponota-select');
     const bodegaSelect = document.querySelector('select[name="idbodega"]');
     let productosDisponibles = [];
+
+    function mostrarAlertaStock(max) {
+        if (window.Swal) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'warning',
+                title: `El valor debe ser menor o igual a ${max}`,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        }
+    }
 
     // Función para obtener productos ya seleccionados
     function getProductosSeleccionados() {
@@ -271,8 +289,13 @@
             // Limpia los valores de los inputs/clones
             newRow.querySelectorAll('input').forEach(input => {
                 input.value = '';
+                input.removeAttribute('max');
+                input.removeAttribute('placeholder');
                 input.classList.remove('is-invalid');
+                input.setCustomValidity('');
             });
+            const feedback = newRow.querySelector('.stock-feedback');
+            if (feedback) feedback.innerHTML = '';
             newRow.querySelector('.producto-select').innerHTML = '<option value="">Seleccione un producto</option>';
 
             row.parentNode.appendChild(newRow);
@@ -294,7 +317,7 @@
         }
     });
 
-    // Cuando se selecciona un producto, actualizar empaque y opciones de otros selects
+    // Cuando se selecciona un producto, actualizar empaque, stock máximo y opciones de otros selects
     document.getElementById('productos-container').addEventListener('change', function(e) {
         if (e.target.classList.contains('producto-select')) {
             const selectedOption = e.target.options[e.target.selectedIndex];
@@ -312,13 +335,27 @@
             const empaque = selectedOption.getAttribute('data-empaque');
             const row = e.target.closest('.row-producto');
             const empaqueInput = row.querySelector('.empaque-input');
-            const cantidadInput = row.querySelector('input[name="cantidad[]"]');
+            const cantidadInput = row.querySelector('input[name="cantidad[]"], .cantidad-input');
+            const stockFeedback = row.querySelector('.stock-feedback');
             
             empaqueInput.value = empaque ?? '';
             if (cantidadInput) {
-                cantidadInput.max = stock ?? '';
+                if (stock !== null && stock !== undefined && stock !== '') {
+                    cantidadInput.max = stock;
+                    cantidadInput.placeholder = `Máx: ${stock}`;
+                    if (stockFeedback) {
+                        stockFeedback.innerHTML = `<i class="fas fa-boxes me-1 text-primary"></i>Stock disponible: <strong class="text-dark">${stock}</strong>`;
+                    }
+                } else {
+                    cantidadInput.removeAttribute('max');
+                    cantidadInput.placeholder = '';
+                    if (stockFeedback) {
+                        stockFeedback.innerHTML = '';
+                    }
+                }
                 cantidadInput.value = '';
-                cantidadInput.placeholder = stock ? `Máx: ${stock}` : '';
+                cantidadInput.setCustomValidity('');
+                cantidadInput.classList.remove('is-invalid');
             }
 
             // Actualizar opciones en todos los selects para ocultar/mostrar productos
@@ -326,7 +363,28 @@
         }
     });
 
-    // Validación del formulario
+    // Restricción en tiempo real mientras el usuario escribe la cantidad
+    document.getElementById('productos-container').addEventListener('input', function(e) {
+        if (e.target.matches('input[name="cantidad[]"], .cantidad-input')) {
+            const input = e.target;
+            input.setCustomValidity('');
+            
+            const max = parseInt(input.max, 10);
+            if (!isNaN(max) && max > 0 && input.value !== '') {
+                const val = parseInt(input.value, 10);
+                if (val > max) {
+                    input.value = max; // Clampa inmediatamente al valor máximo permitido
+                    input.classList.add('is-invalid');
+                    setTimeout(() => input.classList.remove('is-invalid'), 1800);
+                    mostrarAlertaStock(max);
+                } else if (val < 1) {
+                    input.value = 1;
+                }
+            }
+        }
+    });
+
+    // Validación al enviar el formulario
     document.querySelector('form').addEventListener('submit', function(e) {
         let valid = true;
         const productosSeleccionados = [];
@@ -336,33 +394,56 @@
             if (select.value) {
                 if (productosSeleccionados.includes(select.value)) {
                     valid = false;
-                    alert('No se pueden seleccionar productos duplicados.');
-                    return;
                 }
                 productosSeleccionados.push(select.value);
             }
         });
 
+        if (productosSeleccionados.length !== new Set(productosSeleccionados).size) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'Productos duplicados',
+                text: 'No se pueden seleccionar productos duplicados en la misma solicitud.',
+                confirmButtonColor: '#0097a7',
+                confirmButtonText: 'Entendido'
+            });
+            return;
+        }
+
         // Verificar cantidades máximas
+        let excesoStock = false;
+        let maxPermitido = null;
         document.querySelectorAll('.row-producto').forEach(row => {
-            const cantidadInput = row.querySelector('input[name="cantidad[]"]');
+            const cantidadInput = row.querySelector('input[name="cantidad[]"], .cantidad-input');
+            if (!cantidadInput) return;
             const max = parseInt(cantidadInput.max, 10);
             const val = parseInt(cantidadInput.value, 10);
-            if (max && val > max) {
+            if (!isNaN(max) && max > 0 && val > max) {
                 valid = false;
+                excesoStock = true;
+                maxPermitido = max;
+                cantidadInput.value = max;
                 cantidadInput.classList.add('is-invalid');
             } else {
                 cantidadInput.classList.remove('is-invalid');
             }
         });
 
+        if (excesoStock) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Stock insuficiente',
+                text: `El valor debe ser menor o igual a ${maxPermitido}`,
+                confirmButtonColor: '#0097a7',
+                confirmButtonText: 'Entendido'
+            });
+            return;
+        }
+
         if (!valid) {
             e.preventDefault();
-            if (productosSeleccionados.length !== new Set(productosSeleccionados).size) {
-                // error already handled by alert
-            } else {
-                alert('La cantidad ingresada supera el stock disponible en uno o más productos.');
-            }
         }
     });
 });

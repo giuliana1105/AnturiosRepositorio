@@ -1401,8 +1401,42 @@
             font-size: 16px !important;
             font-weight: 600 !important;
             color: var(--foreground) !important;
-            padding: var(--space-5) var(--space-5) var(--space-2) !important;
+            padding: var(--space-5) 36px var(--space-2) var(--space-5) !important;
             line-height: 1.3 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+        }
+
+        .tour-title-icon {
+            width: 30px;
+            height: 30px;
+            min-width: 30px;
+            border-radius: var(--radius-md);
+            background: var(--accent-subtle);
+            color: var(--accent);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        @media (max-width: 991.98px) {
+            .driver-popover {
+                max-width: calc(100vw - 24px) !important;
+                min-width: 260px !important;
+            }
+            .driver-popover .driver-popover-title {
+                font-size: 15px !important;
+                padding: var(--space-4) 36px var(--space-2) var(--space-4) !important;
+            }
+            .driver-popover .driver-popover-description {
+                font-size: 12.5px !important;
+                padding: 0 var(--space-4) var(--space-3) !important;
+            }
+            .driver-popover .driver-popover-footer {
+                padding: var(--space-3) var(--space-4) !important;
+            }
         }
 
         .driver-popover .driver-popover-description {
@@ -1572,6 +1606,7 @@
             </div>
 
             <div class="sidebar-nav" id="tour-sidebar-nav">
+                <div id="tour-sidebar-nav-inner">
                 
                 @if(auth()->user()->can('ver dashboard general') || auth()->user()->can('ver dashboard vendedor'))
                 <div class="nav-section-title">Principal</div>
@@ -1691,6 +1726,7 @@
                 </div>
                 @endif
 
+                </div>
             </div>
 
             <div class="logout-container" id="tour-logout">
@@ -1806,8 +1842,30 @@
 (function() {
     'use strict';
 
+    const pasosConSidebar = [1, 2, 4];
+
+    function esMovil() {
+        return window.innerWidth < 992;
+    }
+
+    function setSidebarMobileOpen(open) {
+        const wrapper = document.getElementById('wrapper');
+        if (!wrapper) return;
+        if (open && esMovil()) {
+            wrapper.classList.add('toggled');
+        } else {
+            wrapper.classList.remove('toggled');
+        }
+    }
+
+    function syncSidebarParaPaso(index) {
+        if (!esMovil()) return;
+        setSidebarMobileOpen(pasosConSidebar.indexOf(index) !== -1);
+    }
+
     function crearTourAnturios() {
         const driver = window.driver.js.driver;
+        const isMobile = esMovil();
 
         const tourInstance = driver({
             showProgress: true,
@@ -1822,15 +1880,54 @@
             nextBtnText: 'Siguiente →',
             prevBtnText: '← Atrás',
             doneBtnText: '¡Entendido! ✓',
+            onNextClick: function() {
+                if (tourInstance.isLastStep()) {
+                    setSidebarMobileOpen(false);
+                    completarTour();
+                    tourInstance.destroy();
+                    return;
+                }
+                const currentIndex = tourInstance.getActiveIndex();
+                const nextIndex = typeof currentIndex === 'number' ? currentIndex + 1 : 0;
+                syncSidebarParaPaso(nextIndex);
+                requestAnimationFrame(function() {
+                    tourInstance.moveNext();
+                });
+            },
+            onPrevClick: function() {
+                const currentIndex = tourInstance.getActiveIndex();
+                if (typeof currentIndex === 'number' && currentIndex > 0) {
+                    syncSidebarParaPaso(currentIndex - 1);
+                    requestAnimationFrame(function() {
+                        tourInstance.movePrevious();
+                    });
+                }
+            },
+            onHighlightStarted: function() {
+                if (!esMovil()) return;
+                const activeIndex = tourInstance.getActiveIndex();
+                if (typeof activeIndex !== 'number') return;
+                const wrapper = document.getElementById('wrapper');
+                if (!wrapper) return;
+                const debeEstarAbierto = pasosConSidebar.indexOf(activeIndex) !== -1;
+                const estaAbierto = wrapper.classList.contains('toggled');
+                if (estaAbierto !== debeEstarAbierto) {
+                    setSidebarMobileOpen(debeEstarAbierto);
+                    requestAnimationFrame(function() {
+                        tourInstance.refresh();
+                    });
+                }
+            },
             onDestroyStarted: function() {
-                // Marcar como completado cuando cierra o finaliza
+                // Cerrar menú móvil y marcar como completado cuando cierra o finaliza
+                setSidebarMobileOpen(false);
                 completarTour();
                 tourInstance.destroy();
             },
             steps: [
                 {
                     popover: {
-                        title: '🌿 ¡Bienvenido a Anturios!',
+                        title: '<span class="tour-title-icon"><i class="fas fa-seedling"></i></span><span>¡Bienvenido a Anturios!</span>',
                         description: 'Te daremos un recorrido rápido por las funciones principales del sistema de gestión. Solo tomará un momento.<br><br><strong style="color: var(--muted); font-size: 12px;">Puedes cerrar esta guía en cualquier momento con la X.</strong>',
                         side: 'over',
                         align: 'center'
@@ -1839,45 +1936,45 @@
                 {
                     element: '#tour-sidebar-brand',
                     popover: {
-                        title: '🏠 Navegación Principal',
+                        title: '<span class="tour-title-icon"><i class="fas fa-home"></i></span><span>Navegación Principal</span>',
                         description: 'Este es el logo del sistema. Haz clic aquí en cualquier momento para <strong>volver al panel principal</strong> (Dashboard) desde cualquier página.',
-                        side: 'right',
+                        side: isMobile ? 'bottom' : 'right',
                         align: 'start'
                     }
                 },
                 {
-                    element: '#tour-sidebar-nav',
+                    element: isMobile ? '#tour-sidebar-nav-inner' : '#tour-sidebar-nav',
                     popover: {
-                        title: '📋 Menú de Módulos',
+                        title: '<span class="tour-title-icon"><i class="fas fa-clipboard-list"></i></span><span>Menú de Módulos</span>',
                         description: 'Aquí encontrarás todos los módulos disponibles según tu rol:<br><br>• <strong>Almacén</strong> — Catálogo e inventario<br>• <strong>Operaciones</strong> — Solicitudes y aprobaciones<br>• <strong>Ventas</strong> — Historial y registro<br>• <strong>Configuración</strong> — Empleados, bodegas y usuarios<br><br>Haz clic en cada sección para expandir sus opciones.',
-                        side: 'right',
-                        align: 'center'
+                        side: isMobile ? 'bottom' : 'right',
+                        align: isMobile ? 'start' : 'center'
                     }
                 },
                 {
                     element: '#tour-content-area',
                     popover: {
-                        title: '📊 Área de Trabajo',
+                        title: '<span class="tour-title-icon"><i class="fas fa-chart-bar"></i></span><span>Área de Trabajo</span>',
                         description: 'Este es el espacio principal donde se muestra el contenido de cada módulo: tablas de datos, formularios, reportes y estadísticas. Todo aparece aquí.',
-                        side: 'left',
+                        side: isMobile ? 'top' : 'left',
                         align: 'center'
                     }
                 },
                 {
                     element: '#tour-user-profile',
                     popover: {
-                        title: '👤 Tu Perfil',
+                        title: '<span class="tour-title-icon"><i class="fas fa-user"></i></span><span>Tu Perfil</span>',
                         description: 'Aquí puedes ver tu <strong>nombre de usuario</strong> y tu <strong>rol actual</strong> en el sistema. Los módulos y funciones que ves dependen de los permisos asignados a tu rol.',
-                        side: 'right',
+                        side: isMobile ? 'bottom' : 'right',
                         align: 'start'
                     }
                 },
                 {
                     element: '#tour-help-btn',
                     popover: {
-                        title: '❓ ¿Necesitas Ayuda?',
-                        description: 'Si en algún momento quieres <strong>volver a ver esta guía</strong>, solo haz clic en este botón de ayuda. ¡Siempre estará aquí para ti!<br><br><strong style="color: var(--accent);">¡Listo! Ya puedes empezar a usar el sistema. 🎉</strong>',
-                        side: 'left',
+                        title: '<span class="tour-title-icon"><i class="fas fa-question-circle"></i></span><span>¿Necesitas Ayuda?</span>',
+                        description: 'Si en algún momento quieres <strong>volver a ver esta guía</strong>, solo haz clic en este botón de ayuda. ¡Siempre estará aquí para ti!<br><br><strong style="color: var(--accent);">¡Listo! Ya puedes empezar a usar el sistema. <i class="fas fa-check-circle ms-1"></i></strong>',
+                        side: isMobile ? 'top' : 'left',
                         align: 'end'
                     }
                 }
@@ -1904,6 +2001,7 @@
     @if(!auth()->user()->tour_completado)
     document.addEventListener('DOMContentLoaded', function() {
         setTimeout(function() {
+            setSidebarMobileOpen(false);
             var tour = crearTourAnturios();
             tour.drive();
         }, 800);
@@ -1915,6 +2013,7 @@
         var helpBtn = document.getElementById('tour-help-btn');
         if (helpBtn) {
             helpBtn.addEventListener('click', function() {
+                setSidebarMobileOpen(false);
                 var tour = crearTourAnturios();
                 tour.drive();
             });
